@@ -1,0 +1,1 @@
+O:6:"utente":6:{s:4:"nick";s:6:"Esisto";s:8:"password";s:10:"adipiscing";s:5:"email";s:0:"";s:10:"newsletter";b:1;s:17:"notifica_risposta";b:0;s:8:"immagine";s:0:"";}
