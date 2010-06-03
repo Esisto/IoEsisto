@@ -1,1 +1,0 @@
-O:6:"utente":6:{s:4:"nick";s:9:"Samvise85";s:8:"password";s:6:"gamgee";s:5:"email";s:22:"shadowmiller@libero.it";s:10:"newsletter";b:1;s:17:"notifica_risposta";b:0;s:8:"immagine";s:23:"img/login/Samvise85.gif";}
