@@ -7,9 +7,15 @@
 <body>
 
 <?php
-	require_once("post/posttest.php");
+	require_once("post/PostTest.php");
 	
 	echo testPost();
+	echo "<br />";
+	echo testComment();
+	echo "<br />";
+	echo testVote();
+	echo "<br />";
+	echo testEditPost();
 ?>
 
 </body>
