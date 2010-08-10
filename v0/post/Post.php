@@ -16,7 +16,7 @@
 		protected $postType;		//
 		protected $title;			//
 		protected $subtitle;		//
-		protected $headline; 		// AAAAAARGH
+		protected $headline; 		// occhiello
 		protected $author;			//
 		protected $creationDate;	//
 		protected $tags = array();			// array di oggetti TAG
@@ -24,23 +24,37 @@
 		protected $comments = array();		// array di oggetti COMMENTO
 		protected $votes = array();			// array di oggetto VOTO
 		protected $content;		// testo del contenuto o indirizzo del video o foto o array di essi
-		protected $visible;	// boolean
+		protected $visible;		// boolean
 		protected $signals = array();			// array di oggetti SIGNAL
 		
 		function __construct($data) {
-			$this->setTitle($data["title"]);
-			$this->setSubtitle($data["subtitle"]);
-			$this->setAuthor($data["author"]);
-			$this->setHeadline($data["headline"]);
-			$this->setTags($data["tags"]);
-			$this->setCategories($data["categories"]);
-			$this->setContent($data["content"]);
-			$this->setVisible($data["visible"]);
+			if(isset($data["title"]))
+				$this->setTitle($data["title"]);
+			if(isset($data["subtitle"]))
+				$this->setSubtitle($data["subtitle"]);
+			if(isset($data["author"]))
+				$this->setAuthor($data["author"]);
+			if(isset($data["headline"]))
+				$this->setHeadline($data["headline"]);
+			if(isset($data["tags"]))
+				$this->setTags($data["tags"]);
+			if(isset($data["categories"]))
+				$this->setCategories($data["categories"]);
+			if(isset($data["content"]))
+				$this->setContent($data["content"]);
+			if(isset($data["visible"]))
+				$this->setVisible($data["visible"]);
 			$this->setCreationDate(time());
 		}
 		
 		function addComment($comment) {
 			$this->comments[] = $comment;
+			
+			$this->save(SavingMode::$UPDATE);
+		}
+		
+		function addVote($vote) {
+			$this->votes[] = $vote;
 			
 			$this->save(SavingMode::$UPDATE);
 		}
@@ -81,6 +95,9 @@
 		function getComments() {
 			return $this->comments;
 		}
+		function getVotes() {
+			return $this->votes;
+		}
 
 		
 		function setTitle($title) {
@@ -110,7 +127,7 @@
 		function setVisible($visible) {
 			$this->visible = $visible;
 		}
-		function setType($type) {
+		function setPostType($type) {
 			$this->postType = $type;
 		}
 		
@@ -129,7 +146,7 @@
 		
 		function __construct($data) {
 			parent::__construct($data);
-			$this->postType = PostType::NEWS;
+			$this->setPostType(PostType::$NEWS);
 		}
 	}
 	
@@ -137,7 +154,7 @@
 		
 		function __construct($data) {
 			parent::__construct($data);
-			$this->postType = PostType::$PHOTOREPORTAGE;
+			$this->setPostType(PostType::$PHOTOREPORTAGE);
 		}
 	}
 	
@@ -145,7 +162,7 @@
 		
 		function __construct($data) {
 			parent::__construct($data);
-			$this->postType = PostType::$VIDEOREPORTAGE;
+			$this->setPostType(PostType::$VIDEOREPORTAGE);
 		}
 	}
 	
@@ -181,6 +198,18 @@
 			$this->comment=$comment;
 		}
 		
+		function getAuthor() {
+			return $this->author;
+		}
+		
+		function getPost() {
+			return $this->post;
+		}
+		
+		function getComment() {
+			return $this->comment;
+		}
+		
 		function save($savingMode) {
 			
 		}
@@ -194,5 +223,32 @@
 		private $author;
 		private $post;
 		private $vote;
+		
+		function __construct($author,$post,$vote){
+			$this->author = $author;
+			$this->post = $post;
+			$this->vote = $vote;
+		}
+		
+		function getAuthor() {
+			return $this->author;
+		}
+		
+		function getPost() {
+			return $this->post;
+		}
+		
+		function getVote() {
+			return $this->vote;
+		}
+		
+		
+		function save($savingMode) {
+			
+		}
+		
+		function delete() {
+			
+		}
 	}
 ?>

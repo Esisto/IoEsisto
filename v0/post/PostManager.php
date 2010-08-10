@@ -24,12 +24,11 @@ class PostManager {
 	 */
 	static function addPost($data, $type) {
 		$p = null;
-		if(false === array_search($type, Post::$pTypes)) return null;
-		if($type == Post::$pTypes["NEWS"]) 
+		if($type == PostType::$NEWS) 
 			$p = new News($data);
-		else if($type == Post::$pTypes["PHOTOREPORTAGE"]) 
+		else if($type == PostType::$PHOTOREPORTAGE) 
 			$p = new PhotoReportage($data);
-		else if($type == Post::$pTypes["VIDEOREPORTAGE"]) 
+		else if($type == PostType::$VIDEOREPORTAGE) 
 			$p = new VideoReportage($data);
 		else
 			return null;
@@ -54,7 +53,7 @@ class PostManager {
 	 *
 	 * return: l'articolo modificato.
 	 */
-	function editPost($post, $data) {
+	static function editPost($post, $data) {
 		if(isset($data["title"]))
 			$post->setTitle($data["title"]);
 		if(isset($data["subtitle"]))
@@ -67,8 +66,8 @@ class PostManager {
 			$post->setCategories($data["categories"]);
 		if(isset($data["content"]))
 			$post->setContent($data["content"]);
-		if(isset($data["visibile"]))
-			$post->setVisible($data["visibile"]);
+		if(isset($data["visible"]))
+			$post->setVisible($data["visible"]);
 			
 		$post->save(SavingMode::$UPDATE);
 		
@@ -81,15 +80,15 @@ class PostManager {
 	 * param post: il post da eliminare.
 	 * return: il post eliminato.
 	 */
-	function deletePost($post) {
+	static function deletePost($post) {
 		$post->delete();
 		
 		return $post;
 	}
-	function signalPost() {
+	static function signalPost() {
 		
 	}
-	function votePost() {
+	static function votePost() {
 		
 	}
 	
@@ -115,17 +114,17 @@ class PostManager {
 	 * param comment: il commento da eliminare.
 	 * return: il commento eliminato.
 	 */
-	function removeComment($comment) {
+	static function removeComment($comment) {
 		$comment->delete();
 		
 		return $comment;
 	}
 	
-	function signalComment() {
+	static function signalComment() {
 		
 	}
 	
-	function searchForLikelihood() {
+	static function searchForLikelihood() {
 		
 	}
 	
@@ -137,7 +136,7 @@ class PostManager {
 	 * param collection: la collezione in cui aggiungere il post.
 	 * return: la collezione aggiornata.
 	 */
-	function addPostToCollection($post, $collection) {
+	static function addPostToCollection($post, $collection) {
 		$collection->addPost($post);
 		$collection->save(SavingMode::$UPDATE);
 		
@@ -150,13 +149,29 @@ class PostManager {
 	 *
 	 * param post: il post da iscrivere.
 	 * param contest: il contest a cui iscrivere il post
-	 * retrun: il contest aggiornato.
+	 * return: il contest aggiornato.
 	 */
-	function subscribePostToContest($post, $contest) {
+	static function subscribePostToContest($post, $contest) {
 		$contest->subscribePost($post);
 		$contest->save(SavingMode::$UPDATE);
 		
 		return $contest;
+	}
+	
+	
+	static function addVote($author,$post,$vote){
+		$v = new Vote($author,$post->getID(),$vote);
+		$v->save(SavingMode::$INSERT);
+		
+		$post->addVote($v);
+		
+		return $post;
+	}
+	
+	static function removeVote($vote) {
+		$vote->delete();
+		
+		return $vote;
 	}
 }
 ?>
