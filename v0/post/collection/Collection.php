@@ -19,10 +19,6 @@
 			return $this->collectionType;
 		}
 		
-		function setCollectionType($type) {
-			$this->collectionType = $type;
-		}
-		
 		function addPost($post){
 			if(isset($this->content)&& is_array($this->content))
 				$this->content[] = $post;
@@ -30,10 +26,16 @@
 				$this->setContent(array($post));
 				
 			$this->save(SavingMode::$UPDATE);
+			
+			return $this;
 		}
 		
+		/**
+		 * Do nothing. Use addPost() instead.
+		 * @deprecated @Override
+		 */
 		function setContent($content) {
-			
+			return null;
 		}
 	}
 	
@@ -41,13 +43,19 @@
 		
 		function __construct() {
 			parent::__construct();
-			$this->setCollectionType(CollectionType::$ALBUM);
+			$this->collectionType(CollectionType::$ALBUM);
 		}
 		
+		/**
+		 * @Override
+		 * Controlla inoltre che il post da aggiungere sia un PostType::$PHOTOREPORTAGE.
+		 */
 		function addPost($photo){
 			if($photo->getType()==PostType::$PHOTOREPORTAGE){
 				parent::addPost($photo);
 			}
+			
+			return $this;
 		}
 	}
 	
@@ -55,13 +63,19 @@
 		
 		function __construct() {
 			parent::__construct();
-			$this->setCollectionType(CollectionType::$MAGAZINE);
+			$this->collectionType(CollectionType::$MAGAZINE);
 		}
 		
+		/**
+		 * @Override
+		 * Controlla inoltre che il post da aggiungere sia un PostType::$NEWS.
+		 */
 		function addPost($news){
 			if($news->getType()==PostType::$NEWS){
 				parent::addPost($news);
 			}
+			
+			return $this;
 		}
 	}
 	
@@ -69,13 +83,19 @@
 		
 		function __construct() {
 			parent::__construct();
-			$this->setCollectionType(CollectionType::$PLAYLIST);
+			$this->collectionType(CollectionType::$PLAYLIST);
 		}
 		
+		/**
+		 * @Override
+		 * Controlla inoltre che il post da aggiungere sia un PostType::$VIDEOREPORTAGE.
+		 */
 		function addPost($video){
 			if($video->getType()==PostType::$VIDEOREPORTAGE){
 				parent::addPost($video);
 			}
+			
+			return $this;
 		}
 	}
 

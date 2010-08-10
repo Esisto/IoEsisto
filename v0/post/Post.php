@@ -51,12 +51,14 @@
 			$this->comments[] = $comment;
 			
 			$this->save(SavingMode::$UPDATE);
+			return $this;
 		}
 		
 		function addVote($vote) {
 			$this->votes[] = $vote;
 			
 			$this->save(SavingMode::$UPDATE);
+			return $this;
 		}
 		
 		function getID() {
@@ -102,33 +104,43 @@
 		
 		function setTitle($title) {
 			$this->title = $title;
+			return $this;
 		}
 		function setSubtitle($subtitle) {
 			$this->subtitle = $subtitle;
+			return $this;
 		}
 		function setHeadline($occh) {
 			$this->headline = $occh;
+			return $this;
 		}
 		function setAuthor($author) {
 			$this->author = $author;
+			return $this;
 		}
 		function setCreationDate($cDate) {
 			$this->creationDate = $cDate;
+			return $this;
 		}
 		function setTags($tags) {
 			$this->tags = $tags;
+			return $this;
 		}
 		function setCategories($categories) {
 			$this->categories = $categories;
+			return $this;
 		}
 		function setContent($content) {
 			$this->content = $content;
+			return $this;
 		}
 		function setVisible($visible) {
 			$this->visible = $visible;
+			return $this;
 		}
 		function setPostType($type) {
 			$this->postType = $type;
+			return $this;
 		}
 		
 		
@@ -181,21 +193,9 @@
 		private $signals;
 		
 		function __construct($author,$post,$comment){
-			$this->setAuthor($author);
-			$this->setComment($comment);
-			$this->setPost($post);
-		}
-		
-		function setAuthor($author){
-			$this->author=$author;
-		}
-		
-		function setPost($post){
-			$this->post=$post;
-		}
-		
-		function setComment($comment){
-			$this->comment=$comment;
+			$this->author($author);
+			$this->comment($comment);
+			$this->post($post);
 		}
 		
 		function getAuthor() {
