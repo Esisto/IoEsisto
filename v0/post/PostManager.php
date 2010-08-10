@@ -88,8 +88,13 @@ class PostManager {
 	static function signalPost() {
 		
 	}
-	static function votePost() {
+	static function votePost($author, $post, $vote) {
+		$v = new Vote($author, $post->getID(), $vote);
+		$v->save(SavingMode::$INSERT);
 		
+		$post->addVote($v);
+		
+		return $post;
 	}
 	
 	/**
@@ -156,16 +161,6 @@ class PostManager {
 		$contest->save(SavingMode::$UPDATE);
 		
 		return $contest;
-	}
-	
-	
-	static function addVote($author,$post,$vote){
-		$v = new Vote($author,$post->getID(),$vote);
-		$v->save(SavingMode::$INSERT);
-		
-		$post->addVote($v);
-		
-		return $post;
 	}
 	
 	static function removeVote($vote) {
