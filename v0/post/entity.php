@@ -1,39 +1,48 @@
 <?php
+	class PostType {
+		static $PHOTOREPORTAGE = "photoreportage";
+		static $VIDEOREPORTAGE = "videoreportage";
+		static $NEWS = "news";
+		static $COLLECTION = "collection";
+	}
+	
+	class SavingMode {
+		static $INSERT = "insert";
+		static $UPDATE = "update";
+	}
+	
 	class Post {
-		static $pTypes = array("PHOTOREPORTAGE" => "photoreportage",
-							"VIDEOREPORTAGE" => "videoreportage",
-							"NEWS" => "news",
-							"COLLECTION" => "collection");
-		
 		protected $ID;				// id recuperato dal database
 		protected $postType;		//
 		protected $title;			//
 		protected $subtitle;		//
-		protected $occhiello; 		// AAAAAARGH
+		protected $headline; 		// AAAAAARGH
 		protected $author;			//
 		protected $creationDate;	//
 		protected $tags = array();			// array di oggetti TAG
 		protected $categories = array();		// array di oggetti CATEGORY
 		protected $comments = array();		// array di oggetti COMMENTO
 		protected $votes = array();			// array di oggetto VOTO
-		protected $contents;		// testo del contenuto o indirizzo del video o foto o array di essi
+		protected $content;		// testo del contenuto o indirizzo del video o foto o array di essi
 		protected $visible;	// boolean
 		protected $signals = array();			// array di oggetti SIGNAL
 		
-		function __construct($title, $subtitle, $occh, $author, $tags, $categories, $content, $visible) {
-			$this->setTitle($title);
-			$this->setSubtitle($subtitle);
-			$this->setAuthor($author);
-			$this->setOcchiello($occh);
-			$this->setTags($tags);
-			$this->setCategories($categories);
-			$this->setContents($content);
-			$this->setVisible($visible);
+		function __construct($data) {
+			$this->setTitle($data["title"]);
+			$this->setSubtitle($data["subtitle"]);
+			$this->setAuthor($data["author"]);
+			$this->setHeadline($data["headline"]);
+			$this->setTags($data["tags"]);
+			$this->setCategories($data["categories"]);
+			$this->setContent($data["content"]);
+			$this->setVisible($data["visible"]);
 			$this->setCreationDate(time());
 		}
 		
 		function addComment($comment) {
-			$this->comments[$this->comments->lenght] = $comment;
+			$this->comments[] = $comment;
+			
+			$this->save(SavingMode::$UPDATE);
 		}
 		
 		function getID() {
@@ -45,8 +54,8 @@
 		function getSubtitle() {
 			return $this->subtitle;
 		}
-		function getOcchiello() {
-			return $this->occhiello;
+		function getHeadline() {
+			return $this->headline;
 		}
 		function getAuthor() {
 			return $this->author;
@@ -60,10 +69,10 @@
 		function getCategories() {
 			return $this->categories;
 		}
-		function getContents() {
-			return $this->contents;
+		function getContent() {
+			return $this->content;
 		}
-		function getVisible() {
+		function isVisible() {
 			return $this->visible;
 		}
 		function getType() {
@@ -80,8 +89,8 @@
 		function setSubtitle($subtitle) {
 			$this->subtitle = $subtitle;
 		}
-		function setOcchiello($occh) {
-			$this->occhiello = $occh;
+		function setHeadline($occh) {
+			$this->headline = $occh;
 		}
 		function setAuthor($author) {
 			$this->author = $author;
@@ -95,8 +104,8 @@
 		function setCategories($categories) {
 			$this->categories = $categories;
 		}
-		function setContents($contents) {
-			$this->contents = $contents;
+		function setContent($content) {
+			$this->content = $content;
 		}
 		function setVisible($visible) {
 			$this->visible = $visible;
@@ -107,32 +116,36 @@
 		
 		
 		
-		function save() {
+		function save($savingMode) {
+			
+		}
+		
+		function delete() {
 			
 		}
 	}
 	
 	class News extends Post {
 		
-		function __construct($title, $subtitle, $occh, $author, $tags, $categories, $content, $visible) {
-			parent::__construct($title, $subtitle, $occh, $author, $tags, $categories, $content, $visible);
-			$this->postType = Post::$pTypes["NEWS"];
+		function __construct($data) {
+			parent::__construct($data);
+			$this->postType = PostType::NEWS;
 		}
 	}
 	
 	class PhotoReportage extends Post {
 		
-		function __construct($title, $subtitle, $occh, $author, $tags, $categories, $content, $visible) {
-			parent::__construct($title, $subtitle, $occh, $author, $tags, $categories, $content, $visible);
-			$this->postType = Post::$pTypes["PHOTOREPORTAGE"];
+		function __construct($data) {
+			parent::__construct($data);
+			$this->postType = PostType::$PHOTOREPORTAGE;
 		}
 	}
 	
 	class VideoReportage extends Post {
 		
-		function __construct($title, $subtitle, $occh, $author, $tags, $categories, $content, $visible) {
-			parent::__construct($title, $subtitle, $occh, $author, $tags, $categories, $content, $visible);
-			$this->postType = Post::$pTypes["VIDEOREPORTAGE"];
+		function __construct($data) {
+			parent::__construct($data);
+			$this->postType = PostType::$VIDEOREPORTAGE;
 		}
 	}
 	
@@ -166,6 +179,14 @@
 		
 		function setComment($comment){
 			$this->comment=$comment;
+		}
+		
+		function save($savingMode) {
+			
+		}
+		
+		function delete() {
+			
 		}
 	}
 	
