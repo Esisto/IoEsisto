@@ -105,7 +105,7 @@ class PostManager {
 	 * param comment testo del commento
 	 * return post aggiornato.
 	 */
-	static function addComment($post, $author, $comment) {
+	static function commentPost($post, $author, $comment) {
 		$c = new Comment($author, $post->getID(), $comment);
 		$c->save(SavingMode::$INSERT);
 		$post->addComment($c);
@@ -131,21 +131,6 @@ class PostManager {
 	
 	static function searchForLikelihood() {
 		
-	}
-	
-	/**
-	 * Aggiunge un Post ad una Collection.
-	 * TODO FORSE DA METTERE IN CollectionManager.
-	 * 
-	 * param post: il post da aggiungere.
-	 * param collection: la collezione in cui aggiungere il post.
-	 * return: la collezione aggiornata.
-	 */
-	static function addPostToCollection($post, $collection) {
-		$collection->addPost($post);
-		$collection->save(SavingMode::$UPDATE);
-		
-		return $collection;
 	}
 	
 	/**

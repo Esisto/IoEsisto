@@ -91,6 +91,14 @@ class CollectionManager {
 		
 	}
 	
+	/**
+	 * Aggiunge un voto ad una Collection.
+	 * 
+	 * param author: l'autore del commento.
+	 * param collection: la collezione in cui aggiungere il voto.
+	 * param vote: il voto (boolean).
+	 * return: la collezione aggiornata.
+	 */
 	static function voteCollection($author, $collection, $vote) {
 		$v = new Vote($author, $collection->getID(), $vote);
 		$v->save(SavingMode::$INSERT);
@@ -98,17 +106,54 @@ class CollectionManager {
 		return $collection->addVote($v);
 	}
 	
+	/**
+	 * Rimuove un voto dal sistema.
+	 * 
+	 * param vote: il voto da rimuovere.
+	 * return: il voto rimosso.
+	 */
 	static function removeVote($vote) {
 		$vote->delete();
 		
 		return $vote;
 	}
 	
+	/**
+	 * Aggiunge un commento ad una Collection.
+	 * 
+	 * param author: l'autore del commento.
+	 * param collection: la collezione in cui aggiungere il voto.
+	 * param comment: il testo del commento.
+	 * return: la collezione aggiornata.
+	 */
 	static function commentCollection($author, $collection, $comment) {
 		$c = new Comment($author, $collection->getID(), $comment);
 		$c->save(SavingMode::$INSERT);
 		
 		return $collection->addComment($c);
+	}
+	
+	/**
+	 * Rimuove un commento dal sistema.
+	 * 
+	 * param comment: il commento da rimuovere.
+	 * return: il commento rimosso.
+	 */
+	static function removeComment($comment) {
+		$comment->delete();
+		
+		return $comment;
+	}
+	
+	/**
+	 * Aggiunge un Post ad una Collection.
+	 * 
+	 * param post: il post da aggiungere.
+	 * param collection: la collezione in cui aggiungere il post.
+	 * return: la collezione aggiornata.
+	 */
+	static function addPostToCollection($post, $collection) {
+		return $collection->addPost($post);
 	}
 }
 
