@@ -8,6 +8,7 @@
 
 <?php
 	require_once("post/PostTest.php");
+	require_once("post/collection/CollectionTest.php");
 	
 	echo testPost();
 	echo "<br />";
@@ -16,6 +17,10 @@
 	echo testVote();
 	echo "<br />";
 	echo testEditPost();
+	echo "<br />";
+	echo testCollection();
+	echo "<br />";
+	echo testAddPostToCollection();
 ?>
 
 </body>
