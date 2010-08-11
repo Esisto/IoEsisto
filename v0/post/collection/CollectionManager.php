@@ -95,11 +95,21 @@ class CollectionManager {
 		$v = new Vote($author, $collection->getID(), $vote);
 		$v->save(SavingMode::$INSERT);
 		
-		$collection->addVote($v);
-		return $collection;
+		return $collection->addVote($v);
 	}
 	
+	static function removeVote($vote) {
+		$vote->delete();
+		
+		return $vote;
+	}
 	
+	static function commentCollection($author, $collection, $comment) {
+		$c = new Comment($author, $collection->getID(), $comment);
+		$c->save(SavingMode::$INSERT);
+		
+		return $collection->addComment($c);
+	}
 }
 
 ?>
