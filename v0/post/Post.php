@@ -143,19 +143,79 @@
 			return $this;
 		}
 		
-		
-		
+		/**
+		 * Salva il post nel database.
+		 * 
+		 * param savingMode: uno dei valori della classe SavingMode.
+		 * se INSERT: crea una nuova tupla in Post.
+		 * se UPDATE: confronta il Post con quello presente nel database e aggiorna le differenze.
+		 */
 		function save($savingMode) {
+			if($savingMode == SavingMode::$INSERT) {
+				
+				// TODO
+				return true;
+			} else if($savingMode == SavingMode::$UPDATE) {
+				
+				// TODO
+				return true;	
+			}
 			
+			return false;
 		}
 		
 		function delete() {
 			
 		}
+		
+		/**
+		 * @Override
+		 */
+		function __toString() {
+			$s = "Post (ID = " . $this->ID .
+				 " | postType = " . $this->postType .
+				 " | title = " . $this->title .
+				 " | subtitle = " . $this->subtitle .
+				 " | headline = " . $this->headline .
+				 " | author = " . $this->author .
+				 " | creationDate = " . date("d/m/Y G:i", $this->creationDate) .
+				 " | tags = (";
+			for($i=0; $i<count($this->tags); $i++) {
+				if($i>0) $s.= ", ";
+				$s.= $this->tags[$i];
+			}
+			$s.= ") | categories = (";
+			for($i=0; $i<count($this->categories); $i++) {
+				if($i>0) $s.= ", ";
+				$s.= $this->categories[$i];
+			}
+			$s.= ") | comments = (";
+			for($i=0; $i<count($this->comments); $i++) {
+				if($i>0) $s.= ", ";
+				$s.= $this->comments[$i];
+			}
+			$s.= ") | votes = (";
+			for($i=0; $i<count($this->votes); $i++) {
+				if($i>0) $s.= ", ";
+				$s.= $this->votes[$i];
+			}
+			$s.= ") | content = " . $this->content .
+				 " | visible = " . $this->visible .
+				 " | signals = (";
+			for($i=0; $i<count($this->signals); $i++) {
+				if($i>0) $s.= ", ";
+				$s.= $this->signals[$i];
+			}
+			$s.= "))";
+			return $s;
+		}
 	}
 	
 	class News extends Post {
 		
+		/**
+		 * @Override
+		 */
 		function __construct($data) {
 			parent::__construct($data);
 			$this->setPostType(PostType::$NEWS);
@@ -164,14 +224,87 @@
 	
 	class PhotoReportage extends Post {
 		
+		/**
+		 * @Override
+		 */
 		function __construct($data) {
 			parent::__construct($data);
 			$this->setPostType(PostType::$PHOTOREPORTAGE);
 		}
+		
+		/**
+		 * @Override
+		 */
+		function __toString() {
+			$s = "Post (ID = " . $this->ID .
+				 " | postType = " . $this->postType .
+				 " | title = " . $this->title .
+				 " | subtitle = " . $this->subtitle .
+				 " | headline = " . $this->headline .
+				 " | author = " . $this->author .
+				 " | creationDate = " . date("d/m/Y G:i", $this->creationDate) .
+				 " | tags = (";
+			for($i=0; $i<count($this->tags); $i++) {
+				if($i>0) $s.= ", ";
+				$s.= $this->tags[$i];
+			}
+			$s.= ") | categories = (";
+			for($i=0; $i<count($this->categories); $i++) {
+				if($i>0) $s.= ", ";
+				$s.= $this->categories[$i];
+			}
+			$s.= ") | comments = (";
+			for($i=0; $i<count($this->comments); $i++) {
+				if($i>0) $s.= ", ";
+				$s.= $this->comments[$i];
+			}
+			$s.= ") | votes = (";
+			for($i=0; $i<count($this->votes); $i++) {
+				if($i>0) $s.= ", ";
+				$s.= $this->votes[$i];
+			}
+			$s.= ") | content = (";
+			for($i=0; $i<count($this->content); $i++) {
+				if($i>0) $s.= ", ";
+				$s.= $this->content[$i];
+			}
+			$s.= ") | visible = " . $this->visible .
+				 " | signals = (";
+			for($i=0; $i<count($this->signals); $i++) {
+				if($i>0) $s.= ", ";
+				$s.= $this->signals[$i];
+			}
+			$s.= "))";
+			return $s;
+		}
+		
+		/**
+		 * @Override
+		 * Salva il fotoreportage nel database.
+		 * 
+		 * param savingMode: uno dei valori della classe SavingMode.
+		 * se INSERT: crea una nuova tupla in Post.
+		 * se UPDATE: confronta il Post con quello presente nel database e aggiorna le differenze.
+		 */
+		function save($savingMode) {
+			if($savingMode == SavingMode::$INSERT) {
+				
+				// TODO
+				return true;
+			} else if($savingMode == SavingMode::$UPDATE) {
+				
+				// TODO
+				return true;	
+			}
+			
+			return false;
+		}
 	}
 	
 	class VideoReportage extends Post {
-		
+		/**
+		 * @Override
+		 */
 		function __construct($data) {
 			parent::__construct($data);
 			$this->setPostType(PostType::$VIDEOREPORTAGE);
@@ -180,10 +313,24 @@
 	
 	class Category {
 		private $name;
+		
+		/**
+		 * @Override
+		 */
+		function __toString() {
+			return $name;
+		}
 	}
 
 	class Tag {
 		private $name;
+		
+		/**
+		 * @Override
+		 */
+		function __toString() {
+			return $name;
+		}
 	}
 	
 	class Comment {
@@ -193,9 +340,9 @@
 		private $signals;
 		
 		function __construct($author,$post,$comment){
-			$this->author($author);
-			$this->comment($comment);
-			$this->post($post);
+			$this->author = $author;
+			$this->comment = $comment;
+			$this->post = $post;
 		}
 		
 		function getAuthor() {
@@ -210,12 +357,45 @@
 			return $this->comment;
 		}
 		
+		/**
+		 * Salva il commento nel database.
+		 * 
+		 * param savingMode: uno dei valori della classe SavingMode.
+		 * se INSERT: crea una nuova tupla in Post.
+		 * se UPDATE: confronta il Post con quello presente nel database e aggiorna le differenze.
+		 */
 		function save($savingMode) {
+			if($savingMode == SavingMode::$INSERT) {
+				
+				// TODO
+				return true;
+			} else if($savingMode == SavingMode::$UPDATE) {
+				
+				// TODO
+				return true;	
+			}
 			
+			return false;
 		}
 		
 		function delete() {
 			
+		}
+		
+		/**
+		 * @Override
+		 */
+		function __toString() {
+			$s = "Comment (author = " . $this->author .
+				 " | post = " . $this->comment .
+				 " | comment = " . $this->comment .
+				 " | signals = (";
+			for($i=0; $i<count($this->signals); $i++) {
+				if($i>0) $s.= ", ";
+				$s.= $this->signals[$i];
+			}
+			$s.= "))";
+			return $s;
 		}
 	}
 	
@@ -242,13 +422,40 @@
 			return $this->vote;
 		}
 		
-		
+		/**
+		 * Salva il voto nel database.
+		 * 
+		 * param savingMode: uno dei valori della classe SavingMode.
+		 * se INSERT: crea una nuova tupla in Post.
+		 * se UPDATE: confronta il Post con quello presente nel database e aggiorna le differenze.
+		 */
 		function save($savingMode) {
+			if($savingMode == SavingMode::$INSERT) {
+				
+				// TODO
+				return true;
+			} else if($savingMode == SavingMode::$UPDATE) {
+				
+				// TODO
+				return true;	
+			}
 			
+			return false;
 		}
 		
 		function delete() {
 			
+		}
+		
+		/**
+		 * @Override
+		 */
+		function __toString() {
+			$s = "Comment (author = " . $this->author .
+				 " | post = " . $this->comment .
+				 " | comment = " . $this->comment .
+				 ")";
+			return $s;
 		}
 	}
 ?>

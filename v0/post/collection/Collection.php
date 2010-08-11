@@ -8,6 +8,9 @@
 	class Collection extends Post {
 		protected $collectionType;
 		
+		/**
+		 * @Override
+		 */
 		function __construct($data) {
 			parent::__construct($data);
 			if(isset($data["content"]) && !is_array($data["content"]))
@@ -20,11 +23,11 @@
 		}
 		
 		function addPost($post){
-			if(isset($this->content)&& is_array($this->content))
+			if(isset($this->content) && is_array($this->content)) {
 				$this->content[] = $post;
-			else
-				$this->setContent(array($post));
-				
+			} else {
+				parent::setContent(array($post));
+			}
 			$this->save(SavingMode::$UPDATE);
 			
 			return $this;
@@ -37,13 +40,83 @@
 		function setContent($content) {
 			return null;
 		}
+		
+		/**
+		 * @Override
+		 * Salva la collezione nel database.
+		 * 
+		 * param savingMode: uno dei valori della classe SavingMode.
+		 * se INSERT: crea una nuova tupla in Post.
+		 * se UPDATE: confronta il Post con quello presente nel database e aggiorna le differenze.
+		 */
+		function save($savingMode) {
+			if($savingMode == SavingMode::$INSERT) {
+				
+				// TODO
+				return true;
+			} else if($savingMode == SavingMode::$UPDATE) {
+				
+				// TODO
+				return true;	
+			}
+			
+			return false;
+		}
+		
+		/**
+		 * @Override
+		 */
+		function __toString() {
+			$s = "Post (ID = " . $this->ID .
+				 " | postType = " . $this->postType .
+				 " | title = " . $this->title .
+				 " | subtitle = " . $this->subtitle .
+				 " | headline = " . $this->headline .
+				 " | author = " . $this->author .
+				 " | creationDate = " . date("d/m/Y G:i", $this->creationDate) .
+				 " | tags = (";
+			for($i=0; $i<count($this->tags); $i++) {
+				if($i>0) $s.= ", ";
+				$s.= $this->tags[$i];
+			}
+			$s.= ") | categories = (";
+			for($i=0; $i<count($this->categories); $i++) {
+				if($i>0) $s.= ", ";
+				$s.= $this->categories[$i];
+			}
+			$s.= ") | comments = (";
+			for($i=0; $i<count($this->comments); $i++) {
+				if($i>0) $s.= ", ";
+				$s.= $this->comments[$i];
+			}
+			$s.= ") | votes = (";
+			for($i=0; $i<count($this->votes); $i++) {
+				if($i>0) $s.= ", ";
+				$s.= $this->votes[$i];
+			}
+			$s.= ") | content = (";
+			for($i=0; $i<count($this->content); $i++) {
+				if($i>0) $s.= ", ";
+				$s.= $this->content[$i];
+			}
+			$s.= ") | visible = " . $this->visible .
+				 " | signals = (";
+			for($i=0; $i<count($this->signals); $i++) {
+				if($i>0) $s.= ", ";
+				$s.= $this->signals[$i];
+			}
+			$s.= "))";
+			return $s;
+		}
 	}
 	
 	class Album extends Collection {
-		
-		function __construct() {
-			parent::__construct();
-			$this->collectionType(CollectionType::$ALBUM);
+		/**
+		 * @Override
+		 */
+		function __construct($data) {
+			parent::__construct($data);
+			$this->collectionType = collectionType::$ALBUM;
 		}
 		
 		/**
@@ -52,18 +125,19 @@
 		 */
 		function addPost($photo){
 			if($photo->getType()==PostType::$PHOTOREPORTAGE){
-				parent::addPost($photo);
+				return parent::addPost($photo);
 			}
-			
-			return $this;
+			return false;
 		}
 	}
 	
 	class Magazine extends Collection {
-		
-		function __construct() {
-			parent::__construct();
-			$this->collectionType(CollectionType::$MAGAZINE);
+		/**
+		 * @Override
+		 */
+		function __construct($data) {
+			parent::__construct($data);
+			$this->collectionType = CollectionType::$MAGAZINE;
 		}
 		
 		/**
@@ -72,18 +146,20 @@
 		 */
 		function addPost($news){
 			if($news->getType()==PostType::$NEWS){
-				parent::addPost($news);
+				return parent::addPost($news);
 			}
 			
-			return $this;
+			return false;
 		}
 	}
 	
 	class Playlist extends Collection {
-		
-		function __construct() {
-			parent::__construct();
-			$this->collectionType(CollectionType::$PLAYLIST);
+		/**
+		 * @Override
+		 */
+		function __construct($data) {
+			parent::__construct($data);
+			$this->collectionType = CollectionType::$PLAYLIST;
 		}
 		
 		/**
@@ -92,10 +168,10 @@
 		 */
 		function addPost($video){
 			if($video->getType()==PostType::$VIDEOREPORTAGE){
-				parent::addPost($video);
+				return parent::addPost($video);
 			}
 			
-			return $this;
+			return false;
 		}
 	}
 
