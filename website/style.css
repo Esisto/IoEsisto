@@ -1,0 +1,155 @@
+body {
+	background: #E9E9E9 url(img/bg.png) repeat-x
+}
+
+#base{
+	width: 900px;
+	margin: auto;
+}
+
+#header{
+	width: 900px;
+	height: 120px;
+	margin-top: 40px;
+}
+
+#logo{
+	width: 690px;
+	height: 120px;
+	background: #3366FF;
+	float: right;
+}
+
+#login{
+	width: 200px;
+	height: 120px;
+	background: #3366FF;
+	float: right;
+	margin-right: 10px;
+}
+
+#menu{
+	width: 900px;
+	height: 40px;
+	margin-top: 10px;
+}
+
+#post{
+	width: 600px;
+	float: left;
+}
+
+#post .advertising{
+	width: 600px;
+	height: 50px;
+	margin-top: 10px;
+	float: left;	
+}
+
+#featured{
+	width: 100%;
+}
+
+#featured .news {
+	width: 100%;
+}
+
+#featured .title {
+	width: 100%;
+	background: #0033FF;
+	float: left;
+}
+
+#bottom{
+	width: 100%;
+	float: left;
+}
+
+#bottom .news{
+	width: 295px;
+	margin-right: 10px;
+	float: left;
+}
+#bottom .last {
+	margin-right: 0;
+}
+
+#bottom .title{
+	width: 100%;
+	background: #0033FF;
+	float: left;
+}
+
+#bottom .content{
+	width: 100%;
+	float: left;
+}
+
+#bottom .image{
+	width: 80px;
+	height: 80px;
+	background: #00FFFF;
+	float: right;
+}
+
+#footer{
+	width: 900px;
+	height: 40px;
+	background: #3366FF;
+	margin-top: 10px;
+}
+
+.title h1{
+	margin: 0;
+}
+
+.news {
+	margin-top: 10px;
+}
+
+.content {
+	background: #0099FF;
+	float: left;
+}
+
+.image{
+	width: 140px;
+	height: 160px;
+	background: #00FFFF;
+	float: right;
+}
+
+.button{
+	width: 122px;
+	height: 40px;
+	background: #9999FF;
+	margin-left: 5px;
+	float: left;
+}
+
+.advertising{
+	background: black;
+	color: white;
+}
+
+.clear {	
+	clear: both;
+}
+
+#sidebar {
+	float: left;
+	width: 290px;
+	margin-left: 10px;
+}
+
+.sideelement {
+	margin-top: 10px;
+	background: #0099FF;
+}
+
+.seealsoelement {
+	margin-top: 5px;
+}
+.seealsotitle {
+	background: #0033FF;
+}
