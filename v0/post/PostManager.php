@@ -1,4 +1,5 @@
 <?php
+require_once("post/Post.php");
 
 /**
  * Gestisce i post di ogni tipo (non i Collection).
@@ -81,9 +82,7 @@ class PostManager {
 	 * return: il post eliminato.
 	 */
 	static function deletePost($post) {
-		$post->delete();
-		
-		return $post;
+		return $post->delete();
 	}
 	static function signalPost() {
 		
@@ -120,9 +119,7 @@ class PostManager {
 	 * return: il commento eliminato.
 	 */
 	static function removeComment($comment) {
-		$comment->delete();
-		
-		return $comment;
+		return $comment->delete();
 	}
 	
 	static function signalComment() {
@@ -149,9 +146,115 @@ class PostManager {
 	}
 	
 	static function removeVote($vote) {
-		$vote->delete();
+		return $vote->delete();
+	}
+	
+	static function loadComment($id) {
+		require_once("query.php");
 		
+		$q = new Query();
+		$table = $q->getDBSchema()->getTable("Comment");
+		$rs = $q->execute($s = $q->generateSelectStm(array($table),
+													 array(),
+													 array(new WhereConstraint($table->getColumn("cm_ID"),Operator::$UGUALE,$id)),
+													 array()));
+		$col = false;
+		if($rs !== false) {
+			while($row = mysql_fetch_assoc($rs)) {
+				$col = new Comment(intval($row["cm_author"]), intval($row["cm_post"]), $row["cm_comment"]);
+				$col->setID($row["cm_ID"])->setCreationDate(time($row["cm_creationDate"]));
+				break;
+			}
+		}
+		if(!$col)
+			$GLOBALS["query_error"] = "NOT FOUND";
+		return $col;
+	}
+	
+	static function loadVote($author, $post) {
+		require_once("query.php");
+		
+		$q = new Query();
+		$table = $q->getDBSchema()->getTable("Vote");
+		$rs = $q->execute($s = $q->generateSelectStm(array($table),
+													 array(),
+													 array(new WhereConstraint($table->getColumn("vt_author"),Operator::$UGUALE,$author),
+														   new WhereConstraint($table->getColumn("vt_post"),Operator::$UGUALE,$post)),
+													 array()));
+		$vote = false;
+		if($rs !== false) {
+			while($row = mysql_fetch_assoc($rs)) {
+				$vote = new Vote(intval($row["vt_author"]), intval($row["vt_post"]), $row["vt_vote"] > 0);
+				$vote->setCreationDate(time($row["cm_creationDate"]));
+				break;
+			}
+		}
+		if(!$vote)
+			$GLOBALS["query_error"] = "NOT FOUND";
 		return $vote;
+	}
+	
+	static function loadPost($id) {
+		require_once("query.php");
+		
+		$q = new Query();
+		$table = $q->getDBSchema()->getTable("Post");
+		$rs = $q->execute($s = $q->generateSelectStm(array($table),
+													 array(),
+													 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$id)),
+													 array()));
+		$p = false;
+		if($rs !== false) {
+			while($row = mysql_fetch_assoc($rs)) {
+				$data = array("title" => $row["ps_title"], "subtitle" => $row["ps_subtitle"],
+							  "headline" => $row["ps_headline"], "author"=> intval($row["ps_author"]),
+							  "content" => $row["ps_content"], "visible" => $row["ps_visible"] == 1,
+							  "place" => intval($row["ps_place"]));
+				if($row["ps_type"] == PostType::$NEWS) 
+					$p = new News($data);
+				else if($row["ps_type"] == PostType::$PHOTOREPORTAGE) {
+					$data["content"] = unserialize($row["ps_content"]);
+					$p = new PhotoReportage($data);
+				}
+				else if($row["ps_type"] == PostType::$VIDEOREPORTAGE) 
+					$p = new VideoReportage($data);
+				$p->setID($row["ps_ID"])->setCreationDate(time($row["ps_creationDate"]));
+				break;
+			}
+		}
+		if($p !== false) {
+			$table = $q->getDBSchema()->getTable("Comment");
+			$rs = $q->execute($s = $q->generateSelectStm(array($table),
+														 array(),
+														 array(new WhereConstraint($table->getColumn("cm_post"),Operator::$UGUALE,$id)),
+														 array()));
+			if($rs !== false) {
+				$comm = array();
+				while($row = mysql_fetch_assoc($rs)) {
+					$com = new Comment(intval($row["cm_author"]), intval($row["cm_post"]), $row["cm_comment"]);
+					$com->setID($row["cm_ID"])->setCreationDate(time($row["cm_creationDate"]));
+					$comm[] = $com;
+				}
+				$p->setComments($comm);
+			}
+			$table = $q->getDBSchema()->getTable("Vote");
+			$rs = $q->execute($s = $q->generateSelectStm(array($table),
+														 array(),
+														 array(new WhereConstraint($table->getColumn("vt_post"),Operator::$UGUALE,$id)),
+														 array()));
+			if($rs !== false) {
+				$votes = array();
+				while($row = mysql_fetch_assoc($rs)) {
+					$vote = new Vote(intval($row["vt_author"]), intval($row["vt_post"]), $row["vt_vote"] > 0);
+					$vote->setCreationDate(time($row["vt_creationDate"]));
+					$votes[] = $vote;
+				}
+				$p->setVotes($votes);
+			}
+		}
+		if(!$p)
+			$GLOBALS["query_error"] = "NOT FOUND";
+		return $p;
 	}
 }
 ?>

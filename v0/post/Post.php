@@ -102,6 +102,10 @@
 		}
 
 		
+		function setID($id) {
+			$this->ID = intval($id);
+			return $this;
+		}
 		function setTitle($title) {
 			$this->title = $title;
 			return $this;
@@ -143,6 +147,14 @@
 			$this->postType = $type;
 			return $this;
 		}
+		function setComments($comments) {
+			$this->comments = $comments;
+			return $this;
+		}
+		function setVotes($votes) {
+			$this->votes = $votes;
+			return $this;
+		}
 		
 		/**
 		 * Salva il post nel database.
@@ -166,7 +178,7 @@
 								  "ps_subtitle" => $this->getSubtitle(),
 								  "ps_headline" => $this->getHeadline(),
 								  "ps_content" => $this->getContent(),
-								  "ps_visible" => $this->isVisible(),
+								  "ps_visible" => $this->isVisible() ? 1 : 0,
 								  "ps_author" => $this->getAuthor()/*,
 								  "ps_place" => $this->getPlace()*/ //TODO Non ancora implementato.
 								  );
@@ -186,19 +198,33 @@
 						break;
 					}
 					//TODO inserire tags, categories e place.
+					//echo "<br />" . $this; //DEBUG
 					return $this->ID;
 				}
+				return false;
 			} else if($savingMode == SavingMode::$UPDATE) {
 				
 				// TODO
-				return true;	
+				return false;	
 			}
 			
 			return false;
 		}
 		
 		function delete() {
-			
+			require_once("query.php");
+			if(!isset($GLOBALS["q"]))
+				$q = new Query();
+			if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
+				$dbs = $q->getDBSchema();
+				$table = $dbs->getTable("Post");
+				$rs = $q->execute($s = $q->generateDeleteStm($table,
+															 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$this->ID))));
+				//echo "<br />" . $s; //DEBUG
+				if(mysql_affected_rows() == 1)
+					return $this;
+			}
+			return false;
 		}
 		
 		/**
@@ -268,6 +294,16 @@
 		/**
 		 * @Override
 		 */
+		function setContent($content) {
+			if(!is_array($content))
+				$content = array($content);
+			$this->content = $content;
+			return $this;
+		}
+		
+		/**
+		 * @Override
+		 */
 		function __toString() {
 			$s = "Post (ID = " . $this->ID .
 				 " | postType = " . $this->postType .
@@ -275,7 +311,7 @@
 				 " | subtitle = " . $this->subtitle .
 				 " | headline = " . $this->headline .
 				 " | author = " . $this->author .
-				 " | creationDate = " . date("d/m/Y G:i", $this->creationDate) .
+				 " | creationDate = " . date("d/m/Y G:i:s", $this->creationDate) .
 				 " | tags = (";
 			for($i=0; $i<count($this->tags); $i++) {
 				if($i>0) $s.= ", ";
@@ -321,13 +357,45 @@
 		 */
 		function save($savingMode) {
 			if($savingMode == SavingMode::$INSERT) {
-				
-				// TODO
-				return true;
+				require_once("query.php");
+				if(!isset($GLOBALS["q"]))
+					$q = new Query();
+				if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
+					$dbs = $q->getDBSchema();
+					$table = $dbs->getTable("Post");
+					$data = array("ps_type" => $this->getType(),
+								  "ps_title" => $this->getTitle(),
+								  "ps_subtitle" => $this->getSubtitle(),
+								  "ps_headline" => $this->getHeadline(),
+								  "ps_content" => serialize($this->getContent()),
+								  "ps_visible" => $this->isVisible(),
+								  "ps_author" => $this->getAuthor()/*,
+								  "ps_place" => $this->getPlace()*/ //TODO Non ancora implementato.
+								  );
+					$rs = $q->execute($s = $q->generateInsertStm($table,$data));
+					//echo "<br />" . $s; //DEBUG
+					//echo "<br />" . serialize($rs); //DEBUG
+					$this->ID = mysql_insert_id();
+					//echo "<br />" . serialize($this->ID); //DEBUG
+					$rs = $q->execute($s = $q->generateSelectStm(array($table),
+																 array(),
+																 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$this->ID)),
+																 array()));
+					//echo "<br />" . $s; //DEBUG
+					while($row = mysql_fetch_assoc($rs)) {
+						$this->setCreationDate(time($row["ps_creationDate"]));
+						//echo "<br />" . serialize($row["ps_creationDate"]); //DEBUG
+						break;
+					}
+					//TODO inserire tags, categories e place.
+					//echo "<br />" . $this; //DEBUG
+					return $this->ID;
+				}
+				return false;
 			} else if($savingMode == SavingMode::$UPDATE) {
 				
 				// TODO
-				return true;	
+				return false;	
 			}
 			
 			return false;
@@ -367,9 +435,11 @@
 	}
 	
 	class Comment {
+		private $ID;
 		private $author;
 		private $post;
 		private $comment;
+		private $creationDate;
 		private $reports;
 		
 		function __construct($author,$post,$comment){
@@ -390,6 +460,24 @@
 			return $this->comment;
 		}
 		
+		function getCreationDate() {
+			return $this->creationDate;
+		}
+		
+		function getID() {
+			return $this->ID;
+		}
+		
+		function setCreationDate($creationDate) {
+			$this->creationDate = $creationDate;
+			return $this;
+		}
+		
+		function setID($id) {
+			$this->ID = $id;
+			return $this;
+		}
+		
 		/**
 		 * Salva il commento nel database.
 		 * 
@@ -399,9 +487,34 @@
 		 */
 		function save($savingMode) {
 			if($savingMode == SavingMode::$INSERT) {
-				
-				// TODO
-				return true;
+				require_once("query.php");
+				if(!isset($GLOBALS["q"]))
+					$q = new Query();
+				if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
+					$dbs = $q->getDBSchema();
+					$table = $dbs->getTable("Comment");
+					$data = array("cm_comment" => $this->getComment(),
+								  "cm_post" => $this->getPost(),
+								  "cm_author" => $this->getAuthor());
+					$rs = $q->execute($s = $q->generateInsertStm($table,$data));
+					//echo "<br />" . $s; //DEBUG
+					//echo "<br />" . serialize($rs); //DEBUG
+					$this->ID = mysql_insert_id();
+					//echo "<br />" . serialize($this->ID); //DEBUG
+					$rs = $q->execute($s = $q->generateSelectStm(array($table),
+																 array(),
+																 array(new WhereConstraint($table->getColumn("cm_ID"),Operator::$UGUALE,$this->ID)),
+																 array()));
+					//echo "<br />" . $s; //DEBUG
+					while($row = mysql_fetch_assoc($rs)) {
+						$this->creationDate = time($row["cm_creationDate"]);
+						//echo "<br />" . serialize($row["cm_creationDate"]); //DEBUG
+						break;
+					}
+					//echo "<br />" . $this; //DEBUG
+					return $this->ID;
+				}
+				return false;
 			} else if($savingMode == SavingMode::$UPDATE) {
 				
 				// TODO
@@ -412,16 +525,30 @@
 		}
 		
 		function delete() {
-			
+			require_once("query.php");
+			if(!isset($GLOBALS["q"]))
+				$q = new Query();
+			if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
+				$dbs = $q->getDBSchema();
+				$table = $dbs->getTable("Comment");
+				$rs = $q->execute($s = $q->generateDeleteStm($table,
+															 array(new WhereConstraint($table->getColumn("cm_ID"),Operator::$UGUALE,$this->ID))));
+				//echo "<br />" . $s; //DEBUG
+				if(mysql_affected_rows() == 1)
+					return $this;
+			}
+			return false;
 		}
 		
 		/**
 		 * @Override
 		 */
 		function __toString() {
-			$s = "Comment (author = " . $this->author .
-				 " | post = " . $this->comment .
+			$s = "Comment (ID = " . $this->ID .
+				 " | author = " . $this->author .
+				 " | post = " . $this->post .
 				 " | comment = " . $this->comment .
+				 " | creationDate = " . date("d/m/Y G:i:s", $this->creationDate) .
 				 " | reports = (";
 			for($i=0; $i<count($this->reports); $i++) {
 				if($i>0) $s.= ", ";
@@ -436,6 +563,7 @@
 		private $author;
 		private $post;
 		private $vote;
+		private $creationDate;
 		
 		function __construct($author,$post,$vote){
 			$this->author = $author;
@@ -455,6 +583,15 @@
 			return $this->vote;
 		}
 		
+		function getCreationDate() {
+			return $this->vote;
+		}
+		
+		function setCreationDate($creationDate) {
+			$this->creationDate = $creationDate;
+			return $this;
+		}
+		
 		/**
 		 * Salva il voto nel database.
 		 * 
@@ -464,9 +601,33 @@
 		 */
 		function save($savingMode) {
 			if($savingMode == SavingMode::$INSERT) {
-				
-				// TODO
-				return true;
+				require_once("query.php");
+				if(!isset($GLOBALS["q"]))
+					$q = new Query();
+				if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
+					$dbs = $q->getDBSchema();
+					$table = $dbs->getTable("Vote");
+					$data = array("vt_vote" => $this->getVote(),
+								  "vt_post" => $this->getPost(),
+								  "vt_author" => $this->getAuthor());
+					$rs = $q->execute($s = $q->generateInsertStm($table,$data));
+					//echo "<br />" . $s; //DEBUG
+					//echo "<br />" . serialize($rs); //DEBUG
+					$rs = $q->execute($s = $q->generateSelectStm(array($table),
+																 array(),
+																 array(new WhereConstraint($table->getColumn("vt_author"),Operator::$UGUALE,$this->author),
+																	   new WhereConstraint($table->getColumn("vt_post"),Operator::$UGUALE,$this->post)),
+																 array()));
+					//echo "<br />" . $s; //DEBUG
+					while($row = mysql_fetch_assoc($rs)) {
+						$this->creationDate = time($row["vt_creationDate"]);
+						//echo "<br />" . serialize($row["vt_creationDate"]); //DEBUG
+						break;
+					}
+					//echo "<br />" . $this; //DEBUG
+					return $this->creationDate;
+				}
+				return false;
 			} else if($savingMode == SavingMode::$UPDATE) {
 				
 				// TODO
@@ -477,16 +638,29 @@
 		}
 		
 		function delete() {
-			
+			require_once("query.php");
+			if(!isset($GLOBALS["q"]))
+				$q = new Query();
+			if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
+				$dbs = $q->getDBSchema();
+				$table = $dbs->getTable("Vote");
+				$rs = $q->execute($s = $q->generateDeleteStm($table,
+															 array(new WhereConstraint($table->getColumn("vt_author"),Operator::$UGUALE,$this->author),
+																   new WhereConstraint($table->getColumn("vt_post"),Operator::$UGUALE,$this->post))));
+				//echo "<br />" . $s; //DEBUG
+				if(mysql_affected_rows() == 1)
+					return $this;
+			}
+			return false;			
 		}
 		
 		/**
 		 * @Override
 		 */
 		function __toString() {
-			$s = "Comment (author = " . $this->author .
-				 " | post = " . $this->comment .
-				 " | comment = " . $this->comment .
+			$s = "Vote (author = " . $this->author .
+				 " | post = " . $this->post .
+				 " | comment = " . $this->vote .
 				 ")";
 			return $s;
 		}

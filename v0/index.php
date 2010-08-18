@@ -7,6 +7,7 @@
 <body>
 
 <?php
+	global $q;
 	ini_set("display_errors", "On");
 	error_reporting(E_ALL ^ E_NOTICE);
 	require_once("post/PostTest.php");
@@ -14,19 +15,18 @@
 	require_once("settings.php");
 	require_once("strings/" . LANG . "strings.php");
 	
-	/*echo testPost();
-	echo "<br />";
-	echo testComment();
-	echo "<br />";
-	echo testVote();
-	echo "<br />";
-	echo testEditPost();
-	echo "<br />";
-	echo testCollection();
-	echo "<br />";
-	echo testAddPostToCollection();*/
-	echo "<br />";
-	echo testSavePost();
+	//echo testPost();
+	//echo testComment();
+	//echo testVote();
+	//echo testEditPost();
+	//echo testCollection();
+	//echo testAddPostToCollection();
+	//echo testSavePost();
+	//echo testSaveComment();
+	//echo testDeletePost();
+	//echo testDeleteComment();
+	//echo testSaveVote();
+	echo testDeleteVote();
 	
 	//require_once("db_schema.php");
 	//$dbs = new DBSchema(null);
