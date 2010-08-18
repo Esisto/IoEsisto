@@ -256,6 +256,39 @@ class Query {
 	}
 	
 	/**
+	 * Genera uno statement Delete.
+	 *
+	 * param $table: la tabella in cui inserire una tupla.
+	 * param $whereconst: un array di WhereConstraint. 
+	 *
+	 * return: lo statement Delete. Se c'è un errore FALSE.
+	 */
+	function generateDeleteStm($table, $whereconst) {
+		if(!isset($table) || $table == null || $table == "" ||
+		   !isset($whereconst) || !is_array($whereconst) || count($whereconst) == 0)
+			return false;
+		
+		if(!$this->tableExists($table)) return false;
+		$s = "DELETE FROM " . $table->getName();
+		
+		$first = true;
+		$s1 = "";
+		if(isset($whereconst) && $whereconst != null && $whereconst != "" && count($whereconst) > 0)
+			$s1.= " WHERE ";
+		for($i=0; $i<count($whereconst); $i++) {
+			if($whereconst[$i] == null && $whereconst[$i] == "" ||
+			   !$this->columnExists($whereconst[$i]->getColumn())) continue;
+			if($first) $first = false;
+			else $s1.= " AND ";
+			$s1.= $whereconst[$i]->generateWhereStm();
+		}
+		if(!$first)
+			$s.= $s1;
+		
+		return $s;
+	}
+	
+	/**
 	 * Genera uno statement Update.
 	 *
 	 * param $table: tabella da aggiornare.
@@ -286,9 +319,9 @@ class Query {
 			$s1.= " WHERE ";
 		for($i=0; $i<count($whereconst); $i++) {
 			if($whereconst[$i] == null && $whereconst[$i] == "" ||
-			   $this->columnExists($whereconst[$i]->getColumn())) continue;
+			   !$this->columnExists($whereconst[$i]->getColumn())) continue;
 			if($first) $first = false;
-			else $s1.= ", ";
+			else $s1.= " AND ";
 			$s1.= $whereconst->generateWhereStm();
 		}
 		if(!$first)
