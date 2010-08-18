@@ -3,30 +3,47 @@ class Table {
 	private $name;
 	private $columns;
 	
+	/**
+	 *
+	 * param $name: nome della tabella
+	 * param $columns: array associativo nome_colonna => Column
+	 */
 	function __construct($name, $columns) {
 		$this->name = $name;
 		$this->columns = $columns;
-		for($i=0; $i<count($columns); $i++)
-			$columns[$i]->setTable($this);
+		foreach($this->columns as $cname => $c) {
+			$c->setTable($this->name);
+		}
 	}
 	
 	function getName() {
 		return $this->name;
 	}
 	
-	function getColumns() {
-		return $this->columns;
+	function getColumn($columnname) {
+		if(isset($this->columns[$columnname]))
+			return clone $this->columns[$columnname];
+		return false;
 	}
 	
 	function __toString() {
-		$s = "TABLE (name = " . $this->name .
-			 " | columns = (";
-		for($i=0; $i<count($this->columns); $i++) {
-			if($i>0) $s.= ", ";
-			$s.= $this->columns[$i];
+		$s = "<b>TABLE</b> (name = <u>" . $this->name . "</u>" .
+			 " | columns = (<br />";
+		$first = true;
+		foreach($this->columns as $name => $col) {
+			if($first) $first = false;
+			else $s.= ",<br />\t ";
+			$s.= $col;
 		}
 		$s.= "))";
 		return $s;
+	}
+	
+	function __clone() {
+		$c = array();
+		foreach($this->columns as $name => $col)
+			$c[$name] = clone $col;
+		$this->columns = $c;
 	}
 }
 
@@ -36,12 +53,15 @@ class Column {
 	private $properties;
 	
 	/**
-	 * param $table: non è obbligatorio.
+	 *
+	 * param $name: nome della colonna.
+	 * param $properties: array (non associativo) di elementi di Property
+	 * param $tablename: nome della tabella, non è obbligatorio in quanto ogni tabella setta questo valore quando si aggiunge la colonna.
 	 */
-	function __construct($name, $properties, $table) {
+	function __construct($name, $properties, $tablename) {
 		$this->name = $name;
 		$this->properties = $properties;
-		$this->table = $table;
+		$this->table = $tablename;
 	}
 	
 	function getName() {
@@ -61,7 +81,7 @@ class Column {
 	}
 	
 	function __toString() {
-		$s = "COLUMN (name = " . $this->table->getName() . "." . $this->name .
+		$s = "<b>COLUMN</b> (name = <u>" . $this->getTable() . "." . $this->name . "</u>" .
 			 " | properties = (";
 		for($i=0; $i<count($this->properties); $i++) {
 			if($i>0) $s.= ", ";
@@ -74,21 +94,25 @@ class Column {
 
 class Property {
 	static $PRIMARYKEY = "PRIMARY KEY";
-	static $FOREIGNKEY = "FOREIGN KEY";
+	static $FOREIGNKEY = "FOREIGN KEY"; // NOT IMPLEMENTED
 	static $UNIQUE = "UNIQUE";
-	static $NULL = "NULL";
 	static $NOTNULL = "NOT NULL";
 }
 
 class DBSchema {
-	private $tables; //array associativo nome tabella => Table
+	private $tables; 
 	
+	/**
+	 * param $tables: tabelle array associativo nome_tabella => Table
+	 */
 	function __construct($tables) {
 		if(!isset($tables) || !is_array($tables)) {
 			if(file_exists("db_schema.dbs")) {
 				$this->tables = unserialize(file_get_contents("db_schema.dbs"));
+				$GLOBALS["db_schema_status"] = "Schema loaded from file"; //DEBUG
 			} else {
 				$this->loadFromDatabase();
+				$GLOBALS["db_schema_status"] = "Schema loaded from database"; //DEBUG
 			}
 		} else {
 			$t = array();
@@ -96,7 +120,9 @@ class DBSchema {
 				$t[$tables[$i]->getName()] = $tables[$i];
 			}
 			$this->tables = $t;
+			$GLOBALS["db_schema_status"] = "Schame passed by user";
 		}
+		$this->save();
 	}
 	
 	/**
@@ -108,12 +134,58 @@ class DBSchema {
 	}
 	
 	function save() {
-		$fp = fopen("db_schema.dbs", "w+");
+		$fp = fopen("db_schema.txt", "w+");
 		fwrite($fp, serialize($this->tables));
 	}
 	
 	function loadFromDatabase() {
-		// TODO recuperare lo schema dal db
+		require_once("query.php");
+		
+		$db = connect();
+		if($GLOBALS["db_state"] != DB_NOT_CONNECTED) {
+			$rs = mysql_query("SHOW TABLES", $db);
+			$tabs = array();
+			while($row = mysql_fetch_row($rs))
+				$tabs[] = $row[0];
+			//echo "<br />". serialize($tabs); // DEBUG
+			for($i=0; $i<count($tabs); $i++) {
+				$rs = mysql_query("SELECT * FROM $tabs[$i] LIMIT 1");
+				$cols = array();
+				while($row = mysql_fetch_field($rs)) {
+					$props = array();
+					if($row->primary_key) $props[] = Property::$PRIMARYKEY;
+					if($row->unique_key) $props[] = Property::$UNIQUE;
+					if($row->not_null) $props[] = Property::$NOTNULL;
+					//if($row->type = "string") $props[] = Property::$TYPE_STRING; //ritorna tutte string quindi l'ho tolta
+					
+					$cols[$row->name] = new Column($row->name,$props,$row->table);
+					//echo "<br />". $cols[$row->name]; // DEBUG
+				}
+				$this->tables[$tabs[$i]] = new Table($tabs[$i],$cols);
+				//echo "<br />". $this->tables[$tabs[$i]]; // DEBUG
+			}
+		}
+	}
+	
+	function __toString() {
+		$s = "";
+		foreach($this->tables as $name => $table)
+			$s.= $table . "<br />";
+		return $s;
+	}
+	
+	/**
+	 * Restituisce un clone della tabella di nome $tablename.
+	 * param $tablename: nome della tabella ricercata.
+	 * return: il clone della tabella oppure false se $tablename non esiste.
+	 */
+	function getTable($tablename) {
+		if(isset($this->tables[$tablename])) {
+			$t = clone $this->tables[$tablename];
+			//echo "<br />" . serialize($t); //DEBUG
+			return $t;
+		}
+		return false;
 	}
 }
 ?>

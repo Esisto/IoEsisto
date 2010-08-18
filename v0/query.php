@@ -42,11 +42,18 @@ class WhereConstraint {
 		$this->data = $data;
 	}
 	
-	function generateWhereStm() {
+	function generateWhereStm(/*$alias*/) {
 		if($this->operator == null || $this->operator == "")
-				$this->operator = Operator::$UGUALE;
-			return $this->column + " " + $this->operator + " ?";
-		}
+			$this->operator = Operator::$UGUALE;
+		$s = "";
+		if(isset($alias) && !is_null($alias) && $alias != "")
+			$s.= $alias . ".";
+		$s = $this->getColumn()->getName() . " " . $this->getOperator() . " ";
+		if(is_string($this->getData())) $s.= "'";
+		$s.= $this->getData();
+		if(is_string($this->getData())) $s.= "'";
+		return $s;
+	}
 		
 	function getData() {
 		return $this->data;
@@ -55,16 +62,21 @@ class WhereConstraint {
 	function getColumn() {
 		return $this->column;
 	}
+	
+	function getOperator() {
+		return $this->operator;
+	}
 }
 
 class Query {
 	private $db;
 	private $dbSchema = null;
-	private $rs;
+	private $rs; //result set
 	
-	function __construct($db) {
-		$this->db = $db;
-		$this->rs; //result set
+	function __construct() {
+		$this->db = connect();
+		require_once("db_schema.php");
+		$this->dbSchema = new DBSchema(null);
 	}
 		
 	/**
@@ -100,8 +112,8 @@ class Query {
 			if(!$this->tableExists($tables[$i])) continue;
 			if(!$first) $s.= ", ";
 			else $first = false;
-			
-			$s.= $tables[$i];
+			$t = $tables[$i];
+			$s.= $t->getName();
 		}
 		if($first) return false;
 		// WHERE
@@ -218,19 +230,21 @@ class Query {
 			return false;
 		
 		if(!$this->tableExists($table)) return false;
-		$s = "INSERT INTO " + $table;
+		$s = "INSERT INTO " . $table->getName();
 		$s.= " (";
 		$val = " VALUES (";
 		$first = true;
 		foreach($data as $column => $d) {
-			if($column == null && $column == "" || !$this->columnExists($column)) continue;
+			if($column == null && $column == "" || !$this->columnExists($table->getColumn($column))) continue;
 			if(!$first) {
 				$s.= ", ";
 				$val.= ", ";
 			} else
 				$first = false;
 			$s.= $column;
-			$val.= "?";
+			if(is_string($d)) $val.= "'";
+			$val.= $d;
+			if(is_string($d)) $val.= "'";
 		}
 		if($first) return false;
 		
@@ -283,66 +297,68 @@ class Query {
 		return $s;
 	}
 	
+	function execute($query) {
+		$this->rs = mysql_query($query);
+		return $this->rs;
+	}
+	
 	/**
 	 * Controlla che una tabella esista sul database.
 	 * 
 	 * param $tablename: il nome della tabella da trovare.
-	 * param $onDB: forza la ricerca sul database e non sui file di impostazione.
 	 *
 	 * return: true o false.
 	 */
-	function tableExists($table, $onDB) {
-		if($onDB) {
-			// TODO forse non necessario…
-			// controlla sul database l'esistenza della tabella con una query.
-			// return se il risultato è un elemento valido.
-			
-			return true;
-		} else {
-			if($this->dbSchema == null) {
-				require_once("db_schema.php");
-				$this->dbSchema = new DBSchema();
-			}
-			
-			$tables = $this->dbSchema->getTables();
-			return isset($tables[$table->getName()]);
+	function tableExists($table) {
+		if($this->dbSchema == null) {
+			require_once("db_schema.php");
+			$this->dbSchema = new DBSchema();
 		}
+		
+		//echo $table; //DEBUG
+		return false !== $this->dbSchema->getTable($table->getName());
 	}
 	
 	/**
 	 * Controlla che una colonna esista.
 	 *
 	 * param $columnname: il nome della colonna da trovare.
-	 * param $onDB: forza la ricerca sul database e non sui file di impostazione.
 	 *
 	 * return: true o false.
 	 */
-	function columnExists($column, $onDB) {
-		if($onDB) {
-			// TODO forse non necessario…
-			// controlla sul database l'esistenza della colonna con una query.
-			// return se il risultato è un elemento valido.
-			
-			return true;
-		} else {
-			if($this->dbSchema == null) {
-				require_once("db_schema.php");
-				$this->dbSchema = new DBSchema();
-			}
-			
-			if(!$this->tableExists($column->getTable())) return false;
-			$tables = $this->dbSchema->getTables();
-			$table = $tables[$column->getTable()->getName()];
-			$columns = $table->getColumns();
-			return isset($columns[$column->getName()]);
+	function columnExists($column) {
+		if($this->dbSchema == null) {
+			require_once("db_schema.php");
+			$this->dbSchema = new DBSchema();
 		}
+		
+		if(!$this->tableExists($this->dbSchema->getTable($column->getTable()))) return false;
+		$table = $this->dbSchema->getTable($column->getTable());
+		return $table->getColumn($column->getName()) !== false;
+	}
+	
+	function __destruct() {
+		mysql_close($this->db);
+	}
+	
+	function getDBSchema() {
+		return $this->dbSchema;
 	}
 }
 
 function connect() {
 	require_once("settings.php"); //file che contiene i dati d'accesso.
+	require_once("strings/" . LANG . "strings.php");
 	
-	$db = mysql_connect($hostname, $username, $password);
+	$db = mysql_connect(DB_HOSTNAME, DB_USERNAME, DB_PASSWORD);
+	if(false !== $db && mysql_select_db(DB_NAME,$db))
+		$GLOBALS["db_status"] = DB_CONNECTED . DB_HOSTNAME . "/" . DB_NAME;
+	else
+		$GLOBALS["db_status"] = DB_NOT_CONNECTED;
+	
+	// DEBUG
+	//echo $GLOBALS["db_state"];
+	// END DEBUG
 	return $db;
 }
 ?>
