@@ -25,7 +25,7 @@
 		protected $votes = array();			// array di oggetto VOTO
 		protected $content;		// testo del contenuto o indirizzo del video o foto o array di essi
 		protected $visible;		// boolean
-		protected $signals = array();			// array di oggetti SIGNAL
+		protected $reports = array();		// array di oggetti Report
 		
 		function __construct($data) {
 			if(isset($data["title"]))
@@ -135,6 +135,7 @@
 			return $this;
 		}
 		function setVisible($visible) {
+			settype($visible,"boolean"); // forza $visible ad essere boolean
 			$this->visible = $visible;
 			return $this;
 		}
@@ -149,12 +150,44 @@
 		 * param savingMode: uno dei valori della classe SavingMode.
 		 * se INSERT: crea una nuova tupla in Post.
 		 * se UPDATE: confronta il Post con quello presente nel database e aggiorna le differenze.
+		 *
+		 * return: ID della tupla inserita (o aggiornata), FALSE se c'è un errore.
 		 */
 		function save($savingMode) {
 			if($savingMode == SavingMode::$INSERT) {
-				
-				// TODO
-				return true;
+				require_once("query.php");
+				if(!isset($GLOBALS["q"]))
+					$q = new Query();
+				if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
+					$dbs = $q->getDBSchema();
+					$table = $dbs->getTable("Post");
+					$data = array("ps_type" => $this->getType(),
+								  "ps_title" => $this->getTitle(),
+								  "ps_subtitle" => $this->getSubtitle(),
+								  "ps_headline" => $this->getHeadline(),
+								  "ps_content" => $this->getContent(),
+								  "ps_visible" => $this->isVisible(),
+								  "ps_author" => $this->getAuthor()/*,
+								  "ps_place" => $this->getPlace()*/ //TODO Non ancora implementato.
+								  );
+					$rs = $q->execute($s = $q->generateInsertStm($table,$data));
+					//echo "<br />" . $s; //DEBUG
+					//echo "<br />" . serialize($rs); //DEBUG
+					$this->ID = mysql_insert_id();
+					//echo "<br />" . serialize($this->ID); //DEBUG
+					$rs = $q->execute($s = $q->generateSelectStm(array($table),
+																 array(),
+																 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$this->ID)),
+																 array()));
+					//echo "<br />" . $s; //DEBUG
+					while($row = mysql_fetch_assoc($rs)) {
+						$this->setCreationDate(time($row["ps_creationDate"]));
+						//echo "<br />" . serialize($row["ps_creationDate"]); //DEBUG
+						break;
+					}
+					//TODO inserire tags, categories e place.
+					return $this->ID;
+				}
 			} else if($savingMode == SavingMode::$UPDATE) {
 				
 				// TODO
@@ -178,7 +211,7 @@
 				 " | subtitle = " . $this->subtitle .
 				 " | headline = " . $this->headline .
 				 " | author = " . $this->author .
-				 " | creationDate = " . date("d/m/Y G:i", $this->creationDate) .
+				 " | creationDate = " . date("d/m/Y G:i:s", $this->creationDate) .
 				 " | tags = (";
 			for($i=0; $i<count($this->tags); $i++) {
 				if($i>0) $s.= ", ";
@@ -201,10 +234,10 @@
 			}
 			$s.= ") | content = " . $this->content .
 				 " | visible = " . $this->visible .
-				 " | signals = (";
-			for($i=0; $i<count($this->signals); $i++) {
+				 " | reports = (";
+			for($i=0; $i<count($this->reports); $i++) {
 				if($i>0) $s.= ", ";
-				$s.= $this->signals[$i];
+				$s.= $this->reports[$i];
 			}
 			$s.= "))";
 			return $s;
@@ -269,10 +302,10 @@
 				$s.= $this->content[$i];
 			}
 			$s.= ") | visible = " . $this->visible .
-				 " | signals = (";
-			for($i=0; $i<count($this->signals); $i++) {
+				 " | reports = (";
+			for($i=0; $i<count($this->reports); $i++) {
 				if($i>0) $s.= ", ";
-				$s.= $this->signals[$i];
+				$s.= $this->reports[$i];
 			}
 			$s.= "))";
 			return $s;
@@ -337,7 +370,7 @@
 		private $author;
 		private $post;
 		private $comment;
-		private $signals;
+		private $reports;
 		
 		function __construct($author,$post,$comment){
 			$this->author = $author;
@@ -389,10 +422,10 @@
 			$s = "Comment (author = " . $this->author .
 				 " | post = " . $this->comment .
 				 " | comment = " . $this->comment .
-				 " | signals = (";
-			for($i=0; $i<count($this->signals); $i++) {
+				 " | reports = (";
+			for($i=0; $i<count($this->reports); $i++) {
 				if($i>0) $s.= ", ";
-				$s.= $this->signals[$i];
+				$s.= $this->reports[$i];
 			}
 			$s.= "))";
 			return $s;

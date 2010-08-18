@@ -152,5 +152,50 @@ function testEditPost() {
 	
 	return "EditPost test passed";
 }
+global $q;
+
+function testSavePost() {
+	$data = array("title" => "TITOLO", "subtitle" => "SOTTOTITOLO", "headline" => "OCCHIELLO",
+				  "author"=> 2, "tags" => array("tag1", "tag2", "tag3"),
+				  "categories" => array("cat1", "cat2", "cat3"), "content" => "CONTENUTO NON FILTRATO",
+				  "visible" => true);
+	
+	$p1 = PostManager::addPost($data, PostType::$NEWS);
+	
+	$q = new Query();
+	$table = $q->getDBSchema()->getTable("Post");
+	$rs = $q->execute($s = $q->generateSelectStm(array($table),
+												 array(),
+												 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$p1->getID())),
+												 array()));
+	if($rs === false) return "Post saving test NOT PASSED: not created";
+	$first = true;
+	while($row = mysql_fetch_assoc($rs)) {
+		if($p1 == null)
+			return "Post saving test NOT PASSED: not created";
+		if($p1->getTitle() != $row["ps_title"])
+			return "Post saving test NOT PASSED: title";
+		if($p1->getSubtitle() != $row["ps_subtitle"])
+			return "Post saving test NOT PASSED: subtitle";
+		if($p1->getHeadline() != $row["ps_headline"])
+			return "Post saving test NOT PASSED: headline";
+		if($p1->getAuthor() !== intval($row["ps_author"]))
+			return "Post saving test NOT PASSED: author";
+		//if(isset($row["tags"]))
+		//	if($p1->getTags() != $row["tags"])
+		//		return "Post saving test NOT PASSED: tags";
+		//if(isset($row["categories"]))
+		//	if($p1->getCategories() != $row["categories"])
+		//		return "Post saving test NOT PASSED: categories";
+		if($p1->getContent() != $row["ps_content"])
+			return "Post saving test NOT PASSED: content";
+		settype($row["ps_visible"],"boolean");
+		if($p1->isVisible() !== $row["ps_visible"])
+			return "Post saving test NOT PASSED: visible";
+		$first = false;
+	}
+	if($first) return "Post saving test NOT PASSED: not created";
+	return "Save Post test passed";
+}
 
 ?>
