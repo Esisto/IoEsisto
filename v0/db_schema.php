@@ -134,7 +134,7 @@ class DBSchema {
 	}
 	
 	function save() {
-		$fp = fopen("db_schema.txt", "w+");
+		$fp = fopen("db_schema.dbs", "w+");
 		fwrite($fp, serialize($this->tables));
 	}
 	
