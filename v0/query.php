@@ -7,6 +7,13 @@ class Operator {
 	static $MAGGIORE = ">";
 	static $MAGGIOREUGUALE = ">=";
 }
+
+class SelectOperator {
+	static $UNION = "UNION";
+	static $INTERSECT = "INTERSECT";
+	static $EXCEPT = "EXCEPT";
+}
+
 class JoinConstraint {
 	private $columnleft;
 	private $columnright;
@@ -331,7 +338,7 @@ class Query {
 	}
 	
 	function execute($query) {
-		$this->rs = mysql_query($query);
+		$this->rs = mysql_query($query, $this->db);
 		return $this->rs;
 	}
 	
@@ -370,9 +377,9 @@ class Query {
 		return $table->getColumn($column->getName()) !== false;
 	}
 	
-	function __destruct() {
-		mysql_close($this->db);
-	}
+	//function __destruct() {
+	//	mysql_close($this->db);
+	//}
 	
 	function getDBSchema() {
 		return $this->dbSchema;
