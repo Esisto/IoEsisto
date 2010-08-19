@@ -24,6 +24,8 @@ class PostManager {
 	 * return: l'articolo creato.
 	 */
 	static function addPost($data, $type) {
+		require_once("common.php");
+		$data = Filter::filterArray($data);
 		$p = null;
 		if($type == PostType::$NEWS) 
 			$p = new News($data);
@@ -55,6 +57,9 @@ class PostManager {
 	 * return: l'articolo modificato.
 	 */
 	static function editPost($post, $data) {
+		require_once("common.php");
+		$data = Filter::filterArray($data);
+		
 		if(isset($data["title"]))
 			$post->setTitle($data["title"]);
 		if(isset($data["subtitle"]))
@@ -84,9 +89,46 @@ class PostManager {
 	static function deletePost($post) {
 		return $post->delete();
 	}
-	static function signalPost() {
+	
+	/**
+	 * Aggiunge un report al post selezionato e lo salva nel database.
+	 *
+	 * param $author: id dell'autore del commento
+	 * param $post: variabile di tipo Post
+	 * param $report: testo del report
+	 * return: post aggiornato.
+	 */
+	static function reportPost($author, $post, $report) {
+		require_once("common.php");
+		$report = Filter::filterText($report);
 		
+		$r = new Report($author, $post->getID(), $report);
+		$r->save(SavingMode::$INSERT);
+		
+		return $post->addReport($r);
 	}
+	
+	/**
+	 * Aggiunge un report al commento selezionato e lo salva nel database.
+	 *
+	 * param $author: id dell'autore del commento
+	 * param $comment: variabile di tipo Comment
+	 * param $report: testo del report
+	 * return: commento aggiornato.
+	 */
+	static function reportComment($author, $comment, $report) {
+		//TODO Not iplemented
+		return false;
+	}
+	
+	/**
+	 * Aggiunge un voto al post selezionato e lo salva nel database.
+	 *
+	 * param author: id dell'autore del voto
+	 * param post: variabile di tipo Post
+	 * param comment: il voto
+	 * return: post aggiornato.
+	 */
 	static function votePost($author, $post, $vote) {
 		$v = new Vote($author, $post->getID(), $vote);
 		$v->save(SavingMode::$INSERT);
@@ -99,12 +141,15 @@ class PostManager {
 	/**
 	 * Aggiunge un commento al post selezionato e lo salva nel database.
 	 *
-	 * param author id dell'autore del commento
-	 * param post variabile di tipo Post
-	 * param comment testo del commento
-	 * return post aggiornato.
+	 * param author: id dell'autore del commento
+	 * param post: variabile di tipo Post
+	 * param comment: testo del commento
+	 * return post: aggiornato.
 	 */
 	static function commentPost($post, $author, $comment) {
+		require_once("common.php");
+		$comment = Filter::filterText($comment);
+		
 		$c = new Comment($author, $post->getID(), $comment);
 		$c->save(SavingMode::$INSERT);
 		$post->addComment($c);
@@ -196,7 +241,6 @@ class PostManager {
 	
 	static function loadPost($id) {
 		require_once("query.php");
-		
 		$q = new Query();
 		$table = $q->getDBSchema()->getTable("Post");
 		$rs = $q->execute($s = $q->generateSelectStm(array($table),
@@ -205,11 +249,13 @@ class PostManager {
 													 array()));
 		$p = false;
 		if($rs !== false) {
+			//echo serialize(mysql_fetch_assoc($rs)); //DEBUG
 			while($row = mysql_fetch_assoc($rs)) {
 				$data = array("title" => $row["ps_title"], "subtitle" => $row["ps_subtitle"],
 							  "headline" => $row["ps_headline"], "author"=> intval($row["ps_author"]),
 							  "content" => $row["ps_content"], "visible" => $row["ps_visible"] == 1,
 							  "place" => intval($row["ps_place"]));
+				//echo $row["ps_type"]; //DEBUG
 				if($row["ps_type"] == PostType::$NEWS) 
 					$p = new News($data);
 				else if($row["ps_type"] == PostType::$PHOTOREPORTAGE) {
@@ -218,6 +264,14 @@ class PostManager {
 				}
 				else if($row["ps_type"] == PostType::$VIDEOREPORTAGE) 
 					$p = new VideoReportage($data);
+				else if($row["ps_type"] == PostType::$COLLECTION ||
+						$row["ps_type"] == CollectionType::$ALBUM ||
+						$row["ps_type"] == CollectionType::$MAGAZINE ||
+						$row["ps_type"] == CollectionType::$PLAYLIST) {
+					require_once("post/collection/CollectionManager.php");
+					echo ($p =CollectionManager::loadCollection($id));
+					return $p;
+				}
 				$p->setID($row["ps_ID"])->setCreationDate(time($row["ps_creationDate"]));
 				break;
 			}

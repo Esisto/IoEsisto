@@ -13,8 +13,10 @@
 		 */
 		function __construct($data) {
 			parent::__construct($data);
-			if(isset($data["content"]) && !is_array($data["content"]))
-				$this->setContent(array($data["content"]));
+			if(isset($data["content"])) {
+				if(!is_array($data["content"])) $data["content"] = array($data["content"]);
+				parent::setContent($data["content"]);
+			}
 			$this->setPostType(PostType::$COLLECTION);
 		}
 		
@@ -51,13 +53,47 @@
 		 */
 		function save($savingMode) {
 			if($savingMode == SavingMode::$INSERT) {
-				
-				// TODO
-				return true;
+				require_once("query.php");
+				if(!isset($GLOBALS["q"]))
+					$q = new Query();
+				if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
+					$dbs = $q->getDBSchema();
+					$table = $dbs->getTable("Post");
+					$data = array("ps_type" => $this->getCollectionType(),
+								  "ps_title" => $this->getTitle(),
+								  "ps_subtitle" => $this->getSubtitle(),
+								  "ps_headline" => $this->getHeadline(),
+								  "ps_content" => serialize($this->getContent()),
+								  "ps_visible" => $this->isVisible(),
+								  "ps_author" => $this->getAuthor()/*,
+								  "ps_place" => $this->getPlace()*/ //TODO Non ancora implementato.
+								  );
+					$rs = $q->execute($s = $q->generateInsertStm($table,$data));
+					//echo "<br />" . $s; //DEBUG
+					//echo "<br />" . serialize($rs); //DEBUG
+					$this->ID = mysql_insert_id();
+					//echo "<br />" . serialize($this->ID); //DEBUG
+					$rs = $q->execute($s = $q->generateSelectStm(array($table),
+																 array(),
+																 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$this->ID)),
+																 array()));
+					//echo "<br />" . $s; //DEBUG
+					while($row = mysql_fetch_assoc($rs)) {
+						$this->setCreationDate(time($row["ps_creationDate"]));
+						//echo "<br />" . serialize($row["ps_creationDate"]); //DEBUG
+						break;
+					}
+					//TODO inserire tags, categories e place.
+					//echo "<br />" . $this; //DEBUG
+					require_once("common.php");
+					LogManager::addLogEntry($this->getAuthor(), LogManager::$INSERT, $this);
+					return $this->ID;
+				}
+				return false;
 			} else if($savingMode == SavingMode::$UPDATE) {
-				
 				// TODO
-				return true;	
+				LogManager::addLogEntry($this->getAuthor(), LogManager::$UPDATE, $this);
+				return false;	
 			}
 			
 			return false;
@@ -125,7 +161,7 @@
 		 */
 		function addPost($photo){
 			if($photo->getType()==PostType::$PHOTOREPORTAGE){
-				return parent::addPost($photo);
+				return parent::addPost($photo->getID());
 			}
 			return false;
 		}
@@ -146,7 +182,7 @@
 		 */
 		function addPost($news){
 			if($news->getType()==PostType::$NEWS){
-				return parent::addPost($news);
+				return parent::addPost($news->getID());
 			}
 			
 			return false;
@@ -168,7 +204,7 @@
 		 */
 		function addPost($video){
 			if($video->getType()==PostType::$VIDEOREPORTAGE){
-				return parent::addPost($video);
+				return parent::addPost($video->getID());
 			}
 			
 			return false;

@@ -189,7 +189,7 @@
 					//echo "<br />" . serialize($this->ID); //DEBUG
 					$rs = $q->execute($s = $q->generateSelectStm(array($table),
 																 array(),
-																 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$this->ID)),
+																 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$this->getID())),
 																 array()));
 					//echo "<br />" . $s; //DEBUG
 					while($row = mysql_fetch_assoc($rs)) {
@@ -199,12 +199,14 @@
 					}
 					//TODO inserire tags, categories e place.
 					//echo "<br />" . $this; //DEBUG
+					require_once("common.php");
+					LogManager::addLogEntry($this->getAuthor(), LogManager::$INSERT, $this);
 					return $this->ID;
 				}
 				return false;
 			} else if($savingMode == SavingMode::$UPDATE) {
-				
 				// TODO
+				LogManager::addLogEntry($this->getAuthor(), LogManager::$UPDATE, $this);
 				return false;	
 			}
 			
@@ -219,10 +221,13 @@
 				$dbs = $q->getDBSchema();
 				$table = $dbs->getTable("Post");
 				$rs = $q->execute($s = $q->generateDeleteStm($table,
-															 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$this->ID))));
+															 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$this->getID()))));
 				//echo "<br />" . $s; //DEBUG
-				if(mysql_affected_rows() == 1)
+				if(mysql_affected_rows() == 1) {
+					require_once("common.php");
+					LogManager::addLogEntry($this->getAuthor(), LogManager::$DELETE, $this);
 					return $this;
+				}
 			}
 			return false;
 		}
@@ -379,7 +384,7 @@
 					//echo "<br />" . serialize($this->ID); //DEBUG
 					$rs = $q->execute($s = $q->generateSelectStm(array($table),
 																 array(),
-																 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$this->ID)),
+																 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$this->getID())),
 																 array()));
 					//echo "<br />" . $s; //DEBUG
 					while($row = mysql_fetch_assoc($rs)) {
@@ -389,12 +394,14 @@
 					}
 					//TODO inserire tags, categories e place.
 					//echo "<br />" . $this; //DEBUG
+					require_once("common.php");
+					LogManager::addLogEntry($this->getAuthor(), LogManager::$INSERT, $this);
 					return $this->ID;
 				}
 				return false;
 			} else if($savingMode == SavingMode::$UPDATE) {
-				
 				// TODO
+				LogManager::addLogEntry($this->getAuthor(), LogManager::$UPDATE, $this);
 				return false;	
 			}
 			
@@ -503,7 +510,7 @@
 					//echo "<br />" . serialize($this->ID); //DEBUG
 					$rs = $q->execute($s = $q->generateSelectStm(array($table),
 																 array(),
-																 array(new WhereConstraint($table->getColumn("cm_ID"),Operator::$UGUALE,$this->ID)),
+																 array(new WhereConstraint($table->getColumn("cm_ID"),Operator::$UGUALE,$this->getID())),
 																 array()));
 					//echo "<br />" . $s; //DEBUG
 					while($row = mysql_fetch_assoc($rs)) {
@@ -512,6 +519,8 @@
 						break;
 					}
 					//echo "<br />" . $this; //DEBUG
+					require_once("common.php");
+					LogManager::addLogEntry($this->getAuthor(), LogManager::$INSERT, $this);
 					return $this->ID;
 				}
 				return false;
@@ -532,10 +541,13 @@
 				$dbs = $q->getDBSchema();
 				$table = $dbs->getTable("Comment");
 				$rs = $q->execute($s = $q->generateDeleteStm($table,
-															 array(new WhereConstraint($table->getColumn("cm_ID"),Operator::$UGUALE,$this->ID))));
+															 array(new WhereConstraint($table->getColumn("cm_ID"),Operator::$UGUALE,$this->getID()))));
 				//echo "<br />" . $s; //DEBUG
-				if(mysql_affected_rows() == 1)
+				if(mysql_affected_rows() == 1) {
+					require_once("common.php");
+					LogManager::addLogEntry($this->getAuthor(), LogManager::$DELETE, $this);
 					return $this;
+				}
 			}
 			return false;
 		}
@@ -615,8 +627,8 @@
 					//echo "<br />" . serialize($rs); //DEBUG
 					$rs = $q->execute($s = $q->generateSelectStm(array($table),
 																 array(),
-																 array(new WhereConstraint($table->getColumn("vt_author"),Operator::$UGUALE,$this->author),
-																	   new WhereConstraint($table->getColumn("vt_post"),Operator::$UGUALE,$this->post)),
+																 array(new WhereConstraint($table->getColumn("vt_author"),Operator::$UGUALE,$this->getAuthor()),
+																	   new WhereConstraint($table->getColumn("vt_post"),Operator::$UGUALE,$this->getPost())),
 																 array()));
 					//echo "<br />" . $s; //DEBUG
 					while($row = mysql_fetch_assoc($rs)) {
@@ -625,6 +637,8 @@
 						break;
 					}
 					//echo "<br />" . $this; //DEBUG
+					require_once("common.php");
+					LogManager::addLogEntry($this->getAuthor(), LogManager::$INSERT, $this);
 					return $this->creationDate;
 				}
 				return false;
@@ -645,11 +659,14 @@
 				$dbs = $q->getDBSchema();
 				$table = $dbs->getTable("Vote");
 				$rs = $q->execute($s = $q->generateDeleteStm($table,
-															 array(new WhereConstraint($table->getColumn("vt_author"),Operator::$UGUALE,$this->author),
-																   new WhereConstraint($table->getColumn("vt_post"),Operator::$UGUALE,$this->post))));
+															 array(new WhereConstraint($table->getColumn("vt_author"),Operator::$UGUALE,$this->getAuthor()),
+																   new WhereConstraint($table->getColumn("vt_post"),Operator::$UGUALE,$this->getPost()))));
 				//echo "<br />" . $s; //DEBUG
-				if(mysql_affected_rows() == 1)
+				if(mysql_affected_rows() == 1) {
+					require_once("common.php");
+					LogManager::addLogEntry($this->getAuthor(), LogManager::$DELETE, $this);
 					return $this;
+				}
 			}
 			return false;			
 		}
@@ -660,7 +677,7 @@
 		function __toString() {
 			$s = "Vote (author = " . $this->author .
 				 " | post = " . $this->post .
-				 " | comment = " . $this->vote .
+				 " | vote = " . $this->vote .
 				 ")";
 			return $s;
 		}

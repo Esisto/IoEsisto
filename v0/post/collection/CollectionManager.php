@@ -24,6 +24,9 @@ class CollectionManager {
 	 * return: la collection creata.
 	 */
 	static function addCollection($data, $type) {
+		require_once("common.php");
+		$data = Filter::filterArray($data);
+		
 		$c = null;
 		if($type == CollectionType::$ALBUM)
 			$c = new Album($data);
@@ -55,6 +58,9 @@ class CollectionManager {
 	 * return: la collection modificata.
 	 */
 	static function editCollection($collection, $data) {
+		require_once("common.php");
+		$data = Filter::filterArray($data);
+		
 		if(isset($data["title"]))
 			$collection->setTitle($data["title"]);
 		if(isset($data["subtitle"]))
@@ -82,13 +88,21 @@ class CollectionManager {
 	 * return: la collection eliminata.
 	 */
 	static function deleteCollection($collection) {
-		$collection->delete();
-		
-		return $collection;
+		require_once("post/PostManager.php");
+		return PostManager::deletePost($collection);
 	}
 	
-	static function signalCollection() {
-		
+	/**
+	 * Aggiunge un report alla collection selezionato e lo salva nel database.
+	 *
+	 * param $author: id dell'autore del commento
+	 * param $post: variabile di tipo Collection
+	 * param $report: testo del report
+	 * return: post aggiornato.
+	 */
+	static function reportCollection($author, $collection, $report) {
+		require_once("post/PostManager.php");
+		return PostManager::reportPost($author, $collection, $report);
 	}
 	
 	/**
@@ -100,10 +114,8 @@ class CollectionManager {
 	 * return: la collezione aggiornata.
 	 */
 	static function voteCollection($author, $collection, $vote) {
-		$v = new Vote($author, $collection->getID(), $vote);
-		$v->save(SavingMode::$INSERT);
-		
-		return $collection->addVote($v);
+		require_once("post/PostManager.php");
+		return PostManager::votePost($author,$collection,$vote);
 	}
 	
 	/**
@@ -127,10 +139,8 @@ class CollectionManager {
 	 * return: la collezione aggiornata.
 	 */
 	static function commentCollection($author, $collection, $comment) {
-		$c = new Comment($author, $collection->getID(), $comment);
-		$c->save(SavingMode::$INSERT);
-		
-		return $collection->addComment($c);
+		require_once("post/PostManager.php");
+		return PostManager::commentPost($collection,$author,$comment);
 	}
 	
 	/**
@@ -155,6 +165,73 @@ class CollectionManager {
 	static function addPostToCollection($post, $collection) {
 		return $collection->addPost($post);
 	}
+	
+	/**
+	 *
+	 *
+	 */
+	static function loadCollection($id) {
+		require_once("query.php");
+		
+		$q = new Query();
+		$table = $q->getDBSchema()->getTable("Post");
+		$rs = $q->execute($s = $q->generateSelectStm(array($table),
+													 array(),
+													 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$id)),
+													 array()));
+		$p = false;
+		if($rs !== false) {
+			while($row = mysql_fetch_assoc($rs)) {
+				$data = array("title" => $row["ps_title"], "subtitle" => $row["ps_subtitle"],
+							  "headline" => $row["ps_headline"], "author"=> intval($row["ps_author"]),
+							  "content" => unserialize($row["ps_content"]), "visible" => $row["ps_visible"] == 1,
+							  "place" => intval($row["ps_place"]));
+				//echo "<br />" . $data["content"] . "/" . unserialize($row["ps_content"]); //DEBUG
+				if($row["ps_type"] == CollectionType::$ALBUM) 
+					$p = new Album($data);
+				else if($row["ps_type"] == CollectionType::$MAGAZINE)
+					$p = new Magazine($data);
+				else if($row["ps_type"] == CollectionType::$PLAYLIST) 
+					$p = new Playlist($data);
+				$p->setID($row["ps_ID"])->setCreationDate(time($row["ps_creationDate"]));
+				break;
+			}
+		}
+		if($p !== false) {
+			$table = $q->getDBSchema()->getTable("Comment");
+			$rs = $q->execute($s = $q->generateSelectStm(array($table),
+														 array(),
+														 array(new WhereConstraint($table->getColumn("cm_post"),Operator::$UGUALE,$id)),
+														 array()));
+			if($rs !== false) {
+				$comm = array();
+				while($row = mysql_fetch_assoc($rs)) {
+					$com = new Comment(intval($row["cm_author"]), intval($row["cm_post"]), $row["cm_comment"]);
+					$com->setID($row["cm_ID"])->setCreationDate(time($row["cm_creationDate"]));
+					$comm[] = $com;
+				}
+				$p->setComments($comm);
+			}
+			$table = $q->getDBSchema()->getTable("Vote");
+			$rs = $q->execute($s = $q->generateSelectStm(array($table),
+														 array(),
+														 array(new WhereConstraint($table->getColumn("vt_post"),Operator::$UGUALE,$id)),
+														 array()));
+			if($rs !== false) {
+				$votes = array();
+				while($row = mysql_fetch_assoc($rs)) {
+					$vote = new Vote(intval($row["vt_author"]), intval($row["vt_post"]), $row["vt_vote"] > 0);
+					$vote->setCreationDate(time($row["vt_creationDate"]));
+					$votes[] = $vote;
+				}
+				$p->setVotes($votes);
+			}
+		}
+		if(!$p)
+			$GLOBALS["query_error"] = "NOT FOUND";
+		return $p;
+	}
+
 }
 
 ?>
