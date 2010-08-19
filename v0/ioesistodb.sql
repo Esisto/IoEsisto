@@ -220,10 +220,12 @@ CREATE TABLE IF NOT EXISTS `Follow` (
 --
 DROP TABLE IF EXISTS `Log`;
 CREATE TABLE IF NOT EXISTS `Log` (
+  `log_ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `log_timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `log_action` varchar(255) NOT NULL,
   `log_user` bigint(20) NOT NULL,
-  PRIMARY KEY (`log_timestamp`,`log_user`),
+  `log_object` blob NOT NULL,
+  PRIMARY KEY (`log_ID`),
   KEY `fk_log_user1` (`log_user`),
   FOREIGN KEY (`log_user`) REFERENCES `User` (`us_ID`) ON DELETE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
@@ -281,10 +283,11 @@ CREATE TABLE IF NOT EXISTS `MailOfDirectory` (
 --
 DROP TABLE IF EXISTS `Report`;
 CREATE TABLE IF NOT EXISTS `Report` (
+  `rp_ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `rp_post` bigint(20) NOT NULL,
   `rp_user` bigint(20) NOT NULL,
   `rp_report` text NOT NULL,
-  PRIMARY KEY (`rp_post`,`rp_user`),
+  PRIMARY KEY (`rp_ID`),
   KEY `fk_post_has_user_post1` (`rp_post`),
   KEY `fk_post_has_user_user1` (`rp_user`),
   FOREIGN KEY (`rp_post`) REFERENCES `Post` (`ps_ID`) ON DELETE CASCADE,
