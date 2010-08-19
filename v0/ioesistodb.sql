@@ -127,6 +127,7 @@ CREATE TABLE IF NOT EXISTS `Post` (
   `ps_subtitle` varchar(100) NULL,
   `ps_headline` varchar(100) NULL,
   `ps_creationDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `ps_modificationDate` datetime NULL,
   `ps_content` text NOT NULL,
   `ps_visible` tinyint(1) DEFAULT 0,
   `ps_author` bigint(20) NOT NULL,
