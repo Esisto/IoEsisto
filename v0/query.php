@@ -310,13 +310,16 @@ class Query {
 			return false;
 		
 		if(!$this->tableExists($table)) return false;
-		$s = "UPDATE " + $table + " SET ";
+		$s = "UPDATE " . $table->getName() . " SET ";
 		$first = true;
 		foreach($data as $column => $d) {
-			if($column == null && $column == "" || $this->columnExists($column)) continue;
+			if($column == null && $column == "" || !$this->columnExists($table->getColumn($column))) continue;
 			if($first) $first = false;
 			else $s.= ", ";
-			$s.= $column . " = ?";
+			$s.= $column . " = ";
+			if(is_string($d)) $s.= "'";
+			$s.= $d;
+			if(is_string($d)) $s.= "'";
 		}
 		if($first) return false;
 		
@@ -329,7 +332,7 @@ class Query {
 			   !$this->columnExists($whereconst[$i]->getColumn())) continue;
 			if($first) $first = false;
 			else $s1.= " AND ";
-			$s1.= $whereconst->generateWhereStm();
+			$s1.= $whereconst[$i]->generateWhereStm();
 		}
 		if(!$first)
 			$s.= $s1;
