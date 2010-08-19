@@ -15,28 +15,16 @@
 	require_once("settings.php");
 	require_once("strings/" . LANG . "strings.php");
 	
-	//echo testPost();
-	//echo testComment();
-	//echo testVote();
 	//echo testEditPost();
-	//echo testCollection();
-	//echo testAddPostToCollection();
+	echo testAddPostToCollection();
 	//echo testSavePost();
 	//echo testSaveComment();
 	//echo testDeletePost();
 	//echo testDeleteComment();
 	//echo testSaveVote();
-	echo testDeleteVote();
-	
-	//require_once("db_schema.php");
-	//$dbs = new DBSchema(null);
-	////$db = connect();
-	//if($GLOBALS["db_state"] != DB_NOT_CONNECTED) {
-	//	echo "<br /><br />";
-	//	echo $GLOBALS["db_status"];
-	//}
-	//echo "<br />";
-	//echo $GLOBALS["db_schema_status"];
+	//echo testDeleteVote();
+	//echo testSaveCollection();
+	//echo testSaveVoteOnCollection();
 ?>
 
 </body>

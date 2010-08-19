@@ -153,6 +153,10 @@ function testEditPost() {
 	return "<br />EditPost test passed";
 }
 
+/**
+ * Crea un post;
+ * Carica il post dal database e lo confronta con quello salvato in memoria;
+ */
 function testSavePost() {
 	$data = array("title" => "TITOLO", "subtitle" => "SOTTOTITOLO", "headline" => "OCCHIELLO",
 				  "author"=> 2, "tags" => array("tag1", "tag2", "tag3"),
@@ -161,7 +165,7 @@ function testSavePost() {
 	
 	$p1 = PostManager::addPost($data, PostType::$NEWS);
 	$post = PostManager::loadPost($p1->getID());
-	echo $p1 . "<br />" . $post;
+	//echo $p1 . "<br />" . $post; //DEBUG
 	
 	if($post === false)
 		return "<br />Post saving test NOT PASSED: not created";
@@ -189,6 +193,11 @@ function testSavePost() {
 	return "<br />Save Post test passed";
 }
 
+/**
+ * Crea un post;
+ * Associa al post un commento (lo crea);
+ * Carica il commento dal database e lo confronta con quello salvato in memoria;
+ */
 function testSaveComment() {
 	
 	$data = array("title" => "TITOLO", "subtitle" => "SOTTOTITOLO", "headline" => "OCCHIELLO",
@@ -205,10 +214,10 @@ function testSaveComment() {
 	$comm = $p1->getComments();
 	$com = PostManager::loadComment($comm[0]->getId());
 	$post = PostManager::loadPost($p1->getId());
-	if(count($post->getComments()) == 0)
+	if($post === false || count($post->getComments()) == 0)
 		return "<br />Comment test NOT PASSED: not added";
-	echo $comm[0] . "<br />" . $com; 
-	echo "<br />" . $p1 . "<br />" . $post; 
+	//echo $comm[0] . "<br />" . $com; //DEBUG
+	//echo "<br />" . $p1 . "<br />" . $post; //DEBUG
 	if($com === false) return "<br />Comment saving test NOT PASSED: not created";
 	
 	if($comm[0]->getAuthor() != $com->getAuthor())
@@ -225,8 +234,12 @@ function testSaveComment() {
 	return "<br />Comment saving test passed";
 }
 
+/**
+ * Crea un post;
+ * Associa al post un voto ed un commento (li crea);
+ * Cancella il post (di conseguenza anche il voto e il commento, per CASCADE);
+ */
 function testDeletePost() {
-	
 	$data = array("title" => "TITOLO", "subtitle" => "SOTTOTITOLO", "headline" => "OCCHIELLO",
 				  "author"=> 2, "tags" => array("tag1", "tag2", "tag3"),
 				  "categories" => array("cat1", "cat2", "cat3"), "content" => "CONTENUTO NON FILTRATO",
@@ -260,6 +273,13 @@ function testDeletePost() {
 	return "<br />Post deleting test NOT PASSED: not deleted";
 }
 
+/**
+ * Crea un post;
+ * Associa al post un commento (lo crea);
+ * Cancella il commento dal database;
+ * Carica il post e cerca di caricare il commento;
+ * Controlla che il post non abbia quel commento e di non essere riuscito a caricare il commento;
+ */
 function testDeleteComment() {
 	
 	$data = array("title" => "TITOLO", "subtitle" => "SOTTOTITOLO", "headline" => "OCCHIELLO",
@@ -292,6 +312,11 @@ function testDeleteComment() {
 	return "<br />Comment deleting test NOT PASSED: not deleted";
 }
 
+/**
+ * Crea un post;
+ * Associa al post un voto (lo crea);
+ * Carica il voto dal database e lo confronta con quello salvato in memoria;
+ */
 function testSaveVote() {
 	
 	$data = array("title" => "TITOLO", "subtitle" => "SOTTOTITOLO", "headline" => "OCCHIELLO",
@@ -308,10 +333,10 @@ function testSaveVote() {
 	$votes = $p1->getVotes();
 	$vote = PostManager::loadVote($votes[0]->getAuthor(),$votes[0]->getPost());
 	$post = PostManager::loadPost($p1->getId());
-	if(count($post->getVotes()) == 0)
+	if($post === false || count($post->getVotes()) == 0)
 		return "<br />Vote saving test NOT PASSED: not added";
-	//echo $votes[0] . "<br />" . $vote; 
-	//echo "<br />" . $p1 . "<br />" . $post; 
+	//echo $votes[0] . "<br />" . $vote; //DEBUG
+	//echo "<br />" . $p1 . "<br />" . $post; //DEBUG
 	if($com === false) return "<br />Vote saving test NOT PASSED: not created";
 	
 	if($votes[0]->getAuthor() != $vote->getAuthor())
@@ -326,8 +351,14 @@ function testSaveVote() {
 	return "<br />Vote saving test passed";
 }
 
+/**
+ * Crea un post;
+ * Associa al post un voto (lo crea);
+ * Cancella il voto dal database;
+ * Carica il post e cerca di caricare il voto;
+ * Controlla che il post non abbia quel voto e di non essere riuscito a caricare il voto;
+ */
 function testDeleteVote() {
-	
 	$data = array("title" => "TITOLO", "subtitle" => "SOTTOTITOLO", "headline" => "OCCHIELLO",
 				  "author"=> 2, "tags" => array("tag1", "tag2", "tag3"),
 				  "categories" => array("cat1", "cat2", "cat3"), "content" => "CONTENUTO NON FILTRATO",
@@ -354,7 +385,6 @@ function testDeleteVote() {
 				return "<br />Vote deleting test passed";
 		}
 	}
-	
 	return "<br />Vote deleting test NOT PASSED: not deleted";
 }
 ?>
