@@ -19,6 +19,7 @@
 		protected $headline; 		// occhiello
 		protected $author;			//
 		protected $creationDate;	//
+		protected $modificationDate;	//
 		protected $tags = array();			// array di oggetti TAG
 		protected $categories = array();		// array di oggetti CATEGORY
 		protected $comments = array();		// array di oggetti COMMENTO
@@ -79,6 +80,9 @@
 		function getCreationDate() {
 			return $this->creationDate;
 		}
+		function getModificationDate() {
+			return $this->modificationDate;
+		}
 		function getTags() {
 			return $this->tags;
 		}
@@ -124,6 +128,10 @@
 		}
 		function setCreationDate($cDate) {
 			$this->creationDate = $cDate;
+			return $this;
+		}
+		function setModificationDate($mDate) {
+			$this->modificationDate = $mDate;
 			return $this;
 		}
 		function setTags($tags) {
@@ -194,6 +202,7 @@
 					//echo "<br />" . $s; //DEBUG
 					while($row = mysql_fetch_assoc($rs)) {
 						$this->setCreationDate(time($row["ps_creationDate"]));
+						$this->setModificationDate(time($row["ps_creationDate"]));
 						//echo "<br />" . serialize($row["ps_creationDate"]); //DEBUG
 						break;
 					}
@@ -205,9 +214,49 @@
 				}
 				return false;
 			} else if($savingMode == SavingMode::$UPDATE) {
-				// TODO
-				LogManager::addLogEntry($this->getAuthor(), LogManager::$UPDATE, $this);
-				return false;	
+				require_once("query.php");
+				if(!isset($GLOBALS["q"]))
+					$q = new Query();
+				if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
+					$table = $q->getDBSchema()->getTable("Post");
+					$rs = $q->execute($s = $q->generateSelectStm(array($table),
+																 array(),
+																 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$this->getID())),
+																 array()));
+					//echo "<br />" . $s; //DEBUG
+					$data = array();
+					while($row = mysql_fetch_assoc($rs)) {
+						//cerco le differenze e le salvo.
+						if($row["ps_title"] != $this->getTitle())
+							$data["ps_title"] = $this->getTitle();
+						if($row["ps_subtitle"] != $this->getSubtitle())
+							$data["ps_subtitle"] = $this->getSubtitle();
+						if($row["ps_headline"] != $this->getHeadline())
+							$data["ps_headline"] = $this->getHeadline();
+						if($row["ps_content"] != $this->getContent())
+							$data["ps_content"] = $this->getContent();
+						settype($row["ps_visible"], "boolean");
+						if($row["ps_visible"] !== $this->isVisible())
+							$data["ps_visible"] = $this->isVisible() ? 1 : 0;
+						break;
+					}
+					
+					$data["ps_modificationDate"] = date("Y/m/d G:i:s", time()); // se mi dicono di fare l'update, cambio modificationDate
+					//echo "<br />" . serialize($data); //DEBUG
+					//TODO controllare tag e categorie
+					
+					$rs = $q->execute($s = $q->generateUpdateStm($table,
+																 $data,
+																 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$this->getID()))));
+					//echo "<br />" . $s; //DEBUG
+					//echo "<br />" . $rs; //DEBUG
+					if(mysql_affected_rows() == 0)
+						return false;
+					
+					//echo "<br />" . $this; //DEBUG
+					LogManager::addLogEntry($this->getAuthor(), LogManager::$UPDATE, $this);
+					return $this;
+				}
 			}
 			
 			return false;

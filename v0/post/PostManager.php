@@ -273,6 +273,8 @@ class PostManager {
 					return $p;
 				}
 				$p->setID($row["ps_ID"])->setCreationDate(time($row["ps_creationDate"]));
+				if(is_null($row["ps_creationDate"]) || !is_numeric($row["ps_creationDate"]) || $row["ps_creationDate"] == 0)
+					$p->setModificationDate(time($row["ps_creationDate"]));
 				break;
 			}
 		}

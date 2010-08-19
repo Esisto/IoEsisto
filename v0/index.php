@@ -15,8 +15,8 @@
 	require_once("settings.php");
 	require_once("strings/" . LANG . "strings.php");
 	
-	//echo testEditPost();
-	echo testAddPostToCollection();
+	echo testEditPost();
+	//echo testAddPostToCollection();
 	//echo testSavePost();
 	//echo testSaveComment();
 	//echo testDeletePost();
