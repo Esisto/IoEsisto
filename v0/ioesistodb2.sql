@@ -6,17 +6,17 @@ CREATE TABLE IF NOT EXISTS `Category` (
 CREATE TABLE IF NOT EXISTS `Contest` (
   `ct_ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `ct_title` varchar(50) DEFAULT NULL,
-  `ct_description` varchar(255) DEFAULT NULL,
+  `ct_description` text DEFAULT NULL,
   `ct_typeofsubscriber` enum('post','photoreportage','videoreportage','news','collection','album','playlist','magazine') DEFAULT NULL,
   `ct_rules` text,
-  `ct_prizes` varchar(100) DEFAULT NULL,
+  `ct_prizes` text DEFAULT NULL,
   `ct_start` datetime NULL DEFAULT NULL,
   `ct_end` datetime NULL DEFAULT NULL,
   PRIMARY KEY (`ct_ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 CREATE TABLE IF NOT EXISTS `Nation` (
-  `nat_name` varchar(100) NOT NULL,
+  `nat_name` varchar(40) NOT NULL,
   PRIMARY KEY (`nat_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
@@ -80,6 +80,8 @@ CREATE TABLE IF NOT EXISTS `Post` (
   `ps_creationDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `ps_modificationDate` datetime NULL,
   `ps_content` text NOT NULL,
+  `ps_tags` text NULL,
+  `ps_categories` text NULL,
   `ps_visible` tinyint(1) DEFAULT 0,
   `ps_author` bigint(20) NOT NULL,
   `ps_place` bigint(20) NULL,
@@ -199,6 +201,7 @@ CREATE TABLE IF NOT EXISTS `Report` (
   `rp_user` bigint(20) NOT NULL,
   `rp_report` text NOT NULL,
   PRIMARY KEY (`rp_ID`),
+  UNIQUE KEY `rp_postuser_UNIQUE` (`rp_post`, `rp_user`),
   KEY `fk_post_has_user_post1` (`rp_post`),
   KEY `fk_post_has_user_user1` (`rp_user`),
   FOREIGN KEY (`rp_post`) REFERENCES `Post` (`ps_ID`) ON DELETE CASCADE,

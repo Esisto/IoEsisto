@@ -15,16 +15,17 @@
 	require_once("settings.php");
 	require_once("strings/" . LANG . "strings.php");
 	
-	echo testEditPost();
-	//echo testAddPostToCollection();
-	//echo testSavePost();
-	//echo testSaveComment();
-	//echo testDeletePost();
-	//echo testDeleteComment();
-	//echo testSaveVote();
-	//echo testDeleteVote();
-	//echo testSaveCollection();
-	//echo testSaveVoteOnCollection();
+	$t = new Test();
+	echo $t->testEditPost();
+	echo $t->testAddPostToCollection();
+	echo $t->testSavePost();
+	echo $t->testSaveComment();
+	echo $t->testDeletePost();
+	echo $t->testDeleteComment();
+	echo $t->testSaveVote();
+	echo $t->testDeleteVote();
+	echo $t->testSaveCollection();
+	echo $t->testSaveVoteOnCollection();
 ?>
 
 </body>

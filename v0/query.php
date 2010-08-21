@@ -6,6 +6,7 @@ class Operator {
 	static $MINOREUGUALE = "<=";
 	static $MAGGIORE = ">";
 	static $MAGGIOREUGUALE = ">=";
+	static $LIKE = "LIKE";
 }
 
 class SelectOperator {
@@ -375,6 +376,7 @@ class Query {
 			$this->dbSchema = new DBSchema();
 		}
 		
+		if($column === false) return false;
 		if(!$this->tableExists($this->dbSchema->getTable($column->getTable()))) return false;
 		$table = $this->dbSchema->getTable($column->getTable());
 		return $table->getColumn($column->getName()) !== false;

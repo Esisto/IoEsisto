@@ -43,20 +43,22 @@ function testCollection() {
 
 function testAddPostToCollection() {
 	require_once("post/PostManager.php");
+	require_once("post/PostCommon.php");
 	$data = array("title" => "TITOLO", "subtitle" => "SOTTOTITOLO", "headline" => "OCCHIELLO",
-				  "author"=> 2, "tags" => array("tag1", "tag2", "tag3"),
-				  "categories" => array("cat1", "cat2", "cat3"), "content" => "CONTENUTO NON FILTRATO",
-				  "visible" => false);
-	$p = PostManager::addPost($data, PostType::$NEWS);
+				  "author"=> 2, "tags" => "tag1, tag2, tag3",
+				  "categories" => "cat1, cat2, cat3", "content" => "CONTENUTO NON FILTRATO",
+				  "visible" => false, "type" => PostType::$NEWS);
+	$p = PostManager::addPost($data);
 	$data1 = array("title" => "TITOLO", "subtitle" => "SOTTOTITOLO", "headline" => "L'OCCHIELLO",
-				  "author"=> 2, "tags" => array("tag1", "tag2", "tag3"),
-				  "categories" => array("cat1", "cat2", "cat3"),
-				  "visible" => true);
-	$c = CollectionManager::addCollection($data1, CollectionType::$MAGAZINE);
+				  "author"=> 2, "tags" => "tag1, tag2, tag3",
+				  "categories" => "cat1, cat2, cat3",
+				  "visible" => true, "type" => PostType::$MAGAZINE);
+	$c = CollectionManager::addCollection($data1);
 	$c1 = CollectionManager::addPostToCollection($p, $c);
 	
 	$c = CollectionManager::loadCollection($c1->getID());
 	echo $c1 . "<br />" . $c; //DEBUG
+	
 	if($c1 == null)
 		return "<br />AddToCollection test NOT PASSED: not created";
 	if(count($c->getContent()) == 0)
@@ -72,19 +74,20 @@ function testAddPostToCollection() {
  */
 function testSaveCollection() {
 	require_once("post/PostManager.php");
+	require_once("post/PostCommon.php");
 	$data = array("title" => "TITOLO", "subtitle" => "SOTTOTITOLO", "headline" => "OCCHIELLO",
-				  "author"=> 2, "tags" => array("tag1", "tag2", "tag3"),
-				  "categories" => array("cat1", "cat2", "cat3"), "content" => "CONTENUTO NON FILTRATO",
-				  "visible" => false);
-	$p = PostManager::addPost($data, PostType::$NEWS);
+				  "author"=> 2, "tags" => "tag1, tag2, tag3",
+				  "categories" => "cat1, cat2, cat3", "content" => "CONTENUTO NON FILTRATO",
+				  "visible" => false, "type" => PostType::$NEWS);
+	$p = PostManager::addPost($data);
 	$data1 = array("title" => "TITOLO", "subtitle" => "SOTTOTITOLO", "headline" => "OCCHIELLO",
-				  "author"=> 2, "tags" => array("tag1", "tag2", "tag3"),
-				  "categories" => array("cat1", "cat2", "cat3"), "content" => $p->getID(),
-				  "visible" => true);
+				  "author"=> 2, "tags" => "tag1, tag2, tag3",
+				  "categories" => "cat1, cat2, cat3", "content" => $p->getID(),
+				  "visible" => true, "type" => PostType::$MAGAZINE);
 	
-	$p1 = CollectionManager::addCollection($data1, CollectionType::$MAGAZINE);
+	$p1 = CollectionManager::addCollection($data1);
 	$post = CollectionManager::loadCollection($p1->getID());
-	//echo "<br />" . $p1 . "<br />" . $post; //DEBUG
+	//echo "<p>" . $p1 . "</p><p>" . $post . "</p>"; //DEBUG
 	
 	if($post === false)
 		return "<br />Collection saving test NOT PASSED: not created";
@@ -96,12 +99,12 @@ function testSaveCollection() {
 		return "<br />Collection saving test NOT PASSED: headline";
 	if($p1->getAuthor() != $post->getAuthor())
 		return "<br />Collection saving test NOT PASSED: author";
-	//if(isset($row["tags"]))
-	//	if($p1->getTags() != $row["tags"])
-	//		return "<br />Post saving test NOT PASSED: tags";
-	//if(isset($row["categories"]))
-	//	if($p1->getCategories() != $row["categories"])
-	//		return "<br />Post saving test NOT PASSED: categories";
+	if(isset($row["tags"]))
+		if($p1->getTags() != $row["tags"])
+			return "<br />Post saving test NOT PASSED: tags";
+	if(isset($row["categories"]))
+		if($p1->getCategories() != $row["categories"])
+			return "<br />Post saving test NOT PASSED: categories";
 	if($p1->getContent() != $post->getContent())
 		return "<br />Collection saving test NOT PASSED: content";
 	if($p1->isVisible() != $post->isVisible())

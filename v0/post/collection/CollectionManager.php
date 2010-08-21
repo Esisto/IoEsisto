@@ -21,23 +21,32 @@ class CollectionManager {
 	 * visibile: indica la visibilità dell'articolo se non visibile è da considerare come una bozza (boolean)
 	 * param type: tipo di collection, deve essere incluso in CollectionType
 	 * 
-	 * return: la collection creata.
+	 * return: la collection creata o FALSE se c'è un errose
 	 */
-	static function addCollection($data, $type) {
+	static function addCollection($data) {
 		require_once("common.php");
 		$data = Filter::filterArray($data);
 		
-		$c = null;
-		if($type == CollectionType::$ALBUM)
+		require_once("post/PostCommon.php");
+		if(!isset($data["type"]))
+		   return false;
+		$c = false;
+		if($data["type"] == PostType::$ALBUM) {
+			require_once("post/collection/Album.php");
 			$c = new Album($data);
-		else if($type == CollectionType::$MAGAZINE)
+		} else if($data["type"] == PostType::$MAGAZINE) {
+			require_once("post/collection/Magazine.php");
 			$c = new Magazine($data);
-		else if($type == CollectionType::$PLAYLIST)
+		} else if($data["type"] == PostType::$PLAYLIST) {
+			require_once("post/collection/Playlist.php");
 			$c = new Playlist($data);
-		else
-			return null;
+		} else if($data["type"] == PostType::$PHOTOREPORTAGE) {
+			require_once("post/collection/PhotoReportage.php");
+			$c = new PhotoReportage($data);
+		} else
+			return false;
 		
-		$c->save(SavingMode::$INSERT);
+		$c->save();
 		
 		return $c;
 	}
@@ -171,65 +180,8 @@ class CollectionManager {
 	 *
 	 */
 	static function loadCollection($id) {
-		require_once("query.php");
-		
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable("Post");
-		$rs = $q->execute($s = $q->generateSelectStm(array($table),
-													 array(),
-													 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$id)),
-													 array()));
-		$p = false;
-		if($rs !== false) {
-			while($row = mysql_fetch_assoc($rs)) {
-				$data = array("title" => $row["ps_title"], "subtitle" => $row["ps_subtitle"],
-							  "headline" => $row["ps_headline"], "author"=> intval($row["ps_author"]),
-							  "content" => unserialize($row["ps_content"]), "visible" => $row["ps_visible"] == 1,
-							  "place" => intval($row["ps_place"]));
-				//echo "<br />" . $data["content"] . "/" . unserialize($row["ps_content"]); //DEBUG
-				if($row["ps_type"] == CollectionType::$ALBUM) 
-					$p = new Album($data);
-				else if($row["ps_type"] == CollectionType::$MAGAZINE)
-					$p = new Magazine($data);
-				else if($row["ps_type"] == CollectionType::$PLAYLIST) 
-					$p = new Playlist($data);
-				$p->setID($row["ps_ID"])->setCreationDate(time($row["ps_creationDate"]));
-				break;
-			}
-		}
-		if($p !== false) {
-			$table = $q->getDBSchema()->getTable("Comment");
-			$rs = $q->execute($s = $q->generateSelectStm(array($table),
-														 array(),
-														 array(new WhereConstraint($table->getColumn("cm_post"),Operator::$UGUALE,$id)),
-														 array()));
-			if($rs !== false) {
-				$comm = array();
-				while($row = mysql_fetch_assoc($rs)) {
-					$com = new Comment(intval($row["cm_author"]), intval($row["cm_post"]), $row["cm_comment"]);
-					$com->setID($row["cm_ID"])->setCreationDate(time($row["cm_creationDate"]));
-					$comm[] = $com;
-				}
-				$p->setComments($comm);
-			}
-			$table = $q->getDBSchema()->getTable("Vote");
-			$rs = $q->execute($s = $q->generateSelectStm(array($table),
-														 array(),
-														 array(new WhereConstraint($table->getColumn("vt_post"),Operator::$UGUALE,$id)),
-														 array()));
-			if($rs !== false) {
-				$votes = array();
-				while($row = mysql_fetch_assoc($rs)) {
-					$vote = new Vote(intval($row["vt_author"]), intval($row["vt_post"]), $row["vt_vote"] > 0);
-					$vote->setCreationDate(time($row["vt_creationDate"]));
-					$votes[] = $vote;
-				}
-				$p->setVotes($votes);
-			}
-		}
-		if(!$p)
-			$GLOBALS["query_error"] = "NOT FOUND";
-		return $p;
+		require_once("post/PostManager.php");
+		return Collection::loadFromDatabase($id);
 	}
 
 }

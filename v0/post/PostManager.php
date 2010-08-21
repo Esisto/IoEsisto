@@ -1,8 +1,10 @@
 <?php
 require_once("post/Post.php");
+require_once("post/News.php");
+require_once("post/VideoReportage.php");
 
 /**
- * Gestisce i post di ogni tipo (non i Collection).
+ * Gestisce i post di ogni tipo (non le Collection).
  *
  */
 class PostManager {
@@ -23,20 +25,23 @@ class PostManager {
 	 * 
 	 * return: l'articolo creato.
 	 */
-	static function addPost($data, $type) {
+	static function addPost($data) {
 		require_once("common.php");
+		if(isset($data["ID"])) unset($data["ID"]);
 		$data = Filter::filterArray($data);
-		$p = null;
-		if($type == PostType::$NEWS) 
-			$p = new News($data);
-		else if($type == PostType::$PHOTOREPORTAGE) 
-			$p = new PhotoReportage($data);
-		else if($type == PostType::$VIDEOREPORTAGE) 
-			$p = new VideoReportage($data);
-		else
-			return null;
 		
-		$p->save(SavingMode::$INSERT);
+		require_once("post/PostCommon.php");
+		if(!isset($data["type"]))
+		   return false;
+		$p = false;
+		if($data["type"] == PostType::$NEWS) {
+			$p = new News($data);
+		} else if($data["type"]  == PostType::$VIDEOREPORTAGE) {
+			$p = new VideoReportage($data);
+		} else
+			return false;
+		
+		$p->save();
 		
 		return $p;
 	}
@@ -58,6 +63,7 @@ class PostManager {
 	 */
 	static function editPost($post, $data) {
 		require_once("common.php");
+		if(isset($data["ID"])) unset($data["ID"]);
 		$data = Filter::filterArray($data);
 		
 		if(isset($data["title"]))
@@ -75,7 +81,7 @@ class PostManager {
 		if(isset($data["visible"]))
 			$post->setVisible($data["visible"]);
 			
-		$post->save(SavingMode::$UPDATE);
+		$post->update();
 		
 		return $post;
 	}
@@ -102,8 +108,9 @@ class PostManager {
 		require_once("common.php");
 		$report = Filter::filterText($report);
 		
+		require_once("post/PostCommon.php");
 		$r = new Report($author, $post->getID(), $report);
-		$r->save(SavingMode::$INSERT);
+		$r->save();
 		
 		return $post->addReport($r);
 	}
@@ -130,11 +137,11 @@ class PostManager {
 	 * return: post aggiornato.
 	 */
 	static function votePost($author, $post, $vote) {
+		require_once("post/PostCommon.php");
 		$v = new Vote($author, $post->getID(), $vote);
-		$v->save(SavingMode::$INSERT);
+		$v->save();
 		
 		$post->addVote($v);
-		
 		return $post;
 	}
 	
@@ -150,10 +157,11 @@ class PostManager {
 		require_once("common.php");
 		$comment = Filter::filterText($comment);
 		
-		$c = new Comment($author, $post->getID(), $comment);
-		$c->save(SavingMode::$INSERT);
-		$post->addComment($c);
+		require_once("post/PostCommon.php");
+		$c = new Comment(array("author" => $author, "post" => $post->getID(), "comment" => $comment));
+		$c->save();
 		
+		$post->addComment($c);
 		return $post;
 	}
 	
@@ -164,15 +172,12 @@ class PostManager {
 	 * return: il commento eliminato.
 	 */
 	static function removeComment($comment) {
+		require_once("post/PostCommon.php");
 		return $comment->delete();
 	}
 	
-	static function signalComment() {
-		
-	}
-	
-	static function searchForLikelihood() {
-		
+	static function searchForLikelihood($post) {
+		return SearchManager::searchForLikelihood($post);
 	}
 	
 	/**
@@ -184,133 +189,28 @@ class PostManager {
 	 * return: il contest aggiornato.
 	 */
 	static function subscribePostToContest($post, $contest) {
-		$contest->subscribePost($post);
-		$contest->save(SavingMode::$UPDATE);
-		
-		return $contest;
+		require_once("post/contest/ContestManager.php");
+		return ContestManager::subscribePostToContest($post, $contest);
 	}
 	
 	static function removeVote($vote) {
+		require_once("post/PostCommon.php");
 		return $vote->delete();
 	}
 	
 	static function loadComment($id) {
-		require_once("query.php");
+		require_once("post/PostCommon.php");
+		return Comment::loadFromDatabase($id);
 		
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable("Comment");
-		$rs = $q->execute($s = $q->generateSelectStm(array($table),
-													 array(),
-													 array(new WhereConstraint($table->getColumn("cm_ID"),Operator::$UGUALE,$id)),
-													 array()));
-		$col = false;
-		if($rs !== false) {
-			while($row = mysql_fetch_assoc($rs)) {
-				$col = new Comment(intval($row["cm_author"]), intval($row["cm_post"]), $row["cm_comment"]);
-				$col->setID($row["cm_ID"])->setCreationDate(time($row["cm_creationDate"]));
-				break;
-			}
-		}
-		if(!$col)
-			$GLOBALS["query_error"] = "NOT FOUND";
-		return $col;
 	}
 	
 	static function loadVote($author, $post) {
-		require_once("query.php");
-		
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable("Vote");
-		$rs = $q->execute($s = $q->generateSelectStm(array($table),
-													 array(),
-													 array(new WhereConstraint($table->getColumn("vt_author"),Operator::$UGUALE,$author),
-														   new WhereConstraint($table->getColumn("vt_post"),Operator::$UGUALE,$post)),
-													 array()));
-		$vote = false;
-		if($rs !== false) {
-			while($row = mysql_fetch_assoc($rs)) {
-				$vote = new Vote(intval($row["vt_author"]), intval($row["vt_post"]), $row["vt_vote"] > 0);
-				$vote->setCreationDate(time($row["cm_creationDate"]));
-				break;
-			}
-		}
-		if(!$vote)
-			$GLOBALS["query_error"] = "NOT FOUND";
-		return $vote;
+		require_once("post/PostCommon.php");
+		return Vote::loadFromDatabase($author, $post);
 	}
 	
 	static function loadPost($id) {
-		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable("Post");
-		$rs = $q->execute($s = $q->generateSelectStm(array($table),
-													 array(),
-													 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$id)),
-													 array()));
-		$p = false;
-		if($rs !== false) {
-			//echo serialize(mysql_fetch_assoc($rs)); //DEBUG
-			while($row = mysql_fetch_assoc($rs)) {
-				$data = array("title" => $row["ps_title"], "subtitle" => $row["ps_subtitle"],
-							  "headline" => $row["ps_headline"], "author"=> intval($row["ps_author"]),
-							  "content" => $row["ps_content"], "visible" => $row["ps_visible"] == 1,
-							  "place" => intval($row["ps_place"]));
-				//echo $row["ps_type"]; //DEBUG
-				if($row["ps_type"] == PostType::$NEWS) 
-					$p = new News($data);
-				else if($row["ps_type"] == PostType::$PHOTOREPORTAGE) {
-					$data["content"] = unserialize($row["ps_content"]);
-					$p = new PhotoReportage($data);
-				}
-				else if($row["ps_type"] == PostType::$VIDEOREPORTAGE) 
-					$p = new VideoReportage($data);
-				else if($row["ps_type"] == PostType::$COLLECTION ||
-						$row["ps_type"] == CollectionType::$ALBUM ||
-						$row["ps_type"] == CollectionType::$MAGAZINE ||
-						$row["ps_type"] == CollectionType::$PLAYLIST) {
-					require_once("post/collection/CollectionManager.php");
-					echo ($p =CollectionManager::loadCollection($id));
-					return $p;
-				}
-				$p->setID($row["ps_ID"])->setCreationDate(time($row["ps_creationDate"]));
-				if(is_null($row["ps_creationDate"]) || !is_numeric($row["ps_creationDate"]) || $row["ps_creationDate"] == 0)
-					$p->setModificationDate(time($row["ps_creationDate"]));
-				break;
-			}
-		}
-		if($p !== false) {
-			$table = $q->getDBSchema()->getTable("Comment");
-			$rs = $q->execute($s = $q->generateSelectStm(array($table),
-														 array(),
-														 array(new WhereConstraint($table->getColumn("cm_post"),Operator::$UGUALE,$id)),
-														 array()));
-			if($rs !== false) {
-				$comm = array();
-				while($row = mysql_fetch_assoc($rs)) {
-					$com = new Comment(intval($row["cm_author"]), intval($row["cm_post"]), $row["cm_comment"]);
-					$com->setID($row["cm_ID"])->setCreationDate(time($row["cm_creationDate"]));
-					$comm[] = $com;
-				}
-				$p->setComments($comm);
-			}
-			$table = $q->getDBSchema()->getTable("Vote");
-			$rs = $q->execute($s = $q->generateSelectStm(array($table),
-														 array(),
-														 array(new WhereConstraint($table->getColumn("vt_post"),Operator::$UGUALE,$id)),
-														 array()));
-			if($rs !== false) {
-				$votes = array();
-				while($row = mysql_fetch_assoc($rs)) {
-					$vote = new Vote(intval($row["vt_author"]), intval($row["vt_post"]), $row["vt_vote"] > 0);
-					$vote->setCreationDate(time($row["vt_creationDate"]));
-					$votes[] = $vote;
-				}
-				$p->setVotes($votes);
-			}
-		}
-		if(!$p)
-			$GLOBALS["query_error"] = "NOT FOUND";
-		return $p;
+		return Post::loadFromDatabase($id);
 	}
 }
 ?>
