@@ -1,9 +1,11 @@
 <?php
-require_once("PostManager.php");
-require_once("Post.php");
 require_once("post/PostCommon.php");
+require_once("post/PostManager.php");
+require_once("post/Post.php");
 require_once("post/collection/CollectionManager.php");
 require_once("post/collection/Collection.php");
+require_once("post/contest/ContestManager.php");
+require_once("post/contest/Contest.php");
 
 class Test {
 	var $author_id;
@@ -33,6 +35,9 @@ class Test {
 										   "author"=> $this->author_id, "tags" => "tag1, tag2, tag3",
 										   "categories" => "cat1, cat2, cat3", "content" => null,
 										   "visible" => true, "type" => PostType::$MAGAZINE);
+		$this->contest_data_all = array("title" => "TITOLO", "description" => "DESCRIZIONE", "rules" => "REGOLE",
+										"start" => time(), "end" => time(),
+										"prizes" => "PREMI", "subscriberType" => PostType::$NEWS);
 	}
 	function testPost() {
 		
@@ -494,6 +499,38 @@ class Test {
 			return "<br />Vote saving test NOT PASSED: creationDate";
 		
 		return "<br />Vote saving test passed";
+	}
+	
+	/**
+	 * Crea un post;
+	 * Crea un contest con il post nel contenuto;
+	 * Carica il contest e lo confronta con quello salvato in memoria;
+	 */
+	function testSaveContest() {
+		//$data = $this->post_data_all;
+		//$p = PostManager::addPost($data);
+		$data1 = $this->contest_data_all;
+		$p1 = ContestManager::createContest($data1);
+		
+		$contest = ContestManager::loadContest($p1->getID());
+		echo "<p>" . $p1 . "</p><p>" . $contest . "</p>"; //DEBUG
+		
+		if($contest === false)
+			return "<br />Contest saving test NOT PASSED: not created";
+		if($p1->getTitle() != $contest->getTitle())
+			return "<br />Contest saving test NOT PASSED: title";
+		if($p1->getDescription() != $contest->getDescription())
+			return "<br />Contest saving test NOT PASSED: description";
+		if($p1->getRules() != $contest->getRules())
+			return "<br />Contest saving test NOT PASSED: rules";
+		if($p1->getPrizes() != $contest->getPrizes())
+			return "<br />Contest saving test NOT PASSED: prizes";
+		//echo serialize($p1->getContent()) . "-" . $post->getContent(); //DEBUG
+		if($p1->getStart() != $contest->getStart())
+			return "<br />Contest saving test NOT PASSED: start";
+		if($p1->getEnd() != $contest->getEnd())
+			return "<br />Contest saving test NOT PASSED: end";
+		return "<br />Save Contest test passed";
 	}
 }
 ?>

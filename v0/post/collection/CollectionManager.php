@@ -85,7 +85,7 @@ class CollectionManager {
 		if(isset($data["visible"]))
 			$collection->setVisible($data["visible"]);
 			
-		$collection->save(SavingMode::$UPDATE);
+		$collection->update();
 		
 		return $collection;
 	}

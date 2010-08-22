@@ -242,7 +242,6 @@ class Post {
 				//echo "<br />" . serialize($row["ps_creationDate"]); //DEBUG
 				break;
 			}
-			//TODO inserire tags, categories e place.
 			//echo "<br />" . $this; //DEBUG
 			require_once("common.php");
 			LogManager::addLogEntry($this->getAuthor(), LogManager::$INSERT, $this);

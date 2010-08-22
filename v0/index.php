@@ -11,21 +11,22 @@
 	ini_set("display_errors", "On");
 	error_reporting(E_ALL ^ E_NOTICE);
 	require_once("post/PostTest.php");
-	require_once("post/collection/CollectionTest.php");
 	require_once("settings.php");
 	require_once("strings/" . LANG . "strings.php");
 	
 	$t = new Test();
-	echo $t->testEditPost();
-	echo $t->testAddPostToCollection();
-	echo $t->testSavePost();
-	echo $t->testSaveComment();
-	echo $t->testDeletePost();
-	echo $t->testDeleteComment();
-	echo $t->testSaveVote();
-	echo $t->testDeleteVote();
-	echo $t->testSaveCollection();
-	echo $t->testSaveVoteOnCollection();
+	//echo $t->testEditPost();
+	//echo $t->testAddPostToCollection();
+	//echo $t->testSavePost();
+	//echo $t->testSaveComment();
+	//echo $t->testDeletePost();
+	//echo $t->testDeleteComment();
+	//echo $t->testSaveVote();
+	//echo $t->testDeleteVote();
+	//echo $t->testSaveCollection();
+	//echo $t->testSaveVoteOnCollection();
+	echo $t->testSaveContest();
+	
 ?>
 
 </body>
