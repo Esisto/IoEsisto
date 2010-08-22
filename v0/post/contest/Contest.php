@@ -124,14 +124,43 @@ class Contest {
 	function subscribePost($post) {
 		if($post->getType() != $this->getSubscriberType())
 			return false;
-		$this->subscribers[] = $post;
-		$this->update();
+		require_once("query.php");
+		if(!isset($GLOBALS["q"]))
+			$q = new Query();
+		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
+			$table = $q->getDBSchema()->getTable("ContestSubscriber");
+			$q->execute($s = $q->generateInsertStm($table, array("cs_post" => $post->getID(),
+																 "cs_contest" => $this->getID())));
+			
+			if(mysql_affected_rows() == 0)
+				return false;
+		}
+		$this->subscribers[] = $post->getID();
+		require_once("common.php");
+		require_once("session.php");
+		LogManager::addLogEntry(Session::getUser(), LogManager::$INSERT, $this);
 		return $this;
 	}
 	
 	function unsubscribePost($post) {
+		require_once("query.php");
+		if(!isset($GLOBALS["q"]))
+			$q = new Query();
+		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
+			$table = $q->getDBSchema()->getTable("ContestSubscriber");
+			$q->execute($s = $q->generateDeleteStm($table,
+												   array(new WhereConstraint($table->getColumn("cs_post"), Operator::$UGUALE, $post->getID()),
+														 new WhereConstraint($table->getColumn("cs_contest"), Operator::$UGUALE, $this->getID()))));
+			
+			if(mysql_affected_rows() == 0)
+				return false;
+		}
 		unset($this->subscribers[array_search($post, $this->subscribers)]);
-		$this->update();
+		
+		require_once("common.php");
+		require_once("session.php");
+		LogManager::addLogEntry(Session::getUser(), LogManager::$DELETE, $this);
+		return $this->getID();
 		return $post;
 	}
 	
@@ -183,40 +212,33 @@ class Contest {
 	 * Le dipendenze aggiornate sono quelle che dipendono dall'autore ovvero: tag e categorie
 	 * Potrebbe salvare alcune tuple in Tag.
 	 *
-	 * return: modificationDate o FALSE se c'è un errore.
+	 * return: $this o FALSE se c'è un errore.
 	 */
 	function update() {
+		$old = Contest::loadFromDatabase($this->getID());
+		
+		$data = array();
+		if($old->getTitle() != $this->getTitle())
+			$data["ct_title"] = $this->getTitle();
+		if($old->getDescription() != $this->getDescription())
+			$data["ct_description"] = $this->getDescription();
+		if($old->getEnd() != $this->getEnd())
+			$data["ct_end"] = $this->getEnd();
+		if($old->getPrizes() != $this->getPrizes())
+			$data["ct_prizes"] = $this->getPrizes();
+		if($old->getRules() != $this->getRules())
+			$data["ct_rules"] = $this->getRules();
+		if($old->getStart() != $this->getStart())
+			$data["ct_start"] = $this->getStart();
+		if($old->getWinners() != $this->getWinners())
+			$data["ct_winners"] = $this->getWinners(); //TODO aggiornare i vincitori.
+		if($old->getSubscriberType() == $this->getSubscriberType())
+			$data["ct_typeofsubscriber"] = $this->getSubscriberType();
 		require_once("query.php");
 		if(!isset($GLOBALS["q"]))
 			$q = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
 			$table = $q->getDBSchema()->getTable("Contest");
-			$rs = $q->execute($s = $q->generateSelectStm(array($table),
-														 array(),
-														 array(new WhereConstraint($table->getColumn("ct_ID"),Operator::$UGUALE,$this->getID())),
-														 array()));
-			//echo "<br />" . $s; //DEBUG
-			$data = array();
-			while($row = mysql_fetch_assoc($rs)) {
-				//cerco le differenze e le salvo.
-				if($row["ct_title"] != $this->getTitle())
-					$data["ct_title"] = $this->getTitle();
-				if($row["ct_description"] != $this->getDescription())
-					$data["ct_description"] = $this->getDescription();
-				if($row["ct_end"] != $this->getEnd())
-					$data["ct_end"] = $this->getEnd();
-				if($row["ct_prizes"] != $this->getPrizes())
-					$data["ct_prizes"] = $this->getPrizes();
-				if($row["ct_rules"] != $this->getRules())
-					$data["ct_rules"] = $this->getRules();
-				if($row["ct_start"] != $this->getStart())
-					$data["ct_start"] = $this->getStart();
-				if($row["ct_winners"] != $this->getWinners())
-					$data["ct_winners"] = $this->getWinners();
-				if($row["ct_typeofsubscriber"] == $this->getSubscriberType())
-					$data["ct_typeofsubscriber"] = $this->getSubscriberType();
-				break;
-			}
 			
 			$rs = $q->execute($s = $q->generateUpdateStm($table,
 														 $data,
@@ -227,8 +249,9 @@ class Contest {
 				return false;
 			
 			//echo "<br />" . $this; //DEBUG
-			LogManager::addLogEntry($this->getAuthor(), LogManager::$UPDATE, $this);
-			return $this->getModificationDate();
+			require_once("session.php");
+			LogManager::addLogEntry(Session::getUser(), LogManager::$UPDATE, $this);
+			return $this->getID();
 		}
 		return false;
 	}
@@ -252,7 +275,8 @@ class Contest {
 			//echo "<br />" . $s; //DEBUG
 			if(mysql_affected_rows() == 1) {
 				require_once("common.php");
-				LogManager::addLogEntry($this->getAuthor(), LogManager::$DELETE, $this);
+				require_once("session.php");
+				LogManager::addLogEntry(Session::getUser(), LogManager::$DELETE, $this);
 				return $this;
 			}
 		}
@@ -311,6 +335,7 @@ class Contest {
 													 array()));
 		
 		//echo "<p>" . $s . "</p>"; //DEBUG;
+		//echo "<p>" . mysql_num_rows($rs) . "</p>"; //DEBUG;
 		if($rs !== false) {
 			$sub = array();
 			while($row = mysql_fetch_assoc($rs))

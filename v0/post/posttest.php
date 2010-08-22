@@ -513,7 +513,7 @@ class Test {
 		$p1 = ContestManager::createContest($data1);
 		
 		$contest = ContestManager::loadContest($p1->getID());
-		echo "<p>" . $p1 . "</p><p>" . $contest . "</p>"; //DEBUG
+		//echo "<p>" . $p1 . "</p><p>" . $contest . "</p>"; //DEBUG
 		
 		if($contest === false)
 			return "<br />Contest saving test NOT PASSED: not created";
@@ -531,6 +531,88 @@ class Test {
 		if($p1->getEnd() != $contest->getEnd())
 			return "<br />Contest saving test NOT PASSED: end";
 		return "<br />Save Contest test passed";
+	}
+	
+	/**
+	 * Crea un post;
+	 * Crea un contest con il post nel contenuto;
+	 * Carica il contest e lo confronta con quello salvato in memoria;
+	 */
+	function testSubscribeToContest() {
+		$data = $this->post_data_all;
+		$p = PostManager::addPost($data);
+		$data1 = $this->contest_data_all;
+		$p1 = ContestManager::createContest($data1);
+		$p2 = ContestManager::subscribePostToContest($p, $p1);
+		
+		$contest = ContestManager::loadContest($p2->getID());
+		//echo "<p>" . $p2 . "</p><p>" . $contest . "</p>"; //DEBUG
+		
+		if($contest === false)
+			return "<br />Contest subscribing test NOT PASSED: not created";
+		if(count($p2->getSubscribers()) == 0)
+			return "<br />Contest subscribing test NOT PASSED: not added";
+		if(count($contest->getSubscribers()) == 0)
+			return "<br />Contest subscribing test NOT PASSED: not loaded";
+		return "<br />Contest subscribing test passed";
+	}
+	
+	/**
+	 * Crea un post;
+	 * Crea un contest con il post nel contenuto;
+	 * Carica il contest e lo confronta con quello salvato in memoria;
+	 */
+	function testUnsubscribeToContest() {
+		$data = $this->post_data_all;
+		$p = PostManager::addPost($data);
+		$data1 = $this->contest_data_all;
+		$p1 = ContestManager::createContest($data1);
+		$p2 = ContestManager::subscribePostToContest($p, $p1);
+		$contest = ContestManager::loadContest($p2->getID());
+		//echo "<p>" . $p2 . "</p><p>" . $contest . "</p>"; //DEBUG
+		
+		if(count($p2->getSubscribers()) == 0)
+			return "<br />Contest subscribing test NOT PASSED: not added";
+		if(count($contest->getSubscribers()) == 0)
+			return "<br />Contest subscribing test NOT PASSED: not loaded";
+		
+		$p1 = ContestManager::unsubscribePostFromContest($p, $p2);
+		$contest2 = ContestManager::loadContest($p2->getID());
+		//echo "<p>" . $p2 . "</p><p>" . $contest2 . "</p>"; //DEBUG
+		
+		if(count($p2->getSubscribers()) != 0)
+			return "<br />Contest subscribing test NOT PASSED: not removed";
+		if(count($contest2->getSubscribers()) != 0)
+			return "<br />Contest subscribing test NOT PASSED: loaded";
+		return "<br />Contest subscribing test passed";
+	}
+	
+	/**
+	 * Crea un post;
+	 * Crea un contest con il post nel contenuto;
+	 * Carica il contest e lo confronta con quello salvato in memoria;
+	 */
+	function testDeleteContest() {
+		$data = $this->post_data_all;
+		$p = PostManager::addPost($data);
+		$data1 = $this->contest_data_all;
+		$p1 = ContestManager::createContest($data1);
+		$p2 = ContestManager::subscribePostToContest($p, $p1);
+		$contest = ContestManager::loadContest($p2->getID());
+		echo "<p>" . $p2 . "</p><p>" . $contest . "</p>"; //DEBUG
+		
+		if(count($p2->getSubscribers()) == 0)
+			return "<br />Contest subscribing test NOT PASSED: not added";
+		if(count($contest->getSubscribers()) == 0)
+			return "<br />Contest subscribing test NOT PASSED: not loaded";
+		
+		$p1 = ContestManager::deleteContest($p2);
+		$contest = ContestManager::loadContest($p1->getID());
+		echo "<p>" . $p2 . "</p><p>" . $contest . "</p>"; //DEBUG
+		
+		if($contest !== false)
+			return "<br />Contest subscribing test NOT PASSED: loaded";
+		return "<br />Contest subscribing test passed";
 	}
 }
 ?>

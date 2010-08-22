@@ -25,7 +25,10 @@
 	//echo $t->testDeleteVote();
 	//echo $t->testSaveCollection();
 	//echo $t->testSaveVoteOnCollection();
-	echo $t->testSaveContest();
+	//echo $t->testSaveContest();
+	//echo $t->testSubscribeToContest();
+	//echo $t->testUnsubscribeToContest();
+	echo $t->testDeleteContest();
 	
 ?>
 

@@ -117,7 +117,7 @@ CREATE TABLE IF NOT EXISTS `Contact` (
 CREATE TABLE IF NOT EXISTS `ContestSubscriber` (
   `cs_contest` bigint(20) NOT NULL,
   `cs_post` bigint(20) NOT NULL,
-  `cs_haswon` tinyint(1) NOT NULL,
+  `cs_haswon` tinyint(10) NOT NULL,
   PRIMARY KEY (`cs_contest`,`cs_post`),
   KEY `fk_contest_has_post_contest1` (`cs_contest`),
   KEY `fk_contest_has_post_post1` (`cs_post`),
