@@ -349,7 +349,7 @@ class Query {
 	
 	function execute($query, $tablename, $object) {
 		$this->rs = mysql_query($query, $this->db);
-		if($object == "LogManager") return;
+		if($object == LOGMANAGER) return;
 		$this->query_type = substr($query, 0, 6);
 		$this->num_fields = null;
 		$this->num_fields = $this->num_fields();

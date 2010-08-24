@@ -11,10 +11,12 @@
 	ini_set("display_errors", "On");
 	error_reporting(E_ALL ^ E_NOTICE);
 	require_once("post/PostTest.php");
+	require_once("mail/MailTest.php");
 	require_once("settings.php");
 	require_once("strings/" . LANG . "strings.php");
+	require_once("strings/strings.php");
 	
-	$t = new Test();
+	//$t = new Test();
 	//echo $t->testEditPost();
 	//echo $t->testAddPostToCollection();
 	//echo $t->testSavePost();
@@ -30,6 +32,14 @@
 	//echo $t->testUnsubscribeToContest();
 	//echo $t->testDeleteContest();
 	
+	$t = new MailTest();
+	//echo $t->testMail();
+	//echo $t->testDirectory();
+	//echo $t->testDeleteMailFromDirectory();
+	//echo $t->testDeleteDirectory();
+	//echo $t->testSetReadStatus();
+	//echo $t->testAnswerMail();
+	echo $t->testSendMail();
 ?>
 
 </body>

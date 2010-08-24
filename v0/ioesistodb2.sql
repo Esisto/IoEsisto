@@ -162,8 +162,7 @@ CREATE TABLE IF NOT EXISTS `Log` (
 
 CREATE TABLE IF NOT EXISTS `Mail` (
   `ml_ID` bigint(20) NOT NULL AUTO_INCREMENT,
-  `ml_date` timestamp NULL DEFAULT NULL,
-  `ml_object` varchar(50) DEFAULT NULL,
+  `ml_subject` varchar(50) DEFAULT NULL,
   `ml_text` text,
   `ml_from` bigint(20) NOT NULL,
   `ml_to` varchar(255) NOT NULL,
@@ -186,14 +185,14 @@ CREATE TABLE IF NOT EXISTS `MailDirectory` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin AUTO_INCREMENT=1;
 
 CREATE TABLE IF NOT EXISTS `MailOfDirectory` (
-  `md_read` tinyint(1) DEFAULT 0,
-  `md_dir` bigint(20) NOT NULL,
-  `md_mail` bigint(20) NOT NULL,
-  PRIMARY KEY (`md_dir`,`md_mail`),
-  KEY `fk_MailOfDirectory_MailDirectory1` (`md_dir`),
-  KEY `fk_MailOfDirectory_mail1` (`md_mail`),
-  FOREIGN KEY (`md_dir`) REFERENCES `MailDirectory` (`md_ID`) ON DELETE CASCADE,
-  FOREIGN KEY (`md_mail`) REFERENCES `Mail` (`ml_ID`) ON DELETE CASCADE
+  `mod_read` tinyint(1) DEFAULT 0,
+  `mod_dir` bigint(20) NOT NULL,
+  `mod_mail` bigint(20) NOT NULL,
+  PRIMARY KEY (`mod_dir`,`mod_mail`),
+  KEY `fk_MailOfDirectory_MailDirectory1` (`mod_dir`),
+  KEY `fk_MailOfDirectory_mail1` (`mod_mail`),
+  FOREIGN KEY (`mod_dir`) REFERENCES `MailDirectory` (`md_ID`) ON DELETE CASCADE,
+  FOREIGN KEY (`mod_mail`) REFERENCES `Mail` (`ml_ID`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 CREATE TABLE IF NOT EXISTS `Report` (

@@ -201,8 +201,7 @@ class Post {
 	function save() {
 		require_once("post/PostCommon.php");
 		require_once("query.php");
-		if(!isset($GLOBALS["q"]))
-			$q = new Query();
+		$q = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
 			$dbs = $q->getDBSchema();
 			$table = $dbs->getTable("Post");
