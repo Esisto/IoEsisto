@@ -90,32 +90,32 @@ class Comment {
 	 */
 	function save() {
 		require_once("query.php");
-		if(!isset($GLOBALS["q"]))
-			$q = new Query();
+		$q = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
 			$dbs = $q->getDBSchema();
 			$table = $dbs->getTable("Comment");
 			$data = array("cm_comment" => $this->getComment(),
 						  "cm_post" => $this->getPost(),
 						  "cm_author" => $this->getAuthor());
-			$rs = $q->execute($s = $q->generateInsertStm($table,$data));
+			$rs = $q->execute($s = $q->generateInsertStm($table,$data),
+							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			//echo "<br />" . serialize($rs); //DEBUG
-			$this->ID = mysql_insert_id();
+			$this->ID = $q->last_inserted_id();
 			//echo "<br />" . serialize($this->ID); //DEBUG
 			$rs = $q->execute($s = $q->generateSelectStm(array($table),
 														 array(),
 														 array(new WhereConstraint($table->getColumn("cm_ID"),Operator::$UGUALE,$this->getID())),
-														 array()));
+														 array()),
+							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
-			while($row = mysql_fetch_assoc($rs)) {
+			while($q->hasNext()) {
+				$row = $q->next();
 				$this->creationDate = time($row["cm_creationDate"]);
 				//echo "<br />" . serialize($row["cm_creationDate"]); //DEBUG
 				break;
 			}
 			//echo "<br />" . $this; //DEBUG
-			require_once("common.php");
-			LogManager::addLogEntry($this->getAuthor(), LogManager::$INSERT, $this);
 			return $this->ID;
 		}
 		return false;
@@ -123,17 +123,15 @@ class Comment {
 	
 	function delete() {
 		require_once("query.php");
-		if(!isset($GLOBALS["q"]))
-			$q = new Query();
+		$q = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
 			$dbs = $q->getDBSchema();
 			$table = $dbs->getTable("Comment");
 			$rs = $q->execute($s = $q->generateDeleteStm($table,
-														 array(new WhereConstraint($table->getColumn("cm_ID"),Operator::$UGUALE,$this->getID()))));
+														 array(new WhereConstraint($table->getColumn("cm_ID"),Operator::$UGUALE,$this->getID()))),
+							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
-			if(mysql_affected_rows() == 1) {
-				require_once("common.php");
-				LogManager::addLogEntry($this->getAuthor(), LogManager::$DELETE, $this);
+			if($q->affected_rows() == 1) {
 				return $this;
 			}
 		}
@@ -154,9 +152,11 @@ class Comment {
 		$rs = $q->execute($s = $q->generateSelectStm(array($table),
 													 array(),
 													 array(new WhereConstraint($table->getColumn("cm_ID"),Operator::$UGUALE,$id)),
-													 array()));
-		if($rs !== false && mysql_num_rows($rs) == 1) {
-			while($row = mysql_fetch_assoc($rs)) {
+													 array()),
+						  $table->getName(), $this);
+		if($rs !== false && $q->num_rows() == 1) {
+			while($q->hasNext()) {
+				$row = $q->next();
 				$data = array("comment" => $row["cm_comment"],
 							  "author" => intval($row["cm_author"]),
 							  "post" => intval($row["cm_post"]));
@@ -234,31 +234,31 @@ class Vote {
 	 */
 	function save() {
 		require_once("query.php");
-		if(!isset($GLOBALS["q"]))
-			$q = new Query();
+		$q = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
 			$dbs = $q->getDBSchema();
 			$table = $dbs->getTable("Vote");
 			$data = array("vt_vote" => $this->getVote(),
 						  "vt_post" => $this->getPost(),
 						  "vt_author" => $this->getAuthor());
-			$rs = $q->execute($s = $q->generateInsertStm($table,$data));
+			$rs = $q->execute($s = $q->generateInsertStm($table,$data),
+							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			//echo "<br />" . serialize($rs); //DEBUG
 			$rs = $q->execute($s = $q->generateSelectStm(array($table),
 														 array(),
 														 array(new WhereConstraint($table->getColumn("vt_author"),Operator::$UGUALE,$this->getAuthor()),
 															   new WhereConstraint($table->getColumn("vt_post"),Operator::$UGUALE,$this->getPost())),
-														 array()));
+														 array()),
+							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
-			while($row = mysql_fetch_assoc($rs)) {
+			while($q->hasNext()) {
+				$row = $q->next();
 				$this->creationDate = time($row["vt_creationDate"]);
 				//echo "<br />" . serialize($row["vt_creationDate"]); //DEBUG
 				break;
 			}
 			//echo "<br />" . $this; //DEBUG
-			require_once("common.php");
-			LogManager::addLogEntry($this->getAuthor(), LogManager::$INSERT, $this);
 			return $this->creationDate;
 		}
 		return false;
@@ -266,18 +266,19 @@ class Vote {
 		
 	function update() {
 		require_once("query.php");
-		if(!isset($GLOBALS["q"]))
-			$q = new Query();
+		$q = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
 			$table = $q->getDBSchema()->getTable("Vote");
 			$rs = $q->execute($s = $q->generateSelectStm(array($table),
 														 array(),
 														 array(new WhereConstraint($table->getColumn("vt_author"),Operator::$UGUALE,$this->getAuthor()),
 															   new WhereConstraint($table->getColumn("vt_post"),Operator::$UGUALE,$this->getPost())),
-														 array()));
+														 array()),
+							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			$data = array();
-			while($row = mysql_fetch_assoc($rs)) {
+			while($q->hasNext()) {
+				$row = $q->next();
 				//cerco le differenze e le salvo.
 				if($row["vt_vote"] != $this->getVote())
 					$data["vt_vote"] = $this->getVote();
@@ -288,14 +289,14 @@ class Vote {
 			$rs = $q->execute($s = $q->generateUpdateStm($table,
 														 $data,
 														 array(new WhereConstraint($table->getColumn("vt_author"),Operator::$UGUALE,$this->getAuthor()),
-															   new WhereConstraint($table->getColumn("vt_post"),Operator::$UGUALE,$this->getPost()))));
+															   new WhereConstraint($table->getColumn("vt_post"),Operator::$UGUALE,$this->getPost()))),
+							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			//echo "<br />" . $rs; //DEBUG
-			if(mysql_affected_rows() == 0)
+			if($q->affected_rows() == 0)
 				return false;
 			
 			//echo "<br />" . $this; //DEBUG
-			LogManager::addLogEntry($this->getAuthor(), LogManager::$UPDATE, $this);
 			return $this;
 		}
 		return false;
@@ -303,18 +304,16 @@ class Vote {
 	
 	function delete() {
 		require_once("query.php");
-		if(!isset($GLOBALS["q"]))
-			$q = new Query();
+		$q = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
 			$dbs = $q->getDBSchema();
 			$table = $dbs->getTable("Vote");
 			$rs = $q->execute($s = $q->generateDeleteStm($table,
 														 array(new WhereConstraint($table->getColumn("vt_author"),Operator::$UGUALE,$this->getAuthor()),
-															   new WhereConstraint($table->getColumn("vt_post"),Operator::$UGUALE,$this->getPost()))));
+															   new WhereConstraint($table->getColumn("vt_post"),Operator::$UGUALE,$this->getPost()))),
+							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
-			if(mysql_affected_rows() == 1) {
-				require_once("common.php");
-				LogManager::addLogEntry($this->getAuthor(), LogManager::$DELETE, $this);
+			if($q->affected_rows() == 1) {
 				return $this;
 			}
 		}
@@ -336,9 +335,11 @@ class Vote {
 													 array(),
 													 array(new WhereConstraint($table->getColumn("vt_author"),Operator::$UGUALE,$author),
 														   new WhereConstraint($table->getColumn("vt_post"),Operator::$UGUALE,$post)),
-													 array()));
-		if($rs !== false && mysql_num_rows($rs) == 1) {
-			while($row = mysql_fetch_assoc($rs)) {
+													 array()),
+						  $table->getName(), $this);
+		if($rs !== false && $q->num_rows() == 1) {
+			while($q->hasNext()) {
+				$row = $q->next();
 				$v = new Vote(intval($row["vt_author"]), intval($row["vt_post"]), $row["vt_vote"] > 0);
 				$v->setCreationDate(time($row["cm_creationDate"]));
 				return $v;

@@ -79,6 +79,12 @@ class WhereConstraint {
 class Query {
 	private $db;
 	private $dbSchema = null;
+	private $query_type;
+	private $num_fields;
+	private $num_rows;
+	private $rsindex;
+	private $last_inserted_id;
+	private $affected_rows;
 	private $rs; //result set
 	
 	function __construct() {
@@ -341,8 +347,25 @@ class Query {
 		return $s;
 	}
 	
-	function execute($query) {
+	function execute($query, $tablename, $object) {
 		$this->rs = mysql_query($query, $this->db);
+		if($object == "LogManager") return;
+		$this->query_type = substr($query, 0, 6);
+		$this->num_fields = null;
+		$this->num_fields = $this->num_fields();
+		$this->num_rows = null;
+		$this->num_rows = $this->num_rows();
+		$this->rsindex = 0;
+		$this->last_inserted_id = null;
+		$this->last_inserted_id = $this->last_inserted_id();
+		$this->affected_rows = null;
+		$this->affected_rows = $this->affected_rows();
+		//echo $this->affected_rows(); //DEBUG
+		if($this->affected_rows() > 0) {
+			require_once("common.php");
+			require_once("session.php");
+			LogManager::addLogEntry(Session::getUser(), $this->query_type, $tablename, $object, $this);
+		}
 		return $this->rs;
 	}
 	
@@ -388,6 +411,67 @@ class Query {
 	
 	function getDBSchema() {
 		return $this->dbSchema;
+	}
+	
+	function affected_rows() {
+		if(!is_null($this->affected_rows))
+			return $this->affected_rows;
+		if(!isset($this->query_type) || is_null($this->query_type) ||
+		   $this->query_type == "SELECT")
+			return 0;
+		return mysql_affected_rows($this->db);
+	}
+	
+	function num_rows() {
+		if(!is_null($this->num_rows))
+			return $this->num_rows;
+		if(!isset($this->query_type) || is_null($this->query_type) || $this->query_type != "SELECT")
+			return 0;
+		return mysql_num_rows($this->rs);
+	}
+	
+	function num_fields() {
+		if(isset($this->num_fields) && !is_null($this->num_fields) && $this->num_fields != 0)
+			return $this->num_fields;
+		if(!isset($this->query_type) || is_null($this->query_type) || $this->query_type != "SELECT")
+			return 0;
+		$this->num_fields = mysql_num_rows($this->rs);
+		return $this->num_fields;
+	}
+	
+	function hasNext() {
+		return $this->rsindex < $this->num_fields();
+	}
+	
+	function next() {
+		if(!isset($this->query_type) || is_null($this->query_type) || $this->query_type != "SELECT")
+			return false;
+		$this->rsindex++;
+		return mysql_fetch_assoc($this->rs);
+	}
+	
+	function getField($fieldname) {
+		if(!isset($this->query_type) || is_null($this->query_type) || $this->query_type != "SELECT")
+			return null;
+		return mysql_result($this->rs, $this->rsindex, $fieldname);
+	}
+	
+	function fields() {
+		if(!isset($this->query_type) || is_null($this->query_type) || $this->query_type != "SELECT")
+			return array();
+		$fields = array();
+		while($row = mysql_fetch_field($this->rs)) {
+			$fields[] = $row["name"];
+		}
+		return $fields;
+	}
+	
+	function last_inserted_id() {
+		if(!is_null($this->last_inserted_id))
+			return $this->last_inserted_id;
+		if(!isset($this->query_type) || is_null($this->query_type) || $this->query_type != "INSERT")
+			return false;
+		return mysql_insert_id();
 	}
 }
 

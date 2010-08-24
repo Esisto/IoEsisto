@@ -226,25 +226,25 @@ class Post {
 			if(isset($this->place) && !is_null($this->getPlace()))
 				$data["ps_place"] = $this->getPlace(); //TODO Non ancora implementato.
 			
-			$rs = $q->execute($s = $q->generateInsertStm($table,$data));
+			$rs = $q->execute($s = $q->generateInsertStm($table,$data), $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
-			//echo "<br />" . serialize($rs); //DEBUG
-			$this->ID = mysql_insert_id();
+			//echo "<br />" . $q->affected_rows(); //DEBUG
+			$this->setID($q->last_inserted_id());
 			//echo "<br />" . serialize($this->ID); //DEBUG
 			$rs = $q->execute($s = $q->generateSelectStm(array($table),
 														 array(),
 														 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$this->getID())),
-														 array()));
+														 array()),
+							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
-			while($row = mysql_fetch_assoc($rs)) {
+			while($q->hasNext()) {
+				$row = $q->next();
 				$this->setCreationDate(time($row["ps_creationDate"]));
 				$this->setModificationDate(time($row["ps_creationDate"]));
 				//echo "<br />" . serialize($row["ps_creationDate"]); //DEBUG
 				break;
 			}
 			//echo "<br />" . $this; //DEBUG
-			require_once("common.php");
-			LogManager::addLogEntry($this->getAuthor(), LogManager::$INSERT, $this);
 			return $this->ID;
 		}
 		return false;
@@ -266,10 +266,12 @@ class Post {
 			$rs = $q->execute($s = $q->generateSelectStm(array($table),
 														 array(),
 														 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$this->getID())),
-														 array()));
+														 array()),
+							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			$data = array();
-			while($row = mysql_fetch_assoc($rs)) {
+			while($q->hasNext()) {
+				$row = $q->next();
 				//cerco le differenze e le salvo.
 				if($row["ps_title"] != $this->getTitle())
 					$data["ps_title"] = $this->getTitle();
@@ -298,14 +300,14 @@ class Post {
 			
 			$rs = $q->execute($s = $q->generateUpdateStm($table,
 														 $data,
-														 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$this->getID()))));
+														 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$this->getID()))),
+							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			//echo "<br />" . mysql_affected_rows(); //DEBUG
-			if(mysql_affected_rows() == 0)
+			if($q->affected_rows() == 0)
 				return false;
 			
 			//echo "<br />" . $this; //DEBUG
-			LogManager::addLogEntry($this->getAuthor(), LogManager::$UPDATE, $this);
 			return $this->getModificationDate();
 		}
 		return false;
@@ -326,11 +328,10 @@ class Post {
 			$dbs = $q->getDBSchema();
 			$table = $dbs->getTable("Post");
 			$rs = $q->execute($s = $q->generateDeleteStm($table,
-														 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$this->getID()))));
-			//echo "<br />" . $s; //DEBUG
-			if(mysql_affected_rows() == 1) {
-				require_once("common.php");
-				LogManager::addLogEntry($this->getAuthor(), LogManager::$DELETE, $this);
+														 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$this->getID()))),
+							  $table->getName(), $this);
+			//echo "<br />" . $q->affected_rows() . $s; //DEBUG
+			if($q->affected_rows() == 1) {
 				return $this;
 			}
 		}
@@ -351,13 +352,15 @@ class Post {
 		$rs = $q->execute($s = $q->generateSelectStm(array($table),
 													 array(),
 													 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$id)),
-													 array()));
+													 array()),
+						  $table->getName(), $this);
 		
 		//echo "<p>" . $s . "</p>"; //DEBUG
-		//echo "<p>" . mysql_num_rows($rs) . "</p>"; //DEBUG
-		if($rs !== false && mysql_num_rows($rs) == 1) {
+		//echo "<p>" . $q->num_rows() . "</p>"; //DEBUG
+		if($rs !== false && $q->num_rows() == 1) {
 			// echo serialize(mysql_fetch_assoc($rs)); //DEBUG
-			while($row = mysql_fetch_assoc($rs)) {
+			while($q->hasNext()) {
+				$row = $q->next();
 				$data = array("title" => $row["ps_title"],
 							  "subtitle" => $row["ps_subtitle"],
 							  "headline" => $row["ps_headline"],
@@ -408,12 +411,14 @@ class Post {
 		$rs = $q->execute($s = $q->generateSelectStm(array($table),
 													 array(),
 													 array(new WhereConstraint($table->getColumn("cm_post"),Operator::$UGUALE,$this->getID())),
-													 array()));
+													 array()),
+						  $table->getName(), $this);
 		
 		//echo "<p>" . $s . "</p>"; //DEBUG;
 		if($rs !== false) {
 			$comm = array();
-			while($row = mysql_fetch_assoc($rs)) {
+			while($q->hasNext()) {
+				$row = $q->next();
 				require_once("post/PostCommon.php");
 				$com = new Comment(array("author" => intval($row["cm_author"]),
 										 "post" => intval($row["cm_post"]),
@@ -436,11 +441,13 @@ class Post {
 		$rs = $q->execute($s = $q->generateSelectStm(array($table),
 													 array(),
 													 array(new WhereConstraint($table->getColumn("vt_post"),Operator::$UGUALE,$this->getID())),
-													 array()));
+													 array()),
+						  $table->getName(), $this);
 		//echo "<p>" . $s . "</p>"; //DEBUG;
 		if($rs !== false) {
 			$votes = array();
-			while($row = mysql_fetch_assoc($rs)) {
+			while($q->hasNext()) {
+				$row = $q->next();
 				require_once("post/PostCommon.php");
 				$vote = new Vote(intval($row["vt_author"]), intval($row["vt_post"]), $row["vt_vote"] > 0);
 				$vote->setCreationDate(time($row["vt_creationDate"]));
@@ -462,10 +469,12 @@ class Post {
 		$rs = $q->execute($s = $q->generateSelectStm(array($table),
 													 array(),
 													 array(new WhereConstraint($table->getColumn("rp_post"),Operator::$UGUALE,$this->getID())),
-													 array()));
+													 array()),
+						  $table->getName(), $this);
 		if($rs !== false) {
 			$reports = array();
-			while($row = mysql_fetch_assoc($rs)) {
+			while($q->hasNext()) {
+				$row = $q->next();
 				require_once("common.php");
 				$report = new Report(intval($row["rp_user"]), intval($row["rp_post"]), $row["rp_report"]);
 				$report->setID($row["rp_id"]);

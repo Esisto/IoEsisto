@@ -151,7 +151,8 @@ CREATE TABLE IF NOT EXISTS `Follow` (
 CREATE TABLE IF NOT EXISTS `Log` (
   `log_ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `log_timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `log_action` varchar(255) NOT NULL,
+  `log_action` varchar(6) NOT NULL,
+  `log_table` varchar(20) NOT NULL,
   `log_user` bigint(20) NOT NULL,
   `log_object` blob NOT NULL,
   PRIMARY KEY (`log_ID`),

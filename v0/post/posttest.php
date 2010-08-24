@@ -513,7 +513,7 @@ class Test {
 		$p1 = ContestManager::createContest($data1);
 		
 		$contest = ContestManager::loadContest($p1->getID());
-		//echo "<p>" . $p1 . "</p><p>" . $contest . "</p>"; //DEBUG
+		echo "<p>" . $p1 . "</p><p>" . $contest . "</p>"; //DEBUG
 		
 		if($contest === false)
 			return "<br />Contest saving test NOT PASSED: not created";
@@ -572,9 +572,9 @@ class Test {
 		//echo "<p>" . $p2 . "</p><p>" . $contest . "</p>"; //DEBUG
 		
 		if(count($p2->getSubscribers()) == 0)
-			return "<br />Contest subscribing test NOT PASSED: not added";
+			return "<br />Contest unsubscribing test NOT PASSED: not added";
 		if(count($contest->getSubscribers()) == 0)
-			return "<br />Contest subscribing test NOT PASSED: not loaded";
+			return "<br />Contest unsubscribing test NOT PASSED: not loaded";
 		
 		$p1 = ContestManager::unsubscribePostFromContest($p, $p2);
 		$contest2 = ContestManager::loadContest($p2->getID());
@@ -583,8 +583,8 @@ class Test {
 		if(count($p2->getSubscribers()) != 0)
 			return "<br />Contest subscribing test NOT PASSED: not removed";
 		if(count($contest2->getSubscribers()) != 0)
-			return "<br />Contest subscribing test NOT PASSED: loaded";
-		return "<br />Contest subscribing test passed";
+			return "<br />Contest unsubscribing test NOT PASSED: loaded";
+		return "<br />Contest unsubscribing test passed";
 	}
 	
 	/**
@@ -599,20 +599,20 @@ class Test {
 		$p1 = ContestManager::createContest($data1);
 		$p2 = ContestManager::subscribePostToContest($p, $p1);
 		$contest = ContestManager::loadContest($p2->getID());
-		echo "<p>" . $p2 . "</p><p>" . $contest . "</p>"; //DEBUG
+		//echo "<p>" . $p2 . "</p><p>" . $contest . "</p>"; //DEBUG
 		
 		if(count($p2->getSubscribers()) == 0)
-			return "<br />Contest subscribing test NOT PASSED: not added";
+			return "<br />Contest deleting test NOT PASSED: not added";
 		if(count($contest->getSubscribers()) == 0)
-			return "<br />Contest subscribing test NOT PASSED: not loaded";
+			return "<br />Contest deleting test NOT PASSED: not loaded";
 		
 		$p1 = ContestManager::deleteContest($p2);
 		$contest = ContestManager::loadContest($p1->getID());
-		echo "<p>" . $p2 . "</p><p>" . $contest . "</p>"; //DEBUG
+		//echo "<p>" . $p2 . "</p><p>" . $contest . "</p>"; //DEBUG
 		
 		if($contest !== false)
-			return "<br />Contest subscribing test NOT PASSED: loaded";
-		return "<br />Contest subscribing test passed";
+			return "<br />Contest deleting test NOT PASSED: loaded";
+		return "<br />Contest deleting test passed";
 	}
 }
 ?>

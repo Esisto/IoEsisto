@@ -28,7 +28,7 @@
 	//echo $t->testSaveContest();
 	//echo $t->testSubscribeToContest();
 	//echo $t->testUnsubscribeToContest();
-	echo $t->testDeleteContest();
+	//echo $t->testDeleteContest();
 	
 ?>
 

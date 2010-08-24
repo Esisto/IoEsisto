@@ -130,15 +130,12 @@ class Contest {
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
 			$table = $q->getDBSchema()->getTable("ContestSubscriber");
 			$q->execute($s = $q->generateInsertStm($table, array("cs_post" => $post->getID(),
-																 "cs_contest" => $this->getID())));
-			
-			if(mysql_affected_rows() == 0)
+																 "cs_contest" => $this->getID())),
+						$table->getName(), $this);
+			if($q->affected_rows() == 0)
 				return false;
 		}
 		$this->subscribers[] = $post->getID();
-		require_once("common.php");
-		require_once("session.php");
-		LogManager::addLogEntry(Session::getUser(), LogManager::$INSERT, $this);
 		return $this;
 	}
 	
@@ -150,18 +147,32 @@ class Contest {
 			$table = $q->getDBSchema()->getTable("ContestSubscriber");
 			$q->execute($s = $q->generateDeleteStm($table,
 												   array(new WhereConstraint($table->getColumn("cs_post"), Operator::$UGUALE, $post->getID()),
-														 new WhereConstraint($table->getColumn("cs_contest"), Operator::$UGUALE, $this->getID()))));
-			
-			if(mysql_affected_rows() == 0)
+														 new WhereConstraint($table->getColumn("cs_contest"), Operator::$UGUALE, $this->getID()))),
+						$table->getName(), $this);
+			if($q->affected_rows() == 0)
 				return false;
 		}
 		unset($this->subscribers[array_search($post, $this->subscribers)]);
-		
-		require_once("common.php");
-		require_once("session.php");
-		LogManager::addLogEntry(Session::getUser(), LogManager::$DELETE, $this);
-		return $this->getID();
 		return $post;
+	}
+	
+	function addWinner($post, $position) {
+		if($post->getType() != $this->getSubscriberType())
+			return false;
+		require_once("query.php");
+		if(!isset($GLOBALS["q"]))
+			$q = new Query();
+		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
+			$table = $q->getDBSchema()->getTable("ContestSubscriber");
+			$q->execute($s = $q->generateUpdateStm($table, array("cs_winner" => $position),
+												   array(new WhereConstraint($table->getColumn("cs_post"), Operator::$UGUALE, $post->getID()),
+														 new WhereConstraint($table->getColumn("cs_contest"), Operator::$UGUALE, $this->getID()))),
+						$table->getName(), $this);
+			if($q->affected_rows() == 0)
+				return false;
+		}
+		$this->winners[$position] = $post->getID();
+		return $this;
 	}
 	
 	/**
@@ -186,22 +197,20 @@ class Contest {
 			if(isset($this->prizes) && !is_null($this->getPrizes()))
 				$data["ct_prizes"] = $this->getPrizes();
 			if(isset($this->start) && !is_null($this->getStart()))
-				$data["ct_start"] = date("Y/m/d G:i", $this->getStart());
+				$data["ct_start"] = date("Y/m/d G:i:s", $this->getStart());
 			if(isset($this->end) && !is_null($this->getEnd()))
-				$data["ct_end"] = date("Y/m/d G:i", $this->getEnd());
+				$data["ct_end"] = date("Y/m/d G:i:s", $this->getEnd());
 			if(isset($this->subscriberType) && !is_null($this->getSubscriberType()))
 				$data["ct_typeofsubscriber"] = $this->getSubscriberType();
 			
-			$rs = $q->execute($s = $q->generateInsertStm($table,$data));
+			$rs = $q->execute($s = $q->generateInsertStm($table,$data),
+							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			//echo "<br />" . serialize($rs); //DEBUG
-			$this->ID = mysql_insert_id();
+			$this->setID($q->last_inserted_id());
 			//echo "<br />" . serialize($this->ID); //DEBUG
 			
 			//echo "<br />" . $this; //DEBUG
-			require_once("common.php");
-			require_once("session.php");
-			LogManager::addLogEntry(Session::getUser(), LogManager::$INSERT, $this);
 			return $this->ID;
 		}
 		return false;
@@ -242,15 +251,14 @@ class Contest {
 			
 			$rs = $q->execute($s = $q->generateUpdateStm($table,
 														 $data,
-														 array(new WhereConstraint($table->getColumn("ct_ID"),Operator::$UGUALE,$this->getID()))));
+														 array(new WhereConstraint($table->getColumn("ct_ID"),Operator::$UGUALE,$this->getID()))),
+							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			//echo "<br />" . mysql_affected_rows(); //DEBUG
-			if(mysql_affected_rows() == 0)
+			if($q->affected_rows() == 0)
 				return false;
 			
 			//echo "<br />" . $this; //DEBUG
-			require_once("session.php");
-			LogManager::addLogEntry(Session::getUser(), LogManager::$UPDATE, $this);
 			return $this->getID();
 		}
 		return false;
@@ -271,12 +279,10 @@ class Contest {
 			$dbs = $q->getDBSchema();
 			$table = $dbs->getTable("Contest");
 			$rs = $q->execute($s = $q->generateDeleteStm($table,
-														 array(new WhereConstraint($table->getColumn("ct_ID"),Operator::$UGUALE,$this->getID()))));
+														 array(new WhereConstraint($table->getColumn("ct_ID"),Operator::$UGUALE,$this->getID()))),
+							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
-			if(mysql_affected_rows() == 1) {
-				require_once("common.php");
-				require_once("session.php");
-				LogManager::addLogEntry(Session::getUser(), LogManager::$DELETE, $this);
+			if($q->affected_rows() == 1) {
 				return $this;
 			}
 		}
@@ -297,13 +303,15 @@ class Contest {
 		$rs = $q->execute($s = $q->generateSelectStm(array($table),
 													 array(),
 													 array(new WhereConstraint($table->getColumn("ct_ID"),Operator::$UGUALE,$id)),
-													 array()));
+													 array()),
+						  $table->getName(), $this);
 		
 		//echo "<p>" . $s . "</p>"; //DEBUG
 		//echo "<p>" . mysql_num_rows($rs) . "</p>"; //DEBUG
-		if($rs !== false && mysql_num_rows($rs) == 1) {
+		if($rs !== false && $q->num_rows() == 1) {
 			// echo serialize(mysql_fetch_assoc($rs)); //DEBUG
-			while($row = mysql_fetch_assoc($rs)) {
+			while($q->hasNext()) {
+				$row = $q->next();
 				$data = array("title" => $row["ct_title"],
 							  "description" => $row["ct_description"],
 							  "rules" => $row["ct_rules"],
@@ -316,7 +324,7 @@ class Contest {
 				$c->setID(intval($row["ct_ID"]));
 				break;
 			}
-			$c->loadSubscribers();
+			$c->loadSubscribers()->loadWinners();
 			//echo "<p>" .$p ."</p>";
 			return $c;
 		} else {
@@ -332,15 +340,43 @@ class Contest {
 		$rs = $q->execute($s = $q->generateSelectStm(array($table),
 													 array(),
 													 array(new WhereConstraint($table->getColumn("cs_contest"),Operator::$UGUALE,$this->getID())),
-													 array()));
+													 array()),
+						  $table->getName(), $this);
 		
 		//echo "<p>" . $s . "</p>"; //DEBUG;
 		//echo "<p>" . mysql_num_rows($rs) . "</p>"; //DEBUG;
 		if($rs !== false) {
 			$sub = array();
-			while($row = mysql_fetch_assoc($rs))
+			while($q->hasNext()) {
+				$row = $q->next();
 				$sub[] = $row["cs_post"];
+			}
 			$this->setSubscribers($sub);
+		}
+		return $this;
+	}
+	
+	function loadWinners() {
+		require_once("query.php");
+		$q = new Query();
+		$table = $q->getDBSchema()->getTable("ContestSubscriber");
+		$rs = $q->execute($s = $q->generateSelectStm(array($table),
+													 array(),
+													 array(new WhereConstraint($table->getColumn("cs_contest"),Operator::$UGUALE,$this->getID()),
+														   new WhereConstraint($table->getColumn("cs_winner"),Operator::$MAGGIORE,0)),
+													 array()),
+						  $table->getName(), $this);
+		
+		//echo "<p>" . $s . "</p>"; //DEBUG;
+		//echo "<p>" . mysql_num_rows($rs) . "</p>"; //DEBUG;
+		if($rs !== false) {
+			$win = array();
+			while($q->hasNext()) {
+				$row = $q->next();
+				$win[$row["cs_winner"]] = $row["cs_post"];  // Con in cs_winner il numero di posizione
+				//$win[] = $row["cs_post"];  // Con in cs_winner true o false
+			}
+			$this->setWinners($win);
 		}
 		return $this;
 	}

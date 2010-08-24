@@ -43,21 +43,18 @@ class Report {
 	function save($savingMode) {
 		if($savingMode == SavingMode::$INSERT) {
 			require_once("query.php");
-			if(!isset($GLOBALS["q"]))
-				$q = new Query();
+			$q = new Query();
 			if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
 				$dbs = $q->getDBSchema();
 				$table = $dbs->getTable("Report");
 				$data = array("rp_report" => $this->getReport(),
 							  "rp_post" => $this->getPost(),
 							  "rp_user" => $this->getAuthor());
-				$rs = $q->execute($s = $q->generateInsertStm($table,$data));
+				$rs = $q->execute($s = $q->generateInsertStm($table,$data), $table->getName(), $this);
 				//echo "<br />" . $s; //DEBUG
 				//echo "<br />" . serialize($rs); //DEBUG
-				$this->ID = mysql_insert_id();
+				$this->ID = $q->last_inserted_id();
 				//echo "<br />" . $this; //DEBUG
-				require_once("common.php");
-				LogManager::addLogEntry($this->getAuthor(), LogManager::$INSERT, $this);
 				return $this->getID();
 			}
 		}
@@ -66,17 +63,15 @@ class Report {
 	
 	function delete() {
 		require_once("query.php");
-		if(!isset($GLOBALS["q"]))
-			$q = new Query();
+		$q = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
 			$dbs = $q->getDBSchema();
 			$table = $dbs->getTable("Report");
 			$rs = $q->execute($s = $q->generateDeleteStm($table,
-														 array(new WhereConstraint($table->getColumn("rp_ID"),Operator::$UGUALE,$this->getID()))));
+														 array(new WhereConstraint($table->getColumn("rp_ID"),Operator::$UGUALE,$this->getID()))),
+							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
-			if(mysql_affected_rows() == 1) {
-				require_once("common.php");
-				LogManager::addLogEntry($this->getAuthor(), LogManager::$DELETE, $this);
+			if($q->affected_rows() == 1) {
 				return $this;
 			}
 		}
@@ -96,9 +91,9 @@ class Report {
 }
 
 class LogManager {
-	static $INSERT = "Insert";
-	static $DELETE = "Delete";
-	static $UPDATE = "Update";
+	static $INSERT = "INSERT";
+	static $DELETE = "DELETE";
+	static $UPDATE = "UPDATE";
 	
 	/**
 	 * Recupera il contenuto del Log da $from a $to.
@@ -135,7 +130,7 @@ class LogManager {
 				return array();
 			}
 			//echo "<br />" . $s; //DEBUG
-			$rs = $q->execute($s);
+			$rs = $q->execute($s, $table->getName(), "LogManager");
 			$log_result = array();
 			while($row = mysql_fetch_row) {
 				$log_result[] = $row;
@@ -155,25 +150,27 @@ class LogManager {
 	 *
 	 * return: l'id della entry inserita, false se non c'è riuscito.
 	 */
-	static function addLogEntry($user, $action, $object) {
+	static function addLogEntry($user, $action, $tablename, $object, $query) {
+		//echo $user. $action. $table; //DEBUG
 		if(!isset($user) || !is_numeric($user) ||
 		   !isset($action) || ($action != self::$DELETE && $action != self::$INSERT && $action != self::$UPDATE) ||
 		   !isset($object) || is_null($object) || !is_object($object))
 			return false;
 		
 		require_once("query.php");
-		if(!isset($GLOBALS["q"]))
-			$q = new Query();
+		if(!isset($query))
+			$query = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$table = $q->getDBSchema()->getTable("Log");
-			//echo "<br />" . $table; //DEBUG
+			$table = $query->getDBSchema()->getTable("Log");
+			//echo "<br />" . $tablename; //DEBUG
 			
 			$data = array("log_action" => $action,
+						  "log_table" => $tablename,
 						  "log_user" => $user,
 						  "log_object" => serialize($object));
-			$s = $q->generateInsertStm($table, $data);
+			$s = $query->generateInsertStm($table, $data);
 			//echo "<br />" . $s; //DEBUG
-			$rs = $q->execute($s);
+			$rs = $query->execute($s, $table->getName(), "LogManager");
 			return mysql_insert_id();
 		}
 		return false;
