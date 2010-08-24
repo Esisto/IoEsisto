@@ -8,7 +8,7 @@
 
 <?php
 	ini_set("display_errors", "On");
-	error_reporting(E_ALL ^ E_NOTICE);
+	error_reporting(E_ALL);
 	require_once("settings.php");
 	require_once("strings/" . LANG . "strings.php");
 	require_once("strings/strings.php");
@@ -28,11 +28,12 @@
 	mysql_close($db);
 	$q = new Query();
 	
-	$s = file_get_contents("ioesistodb2.sql");
+	require_once("db.php");
 	$queries = explode("\n\n", $s);
 	
 	for($i=0; $i<count($queries); $i++) {
 		$rs = $q->execute($queries[$i], null, LOGMANAGER);
+		//echo $queries[$i]; //DEBUG
 		if($rs === false) echo "<p>ERROR CREATING TABLES</p>";
 		else {
 			$ss = explode("`", $queries[$i]);
