@@ -125,12 +125,11 @@ class Contest {
 		if($post->getType() != $this->getSubscriberType())
 			return false;
 		require_once("query.php");
-		if(!isset($GLOBALS["q"]))
-			$q = new Query();
+		$q = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$table = $q->getDBSchema()->getTable("ContestSubscriber");
-			$q->execute($s = $q->generateInsertStm($table, array("cs_post" => $post->getID(),
-																 "cs_contest" => $this->getID())),
+			$table = $q->getDBSchema()->getTable(TABLE_CONTEST_SUBSCRIBER);
+			$q->execute($s = $q->generateInsertStm($table, array(CONTEST_SUBSCRIBER_POST => $post->getID(),
+																 CONTEST_SUBSCRIBER_CONTEST => $this->getID())),
 						$table->getName(), $this);
 			if($q->affected_rows() == 0)
 				return false;
@@ -141,13 +140,12 @@ class Contest {
 	
 	function unsubscribePost($post) {
 		require_once("query.php");
-		if(!isset($GLOBALS["q"]))
-			$q = new Query();
+		$q = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$table = $q->getDBSchema()->getTable("ContestSubscriber");
+			$table = $q->getDBSchema()->getTable(TABLE_CONTEST_SUBSCRIBER);
 			$q->execute($s = $q->generateDeleteStm($table,
-												   array(new WhereConstraint($table->getColumn("cs_post"), Operator::$UGUALE, $post->getID()),
-														 new WhereConstraint($table->getColumn("cs_contest"), Operator::$UGUALE, $this->getID()))),
+												   array(new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_POST), Operator::$UGUALE, $post->getID()),
+														 new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_CONTEST), Operator::$UGUALE, $this->getID()))),
 						$table->getName(), $this);
 			if($q->affected_rows() == 0)
 				return false;
@@ -160,13 +158,12 @@ class Contest {
 		if($post->getType() != $this->getSubscriberType())
 			return false;
 		require_once("query.php");
-		if(!isset($GLOBALS["q"]))
-			$q = new Query();
+		$q = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$table = $q->getDBSchema()->getTable("ContestSubscriber");
-			$q->execute($s = $q->generateUpdateStm($table, array("cs_winner" => $position),
-												   array(new WhereConstraint($table->getColumn("cs_post"), Operator::$UGUALE, $post->getID()),
-														 new WhereConstraint($table->getColumn("cs_contest"), Operator::$UGUALE, $this->getID()))),
+			$table = $q->getDBSchema()->getTable(TABLE_CONTEST_SUBSCRIBER);
+			$q->execute($s = $q->generateUpdateStm($table, array(CONTEST_SUBSCRIBER_PLACEMENT => $position),
+												   array(new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_POST), Operator::$UGUALE, $post->getID()),
+														 new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_CONTEST), Operator::$UGUALE, $this->getID()))),
 						$table->getName(), $this);
 			if($q->affected_rows() == 0)
 				return false;
@@ -182,26 +179,25 @@ class Contest {
 	 */
 	function save() {
 		require_once("query.php");
-		if(!isset($GLOBALS["q"]))
-			$q = new Query();
+		$q = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
 			$dbs = $q->getDBSchema();
-			$table = $dbs->getTable("Contest");
+			$table = $dbs->getTable(TABLE_CONTEST);
 			$data = array();
 			if(isset($this->title) && !is_null($this->getTitle()))
-				$data["ct_title"] = $this->getTitle();
+				$data[CONTEST_TITLE] = $this->getTitle();
 			if(isset($this->description) && !is_null($this->getDescription()))
-				$data["ct_description"] = $this->getDescription();
+				$data[CONTEST_DESCRIPTION] = $this->getDescription();
 			if(isset($this->rules) && !is_null($this->getRules()))
-				$data["ct_rules"] = $this->getRules();
+				$data[CONTEST_RULES] = $this->getRules();
 			if(isset($this->prizes) && !is_null($this->getPrizes()))
-				$data["ct_prizes"] = $this->getPrizes();
+				$data[CONTEST_PRIZES] = $this->getPrizes();
 			if(isset($this->start) && !is_null($this->getStart()))
-				$data["ct_start"] = date("Y/m/d G:i:s", $this->getStart());
+				$data[CONTEST_START] = date("Y/m/d G:i:s", $this->getStart());
 			if(isset($this->end) && !is_null($this->getEnd()))
-				$data["ct_end"] = date("Y/m/d G:i:s", $this->getEnd());
+				$data[CONTEST_END] = date("Y/m/d G:i:s", $this->getEnd());
 			if(isset($this->subscriberType) && !is_null($this->getSubscriberType()))
-				$data["ct_typeofsubscriber"] = $this->getSubscriberType();
+				$data[CONTEST_TYPE_OF_SUBSCRIBER] = $this->getSubscriberType();
 			
 			$rs = $q->execute($s = $q->generateInsertStm($table,$data),
 							  $table->getName(), $this);
@@ -228,30 +224,30 @@ class Contest {
 		
 		$data = array();
 		if($old->getTitle() != $this->getTitle())
-			$data["ct_title"] = $this->getTitle();
+			$data[CONTEST_TITLE] = $this->getTitle();
 		if($old->getDescription() != $this->getDescription())
-			$data["ct_description"] = $this->getDescription();
+			$data[CONTEST_DESCRIPTION] = $this->getDescription();
 		if($old->getEnd() != $this->getEnd())
-			$data["ct_end"] = $this->getEnd();
+			$data[CONTEST_END] = $this->getEnd();
 		if($old->getPrizes() != $this->getPrizes())
-			$data["ct_prizes"] = $this->getPrizes();
+			$data[CONTEST_PRIZES] = $this->getPrizes();
 		if($old->getRules() != $this->getRules())
-			$data["ct_rules"] = $this->getRules();
+			$data[CONTEST_RULES] = $this->getRules();
 		if($old->getStart() != $this->getStart())
-			$data["ct_start"] = $this->getStart();
+			$data[CONTEST_START] = $this->getStart();
 		if($old->getWinners() != $this->getWinners())
 			$data["ct_winners"] = $this->getWinners(); //TODO aggiornare i vincitori.
 		if($old->getSubscriberType() == $this->getSubscriberType())
-			$data["ct_typeofsubscriber"] = $this->getSubscriberType();
+			$data[CONTEST_TYPE_OF_SUBSCRIBER] = $this->getSubscriberType();
 		require_once("query.php");
 		if(!isset($GLOBALS["q"]))
 			$q = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$table = $q->getDBSchema()->getTable("Contest");
+			$table = $q->getDBSchema()->getTable(TABLE_CONTEST);
 			
 			$rs = $q->execute($s = $q->generateUpdateStm($table,
 														 $data,
-														 array(new WhereConstraint($table->getColumn("ct_ID"),Operator::$UGUALE,$this->getID()))),
+														 array(new WhereConstraint($table->getColumn(CONTEST_ID),Operator::$UGUALE,$this->getID()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			//echo "<br />" . mysql_affected_rows(); //DEBUG
@@ -277,9 +273,9 @@ class Contest {
 			$q = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
 			$dbs = $q->getDBSchema();
-			$table = $dbs->getTable("Contest");
+			$table = $dbs->getTable(TABLE_CONTEST);
 			$rs = $q->execute($s = $q->generateDeleteStm($table,
-														 array(new WhereConstraint($table->getColumn("ct_ID"),Operator::$UGUALE,$this->getID()))),
+														 array(new WhereConstraint($table->getColumn(CONTEST_ID),Operator::$UGUALE,$this->getID()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			if($q->affected_rows() == 1) {
@@ -299,10 +295,10 @@ class Contest {
 	static function loadFromDatabase($id) {
 		require_once("query.php");
 		$q = new Query();
-		$table = $q->getDBSchema()->getTable("Contest");
+		$table = $q->getDBSchema()->getTable(TABLE_CONTEST);
 		$rs = $q->execute($s = $q->generateSelectStm(array($table),
 													 array(),
-													 array(new WhereConstraint($table->getColumn("ct_ID"),Operator::$UGUALE,$id)),
+													 array(new WhereConstraint($table->getColumn(CONTEST_ID),Operator::$UGUALE,$id)),
 													 array()),
 						  $table->getName(), $this);
 		
@@ -312,23 +308,23 @@ class Contest {
 			// echo serialize(mysql_fetch_assoc($rs)); //DEBUG
 			while($q->hasNext()) {
 				$row = $q->next();
-				$data = array("title" => $row["ct_title"],
-							  "description" => $row["ct_description"],
-							  "rules" => $row["ct_rules"],
-							  "prizes"=> $row["ct_prizes"],
-							  "start" => time($row["ct_start"]),
-							  "end" => time($row["ct_end"]),
+				$data = array("title" => $row[CONTEST_TITLE],
+							  "description" => $row[CONTEST_DESCRIPTION],
+							  "rules" => $row[CONTEST_RULES],
+							  "prizes"=> $row[CONTEST_PRIZES],
+							  "start" => time($row[CONTEST_START]),
+							  "end" => time($row[CONTEST_END]),
 							  "winners" => unserialize($row["ct_winners"]),
-							  "subscriberType" => $row["ct_typeofsubscriber"]);
+							  "subscriberType" => $row[CONTEST_TYPE_OF_SUBSCRIBER]);
 				$c = new Contest($data);
-				$c->setID(intval($row["ct_ID"]));
+				$c->setID(intval($row[CONTEST_ID]));
 				break;
 			}
 			$c->loadSubscribers()->loadWinners();
 			//echo "<p>" .$p ."</p>";
 			return $c;
 		} else {
-			$GLOBALS["query_error"] = "NOT FOUND";
+			$GLOBALS["query_error"] = NOT_FOUND;
 			return false;
 		}
 	}
@@ -336,10 +332,10 @@ class Contest {
 	function loadSubscribers() {
 		require_once("query.php");
 		$q = new Query();
-		$table = $q->getDBSchema()->getTable("ContestSubscriber");
+		$table = $q->getDBSchema()->getTable(TABLE_CONTEST_SUBSCRIBER);
 		$rs = $q->execute($s = $q->generateSelectStm(array($table),
 													 array(),
-													 array(new WhereConstraint($table->getColumn("cs_contest"),Operator::$UGUALE,$this->getID())),
+													 array(new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_CONTEST),Operator::$UGUALE,$this->getID())),
 													 array()),
 						  $table->getName(), $this);
 		
@@ -349,7 +345,7 @@ class Contest {
 			$sub = array();
 			while($q->hasNext()) {
 				$row = $q->next();
-				$sub[] = $row["cs_post"];
+				$sub[] = $row[CONTEST_SUBSCRIBER_POST];
 			}
 			$this->setSubscribers($sub);
 		}
@@ -359,11 +355,11 @@ class Contest {
 	function loadWinners() {
 		require_once("query.php");
 		$q = new Query();
-		$table = $q->getDBSchema()->getTable("ContestSubscriber");
+		$table = $q->getDBSchema()->getTable(TABLE_CONTEST_SUBSCRIBER);
 		$rs = $q->execute($s = $q->generateSelectStm(array($table),
 													 array(),
-													 array(new WhereConstraint($table->getColumn("cs_contest"),Operator::$UGUALE,$this->getID()),
-														   new WhereConstraint($table->getColumn("cs_winner"),Operator::$MAGGIORE,0)),
+													 array(new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_CONTEST),Operator::$UGUALE,$this->getID()),
+														   new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_PLACEMENT),Operator::$MAGGIORE,0)),
 													 array()),
 						  $table->getName(), $this);
 		
@@ -373,8 +369,8 @@ class Contest {
 			$win = array();
 			while($q->hasNext()) {
 				$row = $q->next();
-				$win[$row["cs_winner"]] = $row["cs_post"];  // Con in cs_winner il numero di posizione
-				//$win[] = $row["cs_post"];  // Con in cs_winner true o false
+				$win[$row[CONTEST_SUBSCRIBER_PLACEMENT]] = $row[CONTEST_SUBSCRIBER_POST];  // Con in cs_winner il numero di posizione
+				//$win[] = $row[CONTEST_SUBSCRIBER_POST];  // Con in cs_winner true o false
 			}
 			$this->setWinners($win);
 		}

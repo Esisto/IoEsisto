@@ -204,26 +204,26 @@ class Post {
 		$q = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
 			$dbs = $q->getDBSchema();
-			$table = $dbs->getTable("Post");
-			$data = array("ps_type" => $this->getType());
+			$table = $dbs->getTable(TABLE_POST);
+			$data = array(POST_TYPE => $this->getType());
 			if(isset($this->title) && !is_null($this->getTitle()))
-				$data["ps_title"] = $this->getTitle();
+				$data[POST_TITLE] = $this->getTitle();
 			if(isset($this->subtitle) && !is_null($this->getSubtitle()))
-				$data["ps_subtitle"] = $this->getSubtitle();
+				$data[POST_SUBTITLE] = $this->getSubtitle();
 			if(isset($this->headline) && !is_null($this->getHeadline()))
-				$data["ps_headline"] = $this->getHeadline();
+				$data[POST_HEADLINE] = $this->getHeadline();
 			if(isset($this->tags) && !is_null($this->getTags()))
-				$data["ps_tags"] = $this->getTags();
+				$data[POST_TAGS] = $this->getTags();
 			if(isset($this->categories) && !is_null($this->getCategories()))
-				$data["ps_categories"] = $this->getCategories();
+				$data[POST_CATEGORIES] = $this->getCategories();
 			if(isset($this->content) && !is_null($this->getContent()))
-				$data["ps_content"] = serialize($this->getContent());
+				$data[POST_CONTENT] = serialize($this->getContent());
 			if(isset($this->visible) && !is_null($this->isVisible()))
-				$data["ps_visible"] = $this->isVisible() ? 1 : 0;
+				$data[POST_VISIBLE] = $this->isVisible() ? 1 : 0;
 			if(isset($this->author) && !is_null($this->getAuthor()))
-				$data["ps_author"] = $this->getAuthor();
+				$data[POST_AUTHOR] = $this->getAuthor();
 			if(isset($this->place) && !is_null($this->getPlace()))
-				$data["ps_place"] = $this->getPlace(); //TODO Non ancora implementato.
+				$data[POST_PLACE] = $this->getPlace(); //TODO Non ancora implementato.
 			
 			$rs = $q->execute($s = $q->generateInsertStm($table,$data), $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
@@ -232,15 +232,15 @@ class Post {
 			//echo "<br />" . serialize($this->ID); //DEBUG
 			$rs = $q->execute($s = $q->generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$this->getID())),
+														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$this->getID())),
 														 array()),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			while($q->hasNext()) {
 				$row = $q->next();
-				$this->setCreationDate(time($row["ps_creationDate"]));
-				$this->setModificationDate(time($row["ps_creationDate"]));
-				//echo "<br />" . serialize($row["ps_creationDate"]); //DEBUG
+				$this->setCreationDate(time($row[POST_CREATION_DATE]));
+				$this->setModificationDate(time($row[POST_CREATION_DATE]));
+				//echo "<br />" . serialize($row[POST_CREATION_DATE]); //DEBUG
 				break;
 			}
 			//echo "<br />" . $this; //DEBUG
@@ -261,10 +261,10 @@ class Post {
 		if(!isset($GLOBALS["q"]))
 			$q = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$table = $q->getDBSchema()->getTable("Post");
+			$table = $q->getDBSchema()->getTable(TABLE_POST);
 			$rs = $q->execute($s = $q->generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$this->getID())),
+														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$this->getID())),
 														 array()),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
@@ -272,34 +272,34 @@ class Post {
 			while($q->hasNext()) {
 				$row = $q->next();
 				//cerco le differenze e le salvo.
-				if($row["ps_title"] != $this->getTitle())
-					$data["ps_title"] = $this->getTitle();
-				if($row["ps_subtitle"] != $this->getSubtitle())
-					$data["ps_subtitle"] = $this->getSubtitle();
-				if($row["ps_headline"] != $this->getHeadline())
-					$data["ps_headline"] = $this->getHeadline();
-				if(unserialize($row["ps_content"]) != $this->getContent())
-					$data["ps_content"] = serialize($this->getContent());
-				if($row["ps_place"] != $this->getPlace())
-					$data["ps_place"] = $this->getPlace();
-				if($row["ps_tags"] != $this->getTags())
-					$data["ps_tags"] = $this->getTags();
+				if($row[POST_TITLE] != $this->getTitle())
+					$data[POST_TITLE] = $this->getTitle();
+				if($row[POST_SUBTITLE] != $this->getSubtitle())
+					$data[POST_SUBTITLE] = $this->getSubtitle();
+				if($row[POST_HEADLINE] != $this->getHeadline())
+					$data[POST_HEADLINE] = $this->getHeadline();
+				if(unserialize($row[POST_CONTENT]) != $this->getContent())
+					$data[POST_CONTENT] = serialize($this->getContent());
+				if($row[POST_PLACE] != $this->getPlace())
+					$data[POST_PLACE] = $this->getPlace();
+				if($row[POST_TAGS] != $this->getTags())
+					$data[POST_TAGS] = $this->getTags();
 				//TODO salvare tag non esistenti
-				if($row["ps_categories"] != $this->getCategories())
-					$data["ps_categories"] = $this->getCategories();
-				settype($row["ps_visible"], "boolean");
-				if($row["ps_visible"] !== $this->isVisible())
-					$data["ps_visible"] = $this->isVisible() ? 1 : 0;
+				if($row[POST_CATEGORIES] != $this->getCategories())
+					$data[POST_CATEGORIES] = $this->getCategories();
+				settype($row[POST_VISIBLE], "boolean");
+				if($row[POST_VISIBLE] !== $this->isVisible())
+					$data[POST_VISIBLE] = $this->isVisible() ? 1 : 0;
 				break;
 			}
 			
-			$data["ps_modificationDate"] = date("Y/m/d G:i:s", time()); // se mi dicono di fare l'update, cambio modificationDate
+			$data[POST_MODIFICATION_DATE] = date("Y/m/d G:i:s", time()); // se mi dicono di fare l'update, cambio modificationDate
 			//echo "<br />" . serialize($data); //DEBUG
 			//TODO controllare tag e categorie
 			
 			$rs = $q->execute($s = $q->generateUpdateStm($table,
 														 $data,
-														 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$this->getID()))),
+														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$this->getID()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			//echo "<br />" . mysql_affected_rows(); //DEBUG
@@ -325,9 +325,9 @@ class Post {
 			$q = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
 			$dbs = $q->getDBSchema();
-			$table = $dbs->getTable("Post");
+			$table = $dbs->getTable(TABLE_POST);
 			$rs = $q->execute($s = $q->generateDeleteStm($table,
-														 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$this->getID()))),
+														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$this->getID()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $q->affected_rows() . $s; //DEBUG
 			if($q->affected_rows() == 1) {
@@ -347,10 +347,10 @@ class Post {
 	static function loadFromDatabase($id) {
 		require_once("query.php");
 		$q = new Query();
-		$table = $q->getDBSchema()->getTable("Post");
+		$table = $q->getDBSchema()->getTable(TABLE_POST);
 		$rs = $q->execute($s = $q->generateSelectStm(array($table),
 													 array(),
-													 array(new WhereConstraint($table->getColumn("ps_ID"),Operator::$UGUALE,$id)),
+													 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$id)),
 													 array()),
 						  $table->getName(), $this);
 		
@@ -360,42 +360,42 @@ class Post {
 			// echo serialize(mysql_fetch_assoc($rs)); //DEBUG
 			while($q->hasNext()) {
 				$row = $q->next();
-				$data = array("title" => $row["ps_title"],
-							  "subtitle" => $row["ps_subtitle"],
-							  "headline" => $row["ps_headline"],
-							  "author"=> intval($row["ps_author"]),
-							  "tags" => $row["ps_tags"],
-							  "categories" => $row["ps_categories"],
-							  "content" => unserialize($row["ps_content"]),
-							  "visible" => $row["ps_visible"] > 0,
-							  "type" => $row["ps_type"],
-							  "place" => $row["ps_place"]);
-				if($row["ps_type"] == PostType::$NEWS)
+				$data = array("title" => $row[POST_TITLE],
+							  "subtitle" => $row[POST_SUBTITLE],
+							  "headline" => $row[POST_HEADLINE],
+							  "author"=> intval($row[POST_AUTHOR]),
+							  "tags" => $row[POST_TAGS],
+							  "categories" => $row[POST_CATEGORIES],
+							  "content" => unserialize($row[POST_CONTENT]),
+							  "visible" => $row[POST_VISIBLE] > 0,
+							  "type" => $row[POST_TYPE],
+							  "place" => $row[POST_PLACE]);
+				if($row[POST_TYPE] == PostType::$NEWS)
 					$p = new News($data);
-				else if($row["ps_type"] == PostType::$VIDEOREPORTAGE)
+				else if($row[POST_TYPE] == PostType::$VIDEOREPORTAGE)
 					$p = new VideoReportage($data);
-				else if($row["ps_type"] == PostType::$ALBUM)
+				else if($row[POST_TYPE] == PostType::$ALBUM)
 					$p = new Album($data);
-				else if($row["ps_type"] == PostType::$MAGAZINE)
+				else if($row[POST_TYPE] == PostType::$MAGAZINE)
 					$p = new Magazine($data);
-				else if($row["ps_type"] == PostType::$PHOTOREPORTAGE)
+				else if($row[POST_TYPE] == PostType::$PHOTOREPORTAGE)
 					$p = new PhotoReportage($data);
-				else if($row["ps_type"] == PostType::$PLAYLIST)
+				else if($row[POST_TYPE] == PostType::$PLAYLIST)
 					$p = new Playlist($data);
-				else if($row["ps_type"] == PostType::$COLLECTION)
+				else if($row[POST_TYPE] == PostType::$COLLECTION)
 					$p = new Collection($data);
 				else
 					$p = new Post($data);
-				$p->setCreationDate(time($row["ps_creationDate"]));
-				$p->setID(intval($row["ps_ID"]));
-				$p->setModificationDate(time($row["ps_modificationDate"]));
+				$p->setCreationDate(time($row[POST_CREATION_DATE]));
+				$p->setID(intval($row[POST_ID]));
+				$p->setModificationDate(time($row[POST_MODIFICATION_DATE]));
 				break;
 			}
 			$p->loadComments()->loadVotes()->loadReports();
 			//echo "<p>" .$p ."</p>";
 			return $p;
 		} else {
-			$GLOBALS["query_error"] = "NOT FOUND";
+			$GLOBALS["query_error"] = NOT_FOUND;
 			return false;
 		}
 	}
@@ -406,10 +406,10 @@ class Post {
 	function loadComments() {
 		require_once("query.php");
 		$q = new Query();
-		$table = $q->getDBSchema()->getTable("Comment");
+		$table = $q->getDBSchema()->getTable(TABLE_COMMENT);
 		$rs = $q->execute($s = $q->generateSelectStm(array($table),
 													 array(),
-													 array(new WhereConstraint($table->getColumn("cm_post"),Operator::$UGUALE,$this->getID())),
+													 array(new WhereConstraint($table->getColumn(COMMENT_POST),Operator::$UGUALE,$this->getID())),
 													 array()),
 						  $table->getName(), $this);
 		
@@ -419,10 +419,10 @@ class Post {
 			while($q->hasNext()) {
 				$row = $q->next();
 				require_once("post/PostCommon.php");
-				$com = new Comment(array("author" => intval($row["cm_author"]),
-										 "post" => intval($row["cm_post"]),
-										 "comment" => $row["cm_comment"]));
-				$com->setID($row["cm_ID"])->setCreationDate(time($row["cm_creationDate"]));
+				$com = new Comment(array("author" => intval($row[COMMENT_AUTHOR]),
+										 "post" => intval($row[COMMENT_POST]),
+										 "comment" => $row[COMMENT_COMMENT]));
+				$com->setID($row[COMMENT_ID])->setCreationDate(time($row[COMMENT_CREATION_DATE]));
 				$comm[] = $com;
 			}
 			$this->setComments($comm);
@@ -436,10 +436,10 @@ class Post {
 	function loadVotes() {
 		require_once("query.php");
 		$q = new Query();
-		$table = $q->getDBSchema()->getTable("Vote");
+		$table = $q->getDBSchema()->getTable(TABLE_VOTE);
 		$rs = $q->execute($s = $q->generateSelectStm(array($table),
 													 array(),
-													 array(new WhereConstraint($table->getColumn("vt_post"),Operator::$UGUALE,$this->getID())),
+													 array(new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$this->getID())),
 													 array()),
 						  $table->getName(), $this);
 		//echo "<p>" . $s . "</p>"; //DEBUG;
@@ -448,8 +448,8 @@ class Post {
 			while($q->hasNext()) {
 				$row = $q->next();
 				require_once("post/PostCommon.php");
-				$vote = new Vote(intval($row["vt_author"]), intval($row["vt_post"]), $row["vt_vote"] > 0);
-				$vote->setCreationDate(time($row["vt_creationDate"]));
+				$vote = new Vote(intval($row[VOTE_AUTHOR]), intval($row[VOTE_POST]), $row[VOTE_VOTE] > 0);
+				$vote->setCreationDate(time($row[VOTE_CREATION_DATE]));
 				$votes[] = $vote;
 			}
 			//echo "<p>" . serialize($votes) . "</p>"; //DEBUG;
@@ -464,10 +464,10 @@ class Post {
 	function loadReports() {
 		require_once("query.php");
 		$q = new Query();
-		$table = $q->getDBSchema()->getTable("Report");
+		$table = $q->getDBSchema()->getTable(TABLE_REPORT);
 		$rs = $q->execute($s = $q->generateSelectStm(array($table),
 													 array(),
-													 array(new WhereConstraint($table->getColumn("rp_post"),Operator::$UGUALE,$this->getID())),
+													 array(new WhereConstraint($table->getColumn(REPORT_POST),Operator::$UGUALE,$this->getID())),
 													 array()),
 						  $table->getName(), $this);
 		if($rs !== false) {
@@ -475,8 +475,8 @@ class Post {
 			while($q->hasNext()) {
 				$row = $q->next();
 				require_once("common.php");
-				$report = new Report(intval($row["rp_user"]), intval($row["rp_post"]), $row["rp_report"]);
-				$report->setID($row["rp_id"]);
+				$report = new Report(intval($row[REPORT_USER]), intval($row[REPORT_POST]), $row[REPORT_TEXT]);
+				$report->setID($row[REPORT_ID]);
 				$reports[] = $report;
 			}
 			$this->setReports($reports);

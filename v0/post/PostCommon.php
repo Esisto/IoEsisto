@@ -93,10 +93,10 @@ class Comment {
 		$q = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
 			$dbs = $q->getDBSchema();
-			$table = $dbs->getTable("Comment");
-			$data = array("cm_comment" => $this->getComment(),
-						  "cm_post" => $this->getPost(),
-						  "cm_author" => $this->getAuthor());
+			$table = $dbs->getTable(TABLE_COMMENT);
+			$data = array(COMMENT_COMMENT => $this->getComment(),
+						  COMMENT_POST => $this->getPost(),
+						  COMMENT_AUTHOR => $this->getAuthor());
 			$rs = $q->execute($s = $q->generateInsertStm($table,$data),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
@@ -105,14 +105,14 @@ class Comment {
 			//echo "<br />" . serialize($this->ID); //DEBUG
 			$rs = $q->execute($s = $q->generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn("cm_ID"),Operator::$UGUALE,$this->getID())),
+														 array(new WhereConstraint($table->getColumn(COMMENT_ID),Operator::$UGUALE,$this->getID())),
 														 array()),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			while($q->hasNext()) {
 				$row = $q->next();
-				$this->creationDate = time($row["cm_creationDate"]);
-				//echo "<br />" . serialize($row["cm_creationDate"]); //DEBUG
+				$this->creationDate = time($row[COMMENT_CREATION_DATE]);
+				//echo "<br />" . serialize($row[COMMENT_CREATION_DATE]); //DEBUG
 				break;
 			}
 			//echo "<br />" . $this; //DEBUG
@@ -126,9 +126,9 @@ class Comment {
 		$q = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
 			$dbs = $q->getDBSchema();
-			$table = $dbs->getTable("Comment");
+			$table = $dbs->getTable(TABLE_COMMENT);
 			$rs = $q->execute($s = $q->generateDeleteStm($table,
-														 array(new WhereConstraint($table->getColumn("cm_ID"),Operator::$UGUALE,$this->getID()))),
+														 array(new WhereConstraint($table->getColumn(COMMENT_ID),Operator::$UGUALE,$this->getID()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			if($q->affected_rows() == 1) {
@@ -148,27 +148,27 @@ class Comment {
 	static function loadFromDatabase($id) {
 		require_once("query.php");
 		$q = new Query();
-		$table = $q->getDBSchema()->getTable("Comment");
+		$table = $q->getDBSchema()->getTable(TABLE_COMMENT);
 		$rs = $q->execute($s = $q->generateSelectStm(array($table),
 													 array(),
-													 array(new WhereConstraint($table->getColumn("cm_ID"),Operator::$UGUALE,$id)),
+													 array(new WhereConstraint($table->getColumn(COMMENT_ID),Operator::$UGUALE,$id)),
 													 array()),
 						  $table->getName(), $this);
 		if($rs !== false && $q->num_rows() == 1) {
 			while($q->hasNext()) {
 				$row = $q->next();
-				$data = array("comment" => $row["cm_comment"],
-							  "author" => intval($row["cm_author"]),
-							  "post" => intval($row["cm_post"]));
+				$data = array("comment" => $row[COMMENT_COMMENT],
+							  "author" => intval($row[COMMENT_AUTHOR]),
+							  "post" => intval($row[COMMENT_POST]));
 				$c = new Comment($data);
-				$c->setID(intval($row["cm_ID"]));
-				$c->setCreationDate(time($row["cm_creationDate"]));
+				$c->setID(intval($row[COMMENT_ID]));
+				$c->setCreationDate(time($row[COMMENT_CREATION_DATE]));
 				break;
 			}
 			$c->loadReports();
 			return $c;
 		} else{
-			$GLOBALS["query_error"] = "NOT FOUND";
+			$GLOBALS["query_error"] = NOT_FOUND;
 			return false;
 		}
 	}
@@ -237,25 +237,25 @@ class Vote {
 		$q = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
 			$dbs = $q->getDBSchema();
-			$table = $dbs->getTable("Vote");
-			$data = array("vt_vote" => $this->getVote(),
-						  "vt_post" => $this->getPost(),
-						  "vt_author" => $this->getAuthor());
+			$table = $dbs->getTable(TABLE_VOTE);
+			$data = array(VOTE_VOTE => $this->getVote(),
+						  VOTE_POST => $this->getPost(),
+						  VOTE_AUTHOR => $this->getAuthor());
 			$rs = $q->execute($s = $q->generateInsertStm($table,$data),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			//echo "<br />" . serialize($rs); //DEBUG
 			$rs = $q->execute($s = $q->generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn("vt_author"),Operator::$UGUALE,$this->getAuthor()),
-															   new WhereConstraint($table->getColumn("vt_post"),Operator::$UGUALE,$this->getPost())),
+														 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::$UGUALE,$this->getAuthor()),
+															   new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$this->getPost())),
 														 array()),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			while($q->hasNext()) {
 				$row = $q->next();
-				$this->creationDate = time($row["vt_creationDate"]);
-				//echo "<br />" . serialize($row["vt_creationDate"]); //DEBUG
+				$this->creationDate = time($row[VOTE_CREATION_DATE]);
+				//echo "<br />" . serialize($row[VOTE_CREATION_DATE]); //DEBUG
 				break;
 			}
 			//echo "<br />" . $this; //DEBUG
@@ -268,11 +268,11 @@ class Vote {
 		require_once("query.php");
 		$q = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$table = $q->getDBSchema()->getTable("Vote");
+			$table = $q->getDBSchema()->getTable(TABLE_VOTE);
 			$rs = $q->execute($s = $q->generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn("vt_author"),Operator::$UGUALE,$this->getAuthor()),
-															   new WhereConstraint($table->getColumn("vt_post"),Operator::$UGUALE,$this->getPost())),
+														 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::$UGUALE,$this->getAuthor()),
+															   new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$this->getPost())),
 														 array()),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
@@ -280,16 +280,16 @@ class Vote {
 			while($q->hasNext()) {
 				$row = $q->next();
 				//cerco le differenze e le salvo.
-				if($row["vt_vote"] != $this->getVote())
-					$data["vt_vote"] = $this->getVote();
+				if($row[VOTE_VOTE] != $this->getVote())
+					$data[VOTE_VOTE] = $this->getVote();
 				break;
 			}
 			//echo "<br />" . serialize($data); //DEBUG
 			
 			$rs = $q->execute($s = $q->generateUpdateStm($table,
 														 $data,
-														 array(new WhereConstraint($table->getColumn("vt_author"),Operator::$UGUALE,$this->getAuthor()),
-															   new WhereConstraint($table->getColumn("vt_post"),Operator::$UGUALE,$this->getPost()))),
+														 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::$UGUALE,$this->getAuthor()),
+															   new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$this->getPost()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			//echo "<br />" . $rs; //DEBUG
@@ -307,10 +307,10 @@ class Vote {
 		$q = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
 			$dbs = $q->getDBSchema();
-			$table = $dbs->getTable("Vote");
+			$table = $dbs->getTable(TABLE_VOTE);
 			$rs = $q->execute($s = $q->generateDeleteStm($table,
-														 array(new WhereConstraint($table->getColumn("vt_author"),Operator::$UGUALE,$this->getAuthor()),
-															   new WhereConstraint($table->getColumn("vt_post"),Operator::$UGUALE,$this->getPost()))),
+														 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::$UGUALE,$this->getAuthor()),
+															   new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$this->getPost()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			if($q->affected_rows() == 1) {
@@ -330,22 +330,22 @@ class Vote {
 	static function loadFromDatabase($author, $post) {
 		require_once("query.php");
 		$q = new Query();
-		$table = $q->getDBSchema()->getTable("Vote");
+		$table = $q->getDBSchema()->getTable(TABLE_VOTE);
 		$rs = $q->execute($s = $q->generateSelectStm(array($table),
 													 array(),
-													 array(new WhereConstraint($table->getColumn("vt_author"),Operator::$UGUALE,$author),
-														   new WhereConstraint($table->getColumn("vt_post"),Operator::$UGUALE,$post)),
+													 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::$UGUALE,$author),
+														   new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$post)),
 													 array()),
 						  $table->getName(), $this);
 		if($rs !== false && $q->num_rows() == 1) {
 			while($q->hasNext()) {
 				$row = $q->next();
-				$v = new Vote(intval($row["vt_author"]), intval($row["vt_post"]), $row["vt_vote"] > 0);
-				$v->setCreationDate(time($row["cm_creationDate"]));
+				$v = new Vote(intval($row[VOTE_AUTHOR]), intval($row[VOTE_POST]), $row[VOTE_VOTE] > 0);
+				$v->setCreationDate(time($row[VOTE_CREATION_DATE]));
 				return $v;
 			}
 		} else{
-			$GLOBALS["query_error"] = "NOT FOUND";
+			$GLOBALS["query_error"] = NOT_FOUND;
 			return false;
 		}
 	}
