@@ -2,6 +2,7 @@
 
 //DB UTILITY STRINGS
 define("LOGMANAGER", "LogManager");
+define("DB_STATUS", "db_status");
 
 //MAIL STRINGS
 define("SPAM", "Spam");
@@ -19,6 +20,7 @@ define("TABLE_USER", "User");
 define("TABLE_POST", "Post");
 define("TABLE_COMMENT", "Comment");
 define("TABLE_CONTACT", "Contact");
+define("TABLE_CONTACT_TYPE", "ContactType");
 define("TABLE_CONTEST_SUBSCRIBER", "ContestSubscriber");
 define("TABLE_FEEDBACK", "Feedback");
 define("TABLE_FOLLOW", "Follow");
@@ -92,10 +94,14 @@ define("COMMENT_AUTHOR", "cm_author");
 define("COMMENT_POST", "cm_post");
 define("COMMENT_USER_FKEY", "fk_comment_user1");
 define("COMMENT_POST_FKEY", "fk_comment_post1");
+define("CONTACT_TYPE_TYPE", "ctt_type");
+define("CONTACT_TYPE_NAME", "ctt_name");
 define("CONTACT_CONTACT", "ct_contact");
 define("CONTACT_USER", "ct_user");
 define("CONTACT_TYPE", "ct_type");
+define("CONTACT_NAME", "ct_type");
 define("CONTACT_USER_FKEY", "fk_contact_user");
+define("CONTACT_CONTACT_TYPE_FKEY", "fk_contact_contactType");
 define("CONTEST_SUBSCRIBER_CONTEST", "cs_contest");
 define("CONTEST_SUBSCRIBER_POST", "cs_post");
 define("CONTEST_SUBSCRIBER_PLACEMENT", "cs_haswon");

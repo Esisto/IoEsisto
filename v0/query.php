@@ -481,13 +481,12 @@ function connect() {
 	
 	$db = mysql_connect(DB_HOSTNAME, DB_USERNAME, DB_PASSWORD);
 	if(false !== $db && mysql_select_db(DB_NAME,$db))
-		$GLOBALS["db_status"] = DB_CONNECTED . DB_HOSTNAME . "/" . DB_NAME;
+		$GLOBALS[DB_STATUS] = DB_CONNECTED . DB_HOSTNAME . "/" . DB_NAME;
 	else
-		$GLOBALS["db_status"] = DB_NOT_CONNECTED;
+		$GLOBALS[DB_STATUS] = DB_NOT_CONNECTED;
 	
-	// DEBUG
-	//echo $GLOBALS["db_state"];
-	// END DEBUG
+	
+	//echo serialize($db); //DEBUG
 	return $db;
 }
 ?>

@@ -46,10 +46,10 @@ class Report {
 			$q = new Query();
 			if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
 				$dbs = $q->getDBSchema();
-				$table = $dbs->getTable("Report");
-				$data = array("rp_report" => $this->getReport(),
-							  "rp_post" => $this->getPost(),
-							  "rp_user" => $this->getAuthor());
+				$table = $dbs->getTable(TABLE_REPORT);
+				$data = array(REPORT_TEXT => $this->getReport(),
+							  REPORT_POST => $this->getPost(),
+							  REPORT_USER => $this->getAuthor());
 				$rs = $q->execute($s = $q->generateInsertStm($table,$data), $table->getName(), $this);
 				//echo "<br />" . $s; //DEBUG
 				//echo "<br />" . serialize($rs); //DEBUG
@@ -66,9 +66,9 @@ class Report {
 		$q = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
 			$dbs = $q->getDBSchema();
-			$table = $dbs->getTable("Report");
+			$table = $dbs->getTable(TABLE_REPORT);
 			$rs = $q->execute($s = $q->generateDeleteStm($table,
-														 array(new WhereConstraint($table->getColumn("rp_ID"),Operator::$UGUALE,$this->getID()))),
+														 array(new WhereConstraint($table->getColumn(REPORT_ID),Operator::$UGUALE,$this->getID()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			if($q->affected_rows() == 1) {
@@ -108,17 +108,17 @@ class LogManager {
 			$q = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
 			$dbs = $q->getDBSchema();
-			$table = $dbs->getTable("Log");
+			$table = $dbs->getTable(TABLE_LOG);
 			$s = "";
 			if(is_numeric($from) && $from != 0) {
 				$s1 = $q->generateSelectStm(array($table), array(),
-											array(new WhereConstraint($table->getColumn("log_timestamp"),Operator::$MAGGIOREUGUALE,$from)),
+											array(new WhereConstraint($table->getColumn(LOG_TIMESTAMP),Operator::$MAGGIOREUGUALE,$from)),
 											array());
 			}
 			if(is_numeric($to) && $to != 0) {
 				$s2 = $q->generateSelectStm(array($table), array(),
-											array(new WhereConstraint($table->getColumn("log_timestamp"),Operator::$MINOREUGUALE,$to)),
-											array("order" => 1, "by" => "log_timestamp"));
+											array(new WhereConstraint($table->getColumn(LOG_TIMESTAMP),Operator::$MINOREUGUALE,$to)),
+											array("order" => 1, "by" => LOG_TIMESTAMP));
 			}
 			if(is_numeric($from) && $from != 0 && is_numeric($to) && $to != 0) {
 				$s = $q->generateComplexSelectStm(array($s1, $s2), array(SelectOperator::$INTERSECT));
@@ -130,7 +130,7 @@ class LogManager {
 				return array();
 			}
 			//echo "<br />" . $s; //DEBUG
-			$rs = $q->execute($s, $table->getName(), "LogManager");
+			$rs = $q->execute($s, $table->getName(), LOGMANAGER);
 			$log_result = array();
 			while($row = mysql_fetch_row) {
 				$log_result[] = $row;
@@ -161,16 +161,16 @@ class LogManager {
 		if(!isset($query))
 			$query = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$table = $query->getDBSchema()->getTable("Log");
+			$table = $query->getDBSchema()->getTable(TABLE_LOG);
 			//echo "<br />" . $tablename; //DEBUG
 			
-			$data = array("log_action" => $action,
-						  "log_table" => $tablename,
-						  "log_user" => $user,
-						  "log_object" => serialize($object));
+			$data = array(LOG_ACTION => $action,
+						  LOG_TABLE => $tablename,
+						  LOG_SUBJECT => $user,
+						  LOG_OBJECT => serialize($object));
 			$s = $query->generateInsertStm($table, $data);
 			//echo "<br />" . $s; //DEBUG
-			$rs = $query->execute($s, $table->getName(), "LogManager");
+			$rs = $query->execute($s, $table->getName(), LOGMANAGER);
 			return mysql_insert_id();
 		}
 		return false;

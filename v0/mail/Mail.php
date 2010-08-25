@@ -277,13 +277,14 @@ class MailDirectory {
 		require_once("query.php");
 		$q = new Query();
 		$table = $q->getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
+		//echo "<p>" . $table . "</p>"; //DEBUG
 		$rs = $q->execute($s = $q->generateSelectStm(array($table),
 													 array(),
 													 array(new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_DIRECTORY),Operator::$UGUALE,$this->getID())),
 													 array()),
 						  $table->getName(), $this);
 		
-		//	echo "<p>" . $s . "</p>"; //DEBUG
+		//echo "<p>" . $s . "</p>"; //DEBUG
 		//echo "<p>" . $q->num_rows() . "</p>"; //DEBUG
 		$mails = array();
 		if($rs !== false && $q->num_rows() > 0) {

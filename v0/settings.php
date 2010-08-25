@@ -5,6 +5,8 @@ define("DB_USERNAME", "root");
 define("DB_PASSWORD", "root");
 define("DB_NAME", "ioesisto");
 
+// File System settings.
+define("USER_DIR", "user2");
 
 // Language settings.
 define("LANG", "en"); // selezionare il linguaggio voluto.

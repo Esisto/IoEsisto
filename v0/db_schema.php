@@ -1,4 +1,6 @@
 <?php
+require_once("strings/strings.php");
+
 class Table {
 	private $name;
 	private $columns;
@@ -142,12 +144,13 @@ class DBSchema {
 		require_once("query.php");
 		
 		$db = connect();
-		if($GLOBALS["db_state"] != DB_NOT_CONNECTED) {
+		//echo serialize($db); //DEBUG
+		if(isset($db)) {
 			$rs = mysql_query("SHOW TABLES", $db);
 			$tabs = array();
 			while($row = mysql_fetch_row($rs))
 				$tabs[] = $row[0];
-			//echo "<br />". serialize($tabs); // DEBUG
+			//echo "<br />". serialize($rs); // DEBUG
 			for($i=0; $i<count($tabs); $i++) {
 				$rs = mysql_query("SELECT * FROM $tabs[$i] LIMIT 1");
 				$cols = array();
