@@ -25,25 +25,28 @@ CREATE TABLE IF NOT EXISTS `" . TABLE_ROLE . "` (
 
 CREATE TABLE IF NOT EXISTS `" . TABLE_USER . "` (
   `" . USER_ID . "` bigint(20) NOT NULL AUTO_INCREMENT,
-  `" . USER_NICKNAME . "` varchar(100) NOT NULL,
-  `" . USER_PASSWORD . "` varchar(128) NOT NULL,
-  `" . USER_NAME . "` varchar(100) NOT NULL,
-  `" . USER_SURNAME . "` varchar(100) NOT NULL,
-  `" . USER_BIRTHDAY . "` date NULL,
+  `" . USER_NICKNAME . "` varchar(100) NULL,
   `" . USER_E_MAIL . "` varchar(100) NOT NULL,
+  `" . USER_PASSWORD . "` varchar(128) NOT NULL,
+  `" . USER_NAME . "` varchar(100) NULL,
+  `" . USER_SURNAME . "` varchar(100) NULL,
   `" . USER_GENDER . "` enum('m','f') DEFAULT NULL,
+  `" . USER_BIRTHDAY . "` date NULL,
+  `" . USER_BIRTHPLACE . "` text NULL,
+  `" . USER_LIVINGPLACE . "` text NULL,
   `" . USER_AVATAR . "` varchar(255) DEFAULT NULL,
-  `" . USER_VISIBLE . "` tinyint(1) DEFAULT 0,
-  `" . USER_VERIFICATED . "` tinyint(1) DEFAULT 0,
   `" . USER_HOBBIES . "` varchar(200) NULL,
   `" . USER_JOB . "` varchar(100) NULL,
-  `" . USER_BIRTHPLACE . "` text NULL,
   `" . USER_ROLE . "` varchar(50) NOT NULL,
-  `" . USER_LIVINGPLACE . "` text NULL,
+  `" . USER_CREATION_DATE . "` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `" . USER_VISIBLE . "` tinyint(1) DEFAULT 0,
+  `" . USER_VERIFIED . "` tinyint(1) DEFAULT 0,
   PRIMARY KEY (`" . USER_ID . "`),
   UNIQUE KEY `" . USER_NICKNAME_UKEY . "` (`" . USER_NICKNAME . "`),
   UNIQUE KEY `" . USER_E_MAIL_UKEY . "` (`" . USER_E_MAIL . "`),
   KEY `" . USER_ROLE_FKEY . "` (`" . USER_ROLE . "`),
+  KEY `" . USER_RESOURCE_FKEY . "` (`" . USER_AVATAR . "`),
+  FOREIGN KEY (`" . USER_AVATAR . "`) REFERENCES `" . TABLE_RESOURCE . "` (`" . RESOURCE_ID . "`) ON DELETE NO ACTION,
   FOREIGN KEY (`" . USER_ROLE . "`) REFERENCES `" . TABLE_ROLE . "` (`" . ROLE_NAME . "`) ON DELETE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin AUTO_INCREMENT=1;
 
@@ -80,19 +83,20 @@ CREATE TABLE IF NOT EXISTS `" . TABLE_COMMENT . "` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 CREATE TABLE IF NOT EXISTS `" . TABLE_CONTACT_TYPE . "` (
-  `" . CONTACT_TYPE_TYPE . "` enum(`phone`, `address`, `email`, `website`, `IM`) NOT NULL,
+  `" . CONTACT_TYPE_TYPE . "` enum('phone', 'address', 'email', 'website', 'IM') NOT NULL,
   `" . CONTACT_TYPE_NAME . "` varchar(20) NOT NULL,
   PRIMARY KEY (`" . CONTACT_TYPE_NAME . "`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 CREATE TABLE IF NOT EXISTS `" . TABLE_CONTACT . "` (
+  `" . CONTACT_ID . "` bigint(20) NOT NULL AUTO_INCREMENT,
   `" . CONTACT_CONTACT . "` varchar(100) NOT NULL,
   `" . CONTACT_USER . "` bigint(20) NOT NULL,
   `" . CONTACT_NAME . "` varchar(20) NOT NULL,
-  PRIMARY KEY (`" . CONTACT_CONTACT . "`,`" . CONTACT_USER . "`),
+  PRIMARY KEY (`" . CONTACT_ID . "`),
   KEY `" . CONTACT_CONTACT_TYPE_FKEY . "` (`" . CONTACT_NAME . "`),
   KEY `" . CONTACT_USER_FKEY . "` (`" . CONTACT_USER . "`),
-  FOREIGN KEY (`" . CONTACT_USER . "`) REFERENCES `" . TABLE_USER . "` (`" . USER_ID . "`) ON DELETE CASCADE
+  FOREIGN KEY (`" . CONTACT_USER . "`) REFERENCES `" . TABLE_USER . "` (`" . USER_ID . "`) ON DELETE CASCADE,
   FOREIGN KEY (`" . CONTACT_NAME . "`) REFERENCES `" . TABLE_CONTACT_TYPE . "` (`" . CONTACT_TYPE_NAME . "`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 

@@ -1,5 +1,8 @@
 <?php
 
+//
+define("FEEDBACK_INITIAL_VALUE", 0);
+
 //DB UTILITY STRINGS
 define("LOGMANAGER", "LogManager");
 define("DB_STATUS", "db_status");
@@ -64,15 +67,17 @@ define("USER_E_MAIL", "us_email");
 define("USER_GENDER", "us_gender");
 define("USER_AVATAR", "us_avatar");
 define("USER_VISIBLE", "us_visible");
-define("USER_VERIFICATED", "us_verificated");
+define("USER_VERIFIED", "us_verified");
 define("USER_HOBBIES", "us_hobbies");
 define("USER_JOB", "us_job");
 define("USER_BIRTHPLACE", "us_birthplace");
 define("USER_ROLE", "us_role");
 define("USER_LIVINGPLACE", "us_livingplace");
+define("USER_CREATION_DATE", "us_creationDate");
 define("USER_E_MAIL_UKEY", "nickname_UNIQUE");
 define("USER_NICKNAME_UKEY", "email_UNIQUE");
 define("USER_ROLE_FKEY", "fk_user_roles1");
+define("USER_RESOURCE_FKEY", "fk_user_resource1");
 define("POST_ID", "ps_ID");
 define("POST_TYPE", "ps_type");
 define("POST_TITLE", "ps_title");
@@ -97,9 +102,9 @@ define("COMMENT_POST_FKEY", "fk_comment_post1");
 define("CONTACT_TYPE_TYPE", "ctt_type");
 define("CONTACT_TYPE_NAME", "ctt_name");
 define("CONTACT_CONTACT", "ct_contact");
+define("CONTACT_ID", "ct_ID");
 define("CONTACT_USER", "ct_user");
-define("CONTACT_TYPE", "ct_type");
-define("CONTACT_NAME", "ct_type");
+define("CONTACT_NAME", "ct_name");
 define("CONTACT_USER_FKEY", "fk_contact_user");
 define("CONTACT_CONTACT_TYPE_FKEY", "fk_contact_contactType");
 define("CONTEST_SUBSCRIBER_CONTEST", "cs_contest");

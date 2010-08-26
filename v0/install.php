@@ -32,13 +32,10 @@
 	$queries = explode("\n\n", $s);
 	
 	for($i=0; $i<count($queries); $i++) {
-		$rs = $q->execute($queries[$i], null, LOGMANAGER);
+		$q->execute($queries[$i], null, LOGMANAGER);
 		//echo $queries[$i]; //DEBUG
-		if($rs === false) echo "<p>ERROR CREATING TABLES</p>";
-		else {
 			$ss = explode("`", $queries[$i]);
 			echo "<p>TABLE " . $ss[1] . " INSTALLED</p>";
-		}
 	}
 	
 	$q->execute("INSERT INTO `Role` VALUES('admin')", "Role", null);

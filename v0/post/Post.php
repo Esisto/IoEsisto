@@ -321,18 +321,14 @@ class Post {
 	 */
 	function delete() {
 		require_once("query.php");
-		if(!isset($GLOBALS["q"]))
-			$q = new Query();
-		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$dbs = $q->getDBSchema();
-			$table = $dbs->getTable(TABLE_POST);
-			$rs = $q->execute($s = $q->generateDeleteStm($table,
-														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$this->getID()))),
-							  $table->getName(), $this);
-			//echo "<br />" . $q->affected_rows() . $s; //DEBUG
-			if($q->affected_rows() == 1) {
-				return $this;
-			}
+		$q = new Query();
+		$table = $q->getDBSchema()->getTable(TABLE_POST);
+		$rs = $q->execute($s = $q->generateDeleteStm($table,
+													 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$this->getID()))),
+						  $table->getName(), $this);
+		//echo "<br />" . $q->affected_rows() . $s; //DEBUG
+		if($q->affected_rows() == 1) {
+			return $this;
 		}
 		return false;
 	}

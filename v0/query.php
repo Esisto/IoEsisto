@@ -347,7 +347,7 @@ class Query {
 		return $s;
 	}
 	
-	function execute($query, $tablename, $object) {
+	function execute($query, $tablename = null, $object = null) {
 		$this->rs = mysql_query($query, $this->db);
 		if($object == LOGMANAGER) return;
 		$this->query_type = substr($query, 0, 6);
