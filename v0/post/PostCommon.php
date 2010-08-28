@@ -90,27 +90,28 @@ class Comment {
 	 */
 	function save() {
 		require_once("query.php");
-		$q = new Query();
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$dbs = $q->getDBSchema();
+			$dbs = $_SESSION["q"]->getDBSchema();
 			$table = $dbs->getTable(TABLE_COMMENT);
 			$data = array(COMMENT_COMMENT => $this->getComment(),
 						  COMMENT_POST => $this->getPost(),
 						  COMMENT_AUTHOR => $this->getAuthor());
-			$rs = $q->execute($s = $q->generateInsertStm($table,$data),
+			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateInsertStm($table,$data),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			//echo "<br />" . serialize($rs); //DEBUG
-			$this->ID = $q->last_inserted_id();
+			$this->ID = $_SESSION["q"]->last_inserted_id();
 			//echo "<br />" . serialize($this->ID); //DEBUG
-			$rs = $q->execute($s = $q->generateSelectStm(array($table),
+			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 														 array(),
 														 array(new WhereConstraint($table->getColumn(COMMENT_ID),Operator::$UGUALE,$this->getID())),
 														 array()),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
-			while($q->hasNext()) {
-				$row = $q->next();
+			while($_SESSION["q"]->hasNext()) {
+				$row = $_SESSION["q"]->next();
 				$this->creationDate = time($row[COMMENT_CREATION_DATE]);
 				//echo "<br />" . serialize($row[COMMENT_CREATION_DATE]); //DEBUG
 				break;
@@ -123,15 +124,16 @@ class Comment {
 	
 	function delete() {
 		require_once("query.php");
-		$q = new Query();
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$dbs = $q->getDBSchema();
+			$dbs = $_SESSION["q"]->getDBSchema();
 			$table = $dbs->getTable(TABLE_COMMENT);
-			$rs = $q->execute($s = $q->generateDeleteStm($table,
+			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateDeleteStm($table,
 														 array(new WhereConstraint($table->getColumn(COMMENT_ID),Operator::$UGUALE,$this->getID()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
-			if($q->affected_rows() == 1) {
+			if($_SESSION["q"]->affected_rows() == 1) {
 				return $this;
 			}
 		}
@@ -147,16 +149,17 @@ class Comment {
 	 */
 	static function loadFromDatabase($id) {
 		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_COMMENT);
-		$rs = $q->execute($s = $q->generateSelectStm(array($table),
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_COMMENT);
+		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 													 array(),
 													 array(new WhereConstraint($table->getColumn(COMMENT_ID),Operator::$UGUALE,$id)),
 													 array()),
-						  $table->getName(), $this);
-		if($rs !== false && $q->num_rows() == 1) {
-			while($q->hasNext()) {
-				$row = $q->next();
+						  $table->getName(), null);
+		if($rs !== false && $_SESSION["q"]->num_rows() == 1) {
+			while($_SESSION["q"]->hasNext()) {
+				$row = $_SESSION["q"]->next();
 				$data = array("comment" => $row[COMMENT_COMMENT],
 							  "author" => intval($row[COMMENT_AUTHOR]),
 							  "post" => intval($row[COMMENT_POST]));
@@ -234,26 +237,27 @@ class Vote {
 	 */
 	function save() {
 		require_once("query.php");
-		$q = new Query();
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$dbs = $q->getDBSchema();
+			$dbs = $_SESSION["q"]->getDBSchema();
 			$table = $dbs->getTable(TABLE_VOTE);
 			$data = array(VOTE_VOTE => $this->getVote(),
 						  VOTE_POST => $this->getPost(),
 						  VOTE_AUTHOR => $this->getAuthor());
-			$rs = $q->execute($s = $q->generateInsertStm($table,$data),
+			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateInsertStm($table,$data),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			//echo "<br />" . serialize($rs); //DEBUG
-			$rs = $q->execute($s = $q->generateSelectStm(array($table),
+			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 														 array(),
 														 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::$UGUALE,$this->getAuthor()),
 															   new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$this->getPost())),
 														 array()),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
-			while($q->hasNext()) {
-				$row = $q->next();
+			while($_SESSION["q"]->hasNext()) {
+				$row = $_SESSION["q"]->next();
 				$this->creationDate = time($row[VOTE_CREATION_DATE]);
 				//echo "<br />" . serialize($row[VOTE_CREATION_DATE]); //DEBUG
 				break;
@@ -266,10 +270,11 @@ class Vote {
 		
 	function update() {
 		require_once("query.php");
-		$q = new Query();
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$table = $q->getDBSchema()->getTable(TABLE_VOTE);
-			$rs = $q->execute($s = $q->generateSelectStm(array($table),
+			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_VOTE);
+			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 														 array(),
 														 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::$UGUALE,$this->getAuthor()),
 															   new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$this->getPost())),
@@ -277,8 +282,8 @@ class Vote {
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			$data = array();
-			while($q->hasNext()) {
-				$row = $q->next();
+			while($_SESSION["q"]->hasNext()) {
+				$row = $_SESSION["q"]->next();
 				//cerco le differenze e le salvo.
 				if($row[VOTE_VOTE] != $this->getVote())
 					$data[VOTE_VOTE] = $this->getVote();
@@ -286,14 +291,14 @@ class Vote {
 			}
 			//echo "<br />" . serialize($data); //DEBUG
 			
-			$rs = $q->execute($s = $q->generateUpdateStm($table,
+			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateUpdateStm($table,
 														 $data,
 														 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::$UGUALE,$this->getAuthor()),
 															   new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$this->getPost()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			//echo "<br />" . $rs; //DEBUG
-			if($q->affected_rows() == 0)
+			if($_SESSION["q"]->affected_rows() == 0)
 				return false;
 			
 			//echo "<br />" . $this; //DEBUG
@@ -304,16 +309,17 @@ class Vote {
 	
 	function delete() {
 		require_once("query.php");
-		$q = new Query();
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$dbs = $q->getDBSchema();
+			$dbs = $_SESSION["q"]->getDBSchema();
 			$table = $dbs->getTable(TABLE_VOTE);
-			$rs = $q->execute($s = $q->generateDeleteStm($table,
+			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateDeleteStm($table,
 														 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::$UGUALE,$this->getAuthor()),
 															   new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$this->getPost()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
-			if($q->affected_rows() == 1) {
+			if($_SESSION["q"]->affected_rows() == 1) {
 				return $this;
 			}
 		}
@@ -329,17 +335,18 @@ class Vote {
 	 */
 	static function loadFromDatabase($author, $post) {
 		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_VOTE);
-		$rs = $q->execute($s = $q->generateSelectStm(array($table),
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_VOTE);
+		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 													 array(),
 													 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::$UGUALE,$author),
 														   new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$post)),
 													 array()),
-						  $table->getName(), $this);
-		if($rs !== false && $q->num_rows() == 1) {
-			while($q->hasNext()) {
-				$row = $q->next();
+						  $table->getName(), null);
+		if($rs !== false && $_SESSION["q"]->num_rows() == 1) {
+			while($_SESSION["q"]->hasNext()) {
+				$row = $_SESSION["q"]->next();
 				$v = new Vote(intval($row[VOTE_AUTHOR]), intval($row[VOTE_POST]), $row[VOTE_VOTE] > 0);
 				$v->setCreationDate(time($row[VOTE_CREATION_DATE]));
 				return $v;

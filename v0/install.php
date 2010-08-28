@@ -33,7 +33,10 @@
 	
 	for($i=0; $i<count($queries); $i++) {
 		$q->execute($queries[$i], null, LOGMANAGER);
-		//echo $queries[$i]; //DEBUG
+		//DEBUG
+		$s = str_replace(",", ",<br />", $queries[$i]);
+		$s = str_replace(") ENGINE", ")<br />ENGINE", $s);
+		echo $s; //DEBUG
 			$ss = explode("`", $queries[$i]);
 			echo "<p>TABLE " . $ss[1] . " INSTALLED</p>";
 	}
@@ -46,7 +49,7 @@
 	if($ra == 2) echo "<p>INSERTED ROLES</p>";
 	
 	// DEBUG
-	$q->execute("INSERT INTO `User` VALUES(2, 'ioesisto', 'ciccia', 'Io', 'Esisto', NULL, 'no-reply@ioesisto.com', 'm', NULL, 1, 1, NULL, NULL, NULL, 'admin', NULL)", "User", null);
+	$q->execute("INSERT INTO `User` VALUES(1, 'ioesisto', 'no-reply@ioesisto.com', 'ciccia', 'Io', 'Esisto', 'm', NULL, NULL, NULL, NULL, NULL, NULL, 'admin', '2010-08-27 11:49:28', 1, 1)", "User", null);
 	if($q->affected_rows() == 1) echo "<p>INSERTED FAKE USER</p>";
 	$q->execute("INSERT INTO `MailDirectory` VALUES(1, '" . TRASH . "', 2)", "MailDirectory", null);
 	$ra = $q->affected_rows();

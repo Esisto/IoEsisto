@@ -17,7 +17,7 @@ class Test {
 	var $collection_data_all;
 	
 	function __construct() {
-		$this->author_id = 2;
+		$this->author_id = 1;
 		$this->vote_value = true;
 		$this->comment_text = "COMMENTO!";
 		$this->post_data = array("title" => "TITOLO", "subtitle" => "SOTTOTITOLO", "headline" => "L'OCCHIELLO",
@@ -321,7 +321,7 @@ class Test {
 		//echo "<br />" . $p1 . "<br />" . $post; //DEBUG
 		if($post === false || count($post->getVotes()) == 0)
 			return "<br />Vote saving test NOT PASSED: not added";
-		if($com === false) return "<br />Vote saving test NOT PASSED: not created";
+		if($vote === false) return "<br />Vote saving test NOT PASSED: not created";
 		
 		if($votes[0]->getAuthor() != $vote->getAuthor())
 			return "<br />Vote saving test NOT PASSED: author";
@@ -354,7 +354,7 @@ class Test {
 		
 		$vote = PostManager::loadVote($votes[0]->getAuthor(),$votes[0]->getPost());
 		$post = PostManager::loadPost($p1->getId());
-		if($com !== false && $post !== false) {
+		if($vote !== false && $post !== false) {
 			$vote = PostManager::removeVote($vote);
 			
 			$post = PostManager::loadPost($post->getID());
@@ -487,7 +487,7 @@ class Test {
 			return "<br />Vote saving test NOT PASSED: not added";
 		//echo $votes[0] . "<br />" . $vote; //DEBUG
 		//echo "<br />" . $p1 . "<br />" . $post; //DEBUG
-		if($com === false) return "<br />Vote saving test NOT PASSED: not created";
+		if($vote === false) return "<br />Vote saving test NOT PASSED: not created";
 		
 		if($votes[0]->getAuthor() != $vote->getAuthor())
 			return "<br />Vote saving test NOT PASSED: author";

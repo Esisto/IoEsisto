@@ -13,7 +13,7 @@ class MailTest {
 	var $fake_trash_dir_id;
 	
 	function __construct() {
-		$this->author_id = 2;
+		$this->author_id = 1;
 		$this->mail_data = array("from" => $this->author_id, "to" => "$this->author_id",
 								 "text" => "TESTO!");
 		$this->mail_data_all = array("subject" => "OGGETTO", "from" => $this->author_id, "to" => "$this->author_id",

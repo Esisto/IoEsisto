@@ -201,9 +201,10 @@ class Post {
 	function save() {
 		require_once("post/PostCommon.php");
 		require_once("query.php");
-		$q = new Query();
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$dbs = $q->getDBSchema();
+			$dbs = $_SESSION["q"]->getDBSchema();
 			$table = $dbs->getTable(TABLE_POST);
 			$data = array(POST_TYPE => $this->getType());
 			if(isset($this->title) && !is_null($this->getTitle()))
@@ -225,19 +226,19 @@ class Post {
 			if(isset($this->place) && !is_null($this->getPlace()))
 				$data[POST_PLACE] = $this->getPlace(); //TODO Non ancora implementato.
 			
-			$rs = $q->execute($s = $q->generateInsertStm($table,$data), $table->getName(), $this);
+			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateInsertStm($table,$data), $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
-			//echo "<br />" . $q->affected_rows(); //DEBUG
-			$this->setID($q->last_inserted_id());
+			//echo "<br />" . $_SESSION["q"]->affected_rows(); //DEBUG
+			$this->setID($_SESSION["q"]->last_inserted_id());
 			//echo "<br />" . serialize($this->ID); //DEBUG
-			$rs = $q->execute($s = $q->generateSelectStm(array($table),
+			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 														 array(),
 														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$this->getID())),
 														 array()),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
-			while($q->hasNext()) {
-				$row = $q->next();
+			while($_SESSION["q"]->hasNext()) {
+				$row = $_SESSION["q"]->next();
 				$this->setCreationDate(time($row[POST_CREATION_DATE]));
 				$this->setModificationDate(time($row[POST_CREATION_DATE]));
 				//echo "<br />" . serialize($row[POST_CREATION_DATE]); //DEBUG
@@ -259,18 +260,19 @@ class Post {
 	function update() {
 		require_once("query.php");
 		if(!isset($GLOBALS["q"]))
-			$q = new Query();
+			if(!isset($_SESSION["q"]))
+				$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$table = $q->getDBSchema()->getTable(TABLE_POST);
-			$rs = $q->execute($s = $q->generateSelectStm(array($table),
+			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_POST);
+			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 														 array(),
 														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$this->getID())),
 														 array()),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			$data = array();
-			while($q->hasNext()) {
-				$row = $q->next();
+			while($_SESSION["q"]->hasNext()) {
+				$row = $_SESSION["q"]->next();
 				//cerco le differenze e le salvo.
 				if($row[POST_TITLE] != $this->getTitle())
 					$data[POST_TITLE] = $this->getTitle();
@@ -297,13 +299,13 @@ class Post {
 			//echo "<br />" . serialize($data); //DEBUG
 			//TODO controllare tag e categorie
 			
-			$rs = $q->execute($s = $q->generateUpdateStm($table,
+			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateUpdateStm($table,
 														 $data,
 														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$this->getID()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			//echo "<br />" . mysql_affected_rows(); //DEBUG
-			if($q->affected_rows() == 0)
+			if($_SESSION["q"]->affected_rows() == 0)
 				return false;
 			
 			//echo "<br />" . $this; //DEBUG
@@ -321,13 +323,14 @@ class Post {
 	 */
 	function delete() {
 		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_POST);
-		$rs = $q->execute($s = $q->generateDeleteStm($table,
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_POST);
+		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateDeleteStm($table,
 													 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$this->getID()))),
 						  $table->getName(), $this);
-		//echo "<br />" . $q->affected_rows() . $s; //DEBUG
-		if($q->affected_rows() == 1) {
+		//echo "<br />" . $_SESSION["q"]->affected_rows() . $s; //DEBUG
+		if($_SESSION["q"]->affected_rows() == 1) {
 			return $this;
 		}
 		return false;
@@ -342,20 +345,21 @@ class Post {
 	 */
 	static function loadFromDatabase($id) {
 		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_POST);
-		$rs = $q->execute($s = $q->generateSelectStm(array($table),
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_POST);
+		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 													 array(),
 													 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$id)),
 													 array()),
-						  $table->getName(), $this);
+						  $table->getName(), null);
 		
 		//echo "<p>" . $s . "</p>"; //DEBUG
-		//echo "<p>" . $q->num_rows() . "</p>"; //DEBUG
-		if($rs !== false && $q->num_rows() == 1) {
+		//echo "<p>" . $_SESSION["q"]->num_rows() . "</p>"; //DEBUG
+		if($rs !== false && $_SESSION["q"]->num_rows() == 1) {
 			// echo serialize(mysql_fetch_assoc($rs)); //DEBUG
-			while($q->hasNext()) {
-				$row = $q->next();
+			while($_SESSION["q"]->hasNext()) {
+				$row = $_SESSION["q"]->next();
 				$data = array("title" => $row[POST_TITLE],
 							  "subtitle" => $row[POST_SUBTITLE],
 							  "headline" => $row[POST_HEADLINE],
@@ -401,9 +405,10 @@ class Post {
 	 */
 	function loadComments() {
 		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_COMMENT);
-		$rs = $q->execute($s = $q->generateSelectStm(array($table),
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_COMMENT);
+		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 													 array(),
 													 array(new WhereConstraint($table->getColumn(COMMENT_POST),Operator::$UGUALE,$this->getID())),
 													 array()),
@@ -412,8 +417,8 @@ class Post {
 		//echo "<p>" . $s . "</p>"; //DEBUG;
 		if($rs !== false) {
 			$comm = array();
-			while($q->hasNext()) {
-				$row = $q->next();
+			while($_SESSION["q"]->hasNext()) {
+				$row = $_SESSION["q"]->next();
 				require_once("post/PostCommon.php");
 				$com = new Comment(array("author" => intval($row[COMMENT_AUTHOR]),
 										 "post" => intval($row[COMMENT_POST]),
@@ -431,9 +436,10 @@ class Post {
 	 */
 	function loadVotes() {
 		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_VOTE);
-		$rs = $q->execute($s = $q->generateSelectStm(array($table),
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_VOTE);
+		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 													 array(),
 													 array(new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$this->getID())),
 													 array()),
@@ -441,8 +447,8 @@ class Post {
 		//echo "<p>" . $s . "</p>"; //DEBUG;
 		if($rs !== false) {
 			$votes = array();
-			while($q->hasNext()) {
-				$row = $q->next();
+			while($_SESSION["q"]->hasNext()) {
+				$row = $_SESSION["q"]->next();
 				require_once("post/PostCommon.php");
 				$vote = new Vote(intval($row[VOTE_AUTHOR]), intval($row[VOTE_POST]), $row[VOTE_VOTE] > 0);
 				$vote->setCreationDate(time($row[VOTE_CREATION_DATE]));
@@ -459,17 +465,18 @@ class Post {
 	 */
 	function loadReports() {
 		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_REPORT);
-		$rs = $q->execute($s = $q->generateSelectStm(array($table),
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_REPORT);
+		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 													 array(),
 													 array(new WhereConstraint($table->getColumn(REPORT_POST),Operator::$UGUALE,$this->getID())),
 													 array()),
 						  $table->getName(), $this);
 		if($rs !== false) {
 			$reports = array();
-			while($q->hasNext()) {
-				$row = $q->next();
+			while($_SESSION["q"]->hasNext()) {
+				$row = $_SESSION["q"]->next();
 				require_once("common.php");
 				$report = new Report(intval($row[REPORT_USER]), intval($row[REPORT_POST]), $row[REPORT_TEXT]);
 				$report->setID($row[REPORT_ID]);
@@ -508,7 +515,7 @@ class Post {
 		$vis = $this->isVisible() ? "true" : "false";
 		$s.= " | visible = " . $vis .
 			 " | reports = (";
-		for($i=0; $i<count($this->getReports); $i++) {
+		for($i=0; $i<count($this->getReports()); $i++) {
 			if($i>0) $s.= ", ";
 			$s.= $this->reports[$i];
 		}

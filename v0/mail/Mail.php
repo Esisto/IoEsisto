@@ -49,16 +49,17 @@ class MailDirectory {
 		$this->mails[] = $mail;
 		//echo $this; //DEBUG
 		require_once("query.php");
-		$q = new Query();
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$table = $q->getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
-			$q->execute($s = $q->generateInsertStm($table,
+			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
+			$_SESSION["q"]->execute($s = $_SESSION["q"]->generateInsertStm($table,
 												   array(MAIL_IN_DIRECTORY_DIRECTORY => $this->getID(),
 														 MAIL_IN_DIRECTORY_MAIL => $mail->getID())),
 						$table->getName(), $this);
 			
 			//echo "<p>" . $s . "</p>"; //DEBUG
-			if($q->affected_rows() == 1) {
+			if($_SESSION["q"]->affected_rows() == 1) {
 				return $this;
 			}
 		}
@@ -68,16 +69,17 @@ class MailDirectory {
 	function moveMailTo($mail, $to) {
 		$to->mails[] = $mail;
 		require_once("query.php");
-		$q = new Query();
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$table = $q->getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
-			$q->execute($s = $q->generateUpdateStm($table,
+			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
+			$_SESSION["q"]->execute($s = $_SESSION["q"]->generateUpdateStm($table,
 												   array(MAIL_IN_DIRECTORY_DIRECTORY => $to->getID()),
 												   array(new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_DIRECTORY), Operator::$UGUALE, $this->getID()),
 														 new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_MAIL), Operator::$UGUALE, $mail->getID()))),
 						$table->getName(), $this);
 			
-			if($q->affected_rows() == 1) {
+			if($_SESSION["q"]->affected_rows() == 1) {
 				$this->loadMails();
 				return $this;
 			}
@@ -87,16 +89,17 @@ class MailDirectory {
 	
 	function removeMail($mail) {
 		require_once("query.php");
-		$q = new Query();
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$table = $q->getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
-			$q->execute($s = $q->generateDeleteStm($table,
+			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
+			$_SESSION["q"]->execute($s = $_SESSION["q"]->generateDeleteStm($table,
 												   array(new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_DIRECTORY), Operator::$UGUALE, $this->getID()),
 														 new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_MAIL), Operator::$UGUALE, $mail->getID()))),
 						$table->getName(), $this);
 			
-			//echo "<p>" . $s . " - " . $q->affected_rows() . "</p>"; //DEBUG
-			if($q->affected_rows() == 1) {
+			//echo "<p>" . $s . " - " . $_SESSION["q"]->affected_rows() . "</p>"; //DEBUG
+			if($_SESSION["q"]->affected_rows() == 1) {
 				return $mail;
 			}
 		}
@@ -106,15 +109,16 @@ class MailDirectory {
 	
 	function setMailReadStatus($mail, $read) {
 		require_once("query.php");
-		$q = new Query();
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$table = $q->getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
-			$q->execute($s = $q->generateUpdateStm($table, array(MAIL_IN_DIRECTORY_READ => ($read ? 1 : 0)),
+			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
+			$_SESSION["q"]->execute($s = $_SESSION["q"]->generateUpdateStm($table, array(MAIL_IN_DIRECTORY_READ => ($read ? 1 : 0)),
 												   array(new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_DIRECTORY), Operator::$UGUALE, $this->getID()),
 														 new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_MAIL), Operator::$UGUALE, $mail->getID()))),
 						$table->getName(), $this);
 				
-			if($q->affected_rows() == 1) {
+			if($_SESSION["q"]->affected_rows() == 1) {
 				return $this;
 			}
 		}
@@ -123,10 +127,11 @@ class MailDirectory {
 	
 	function getMailReadStatus($mail) {
 		require_once("query.php");
-		$q = new Query();
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$table = $q->getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
-			$q->execute($s = $q->generateSelectStm(array($table),
+			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
+			$_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 												   array(),
 												   array(new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_DIRECTORY), Operator::$UGUALE, $this->getID()),
 														 new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_MAIL), Operator::$UGUALE, $mail->getID())),
@@ -134,8 +139,8 @@ class MailDirectory {
 						$table->getName(), $this);
 				
 			//echo "<p>" . $s . "</p>"; //DEBUG
-			if($q->num_rows() == 1) {
-				$row = $q->next();
+			if($_SESSION["q"]->num_rows() == 1) {
+				$row = $_SESSION["q"]->next();
 				//echo "<p>" . $row[MAIL_IN_DIRECTORY_READ] . "</p>"; //DEBUG
 				return $row[MAIL_IN_DIRECTORY_READ] > 0;
 			}
@@ -145,17 +150,18 @@ class MailDirectory {
 	
 	function save() {
 		require_once("query.php");
-		$q = new Query();
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$dbs = $q->getDBSchema();
+			$dbs = $_SESSION["q"]->getDBSchema();
 			$table = $dbs->getTable(TABLE_MAIL_DIRECTORY);
 			$data = array(MAIL_DIRECTORY_NAME => $this->getName(),
 						  MAIL_DIRECTORY_OWNER => $this->getOwner());
 			
-			$rs = $q->execute($s = $q->generateInsertStm($table,$data), $table->getName(), $this);
+			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateInsertStm($table,$data), $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
-			//echo "<br />" . $q->affected_rows(); //DEBUG
-			$this->setID($q->last_inserted_id());
+			//echo "<br />" . $_SESSION["q"]->affected_rows(); //DEBUG
+			$this->setID($_SESSION["q"]->last_inserted_id());
 			//echo "<br />" . $this; //DEBUG
 			return $this;
 		}
@@ -167,16 +173,17 @@ class MailDirectory {
 		
 		if($row[MAIL_DIRECTORY_NAME] != $this->getName()) {
 			require_once("query.php");
-			$q = new Query();
+			if(!isset($_SESSION["q"]))
+				$_SESSION["q"] = new Query();
 			if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-				$table = $q->getDBSchema()->getTable(TABLE_MAIL_DIRECTORY);
+				$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL_DIRECTORY);
 				$data[MAIL_DIRECTORY_NAME] = $this->getName();
 				
-				$rs = $q->execute($s = $q->generateUpdateStm($table,
+				$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateUpdateStm($table,
 														 $data,
 														 array(new WhereConstraint($table->getColumn(MAIL_DIRECTORY_ID),Operator::$UGUALE,$this->getID()))),
 								  $table->getName(), $this);
-				if($q->affected_rows() == 1) {
+				if($_SESSION["q"]->affected_rows() == 1) {
 					return $this;
 				}
 			}	
@@ -189,33 +196,34 @@ class MailDirectory {
 			return false; //la mailbox non si può eliminare.
 		
 		require_once("query.php");
-		$q = new Query();
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$dbs = $q->getDBSchema();
+			$dbs = $_SESSION["q"]->getDBSchema();
 			$table = $dbs->getTable(TABLE_MAIL_DIRECTORY);
 			//cerco la Mailbox dell'utente e sposto tutte le mail lì.
-			$q->execute($s = $q->generateSelectStm(array($table),
+			$_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 												   array(),
 												   array(new WhereConstraint($table->getColumn(MAIL_DIRECTORY_OWNER), Operator::$UGUALE, $this->owner),
 														 new WhereConstraint($table->getColumn(MAIL_DIRECTORY_NAME), Operator::$UGUALE, MAILBOX)),
 												   array()), $table->getName(), $this);
-			if($q->num_rows() == 1) {
-				while($q->hasNext()) {
-					$row = $q->next();
+			if($_SESSION["q"]->num_rows() == 1) {
+				while($_SESSION["q"]->hasNext()) {
+					$row = $_SESSION["q"]->next();
 					$mailboxid = $row[MAIL_DIRECTORY_ID];
 				}
 				
 				$table1 = $dbs->getTable(TABLE_MAIL_IN_DIRECTORY);
-				$q->execute($s = $q->generateUpdateStm($table1, array(MAIL_IN_DIRECTORY_DIRECTORY => $mailboxid),
+				$_SESSION["q"]->execute($s = $_SESSION["q"]->generateUpdateStm($table1, array(MAIL_IN_DIRECTORY_DIRECTORY => $mailboxid),
 													   array(new WhereConstraint($table1->getColumn(MAIL_IN_DIRECTORY_DIRECTORY), Operator::$UGUALE, $this->getID()))),
 							$table1->getName(), $this);
 				
-				if($q->affected_rows() == count($this->getMails())) {
-					$rs = $q->execute($s = $q->generateDeleteStm($table,
+				if($_SESSION["q"]->affected_rows() == count($this->getMails())) {
+					$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateDeleteStm($table,
 																 array(new WhereConstraint($table->getColumn(MAIL_DIRECTORY_ID),Operator::$UGUALE,$this->getID()))),
 									  $table->getName(), $this);
-					//echo "<br />" . $q->affected_rows() . $s; //DEBUG
-					if($q->affected_rows() == 1) {
+					//echo "<br />" . $_SESSION["q"]->affected_rows() . $s; //DEBUG
+					if($_SESSION["q"]->affected_rows() == 1) {
 						return $this;
 					}
 				}
@@ -247,19 +255,20 @@ class MailDirectory {
 	
 	private static function loadDirectoriesFrom($data) {
 		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_MAIL_DIRECTORY);
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL_DIRECTORY);
 		$wheres = array();
 		foreach($data as $comumnname => $d)
 			$wheres[] = new WhereConstraint($table->getColumn($comumnname), Operator::$UGUALE, $d);
-		$rs = $q->execute($s = $q->generateSelectStm(array($table), array(), $wheres, array()), $table->getName(), $data);
+		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table), array(), $wheres, array()), $table->getName(), $data);
 		
 		//echo "<p>" . $s . "</p>"; //DEBUG
-		//echo "<p>" . $q->num_rows() . "</p>"; //DEBUG
-		if($rs !== false && $q->num_rows() > 0) {
+		//echo "<p>" . $_SESSION["q"]->num_rows() . "</p>"; //DEBUG
+		if($rs !== false && $_SESSION["q"]->num_rows() > 0) {
 			$dirs = array();
-			while($q->hasNext()) {
-				$row = $q->next();
+			while($_SESSION["q"]->hasNext()) {
+				$row = $_SESSION["q"]->next();
 				$d = new MailDirectory($row[MAIL_DIRECTORY_NAME], $row[MAIL_DIRECTORY_OWNER]);
 				$d->setID(intval($row[MAIL_DIRECTORY_ID]))->loadMails();
 				$d->loadMails();
@@ -275,28 +284,29 @@ class MailDirectory {
 	
 	function loadMails() {
 		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
 		//echo "<p>" . $table . "</p>"; //DEBUG
-		$rs = $q->execute($s = $q->generateSelectStm(array($table),
+		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 													 array(),
 													 array(new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_DIRECTORY),Operator::$UGUALE,$this->getID())),
 													 array()),
 						  $table->getName(), $this);
 		
 		//echo "<p>" . $s . "</p>"; //DEBUG
-		//echo "<p>" . $q->num_rows() . "</p>"; //DEBUG
+		//echo "<p>" . $_SESSION["q"]->num_rows() . "</p>"; //DEBUG
 		$mails = array();
-		if($rs !== false && $q->num_rows() > 0) {
-			while($q->hasNext()) {
-				$row = $q->next();
+		if($rs !== false && $_SESSION["q"]->num_rows() > 0) {
+			while($_SESSION["q"]->hasNext()) {
+				$row = $_SESSION["q"]->next();
 				$m = Mail::loadFromDatabase($row[MAIL_IN_DIRECTORY_MAIL]);
 				if($m !== false) {
 					$mails[] = $m;
 				}
 				//echo "<p>" .$m ."</p>";
 			}
-			if($q->num_rows() == count($mails))
+			if($_SESSION["q"]->num_rows() == count($mails))
 				return $this->setMails($mails);
 		} else {
 			$GLOBALS["query_error"] = NOT_FOUND;
@@ -376,9 +386,10 @@ class Mail {
 	
 	function save() {
 		require_once("query.php");
-		$q = new Query();
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$dbs = $q->getDBSchema();
+			$dbs = $_SESSION["q"]->getDBSchema();
 			$table = $dbs->getTable(TABLE_MAIL);
 			$data = array();
 			if(isset($this->subject) && !is_null($this->getSubject()))
@@ -392,19 +403,19 @@ class Mail {
 			if(isset($this->repliesTo) && !is_null($this->getRepliesTo()))
 				$data[MAIL_REPLIES_TO] = $this->getRepliesTo();
 			
-			$rs = $q->execute($s = $q->generateInsertStm($table,$data), $table->getName(), $this);
+			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateInsertStm($table,$data), $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
-			//echo "<br />" . $q->affected_rows(); //DEBUG
-			$this->setID($q->last_inserted_id());
+			//echo "<br />" . $_SESSION["q"]->affected_rows(); //DEBUG
+			$this->setID($_SESSION["q"]->last_inserted_id());
 			//echo "<br />" . serialize($this->ID); //DEBUG
-			$rs = $q->execute($s = $q->generateSelectStm(array($table),
+			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 														 array(),
 														 array(new WhereConstraint($table->getColumn(MAIL_ID),Operator::$UGUALE,$this->getID())),
 														 array()),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
-			while($q->hasNext()) {
-				$row = $q->next();
+			while($_SESSION["q"]->hasNext()) {
+				$row = $_SESSION["q"]->next();
 				$this->setCreationDate(time($row[MAIL_CREATION_DATE]));
 				//echo "<br />" . serialize($row[MAIL_CREATION_DATE]); //DEBUG
 				
@@ -430,15 +441,16 @@ class Mail {
 	 */
 	function delete() {
 		require_once("query.php");
-		$q = new Query();
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$dbs = $q->getDBSchema();
+			$dbs = $_SESSION["q"]->getDBSchema();
 			$table = $dbs->getTable(TABLE_MAIL);
-			$rs = $q->execute($s = $q->generateDeleteStm($table,
+			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateDeleteStm($table,
 														 array(new WhereConstraint($table->getColumn(MAIL_ID),Operator::$UGUALE,$this->getID()))),
 							  $table->getName(), $this);
-			//echo "<br />" . $q->affected_rows() . $s; //DEBUG
-			if($q->affected_rows() == 1) {
+			//echo "<br />" . $_SESSION["q"]->affected_rows() . $s; //DEBUG
+			if($_SESSION["q"]->affected_rows() == 1) {
 				return $this;
 			}
 		}
@@ -447,20 +459,21 @@ class Mail {
 	
 	static function loadFromDatabase($id) {
 		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_MAIL);
-		$rs = $q->execute($s = $q->generateSelectStm(array($table),
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL);
+		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 													 array(),
 													 array(new WhereConstraint($table->getColumn(MAIL_ID),Operator::$UGUALE,$id)),
 													 array()),
 						  $table->getName(), null);
 		
 		//echo "<p>" . $s . "</p>"; //DEBUG
-		//echo "<p>" . $q->num_rows() . "</p>"; //DEBUG
-		if($rs !== false && $q->num_rows() == 1) {
+		//echo "<p>" . $_SESSION["q"]->num_rows() . "</p>"; //DEBUG
+		if($rs !== false && $_SESSION["q"]->num_rows() == 1) {
 			// echo serialize(mysql_fetch_assoc($rs)); //DEBUG
-			while($q->hasNext()) {
-				$row = $q->next();
+			while($_SESSION["q"]->hasNext()) {
+				$row = $_SESSION["q"]->next();
 				$data = array("text" => $row[MAIL_TEXT],
 							  "subject" => $row[MAIL_SUBJECT],
 							  "from" => intval($row[MAIL_FROM]),
@@ -481,21 +494,22 @@ class Mail {
 	
 	static function loadMailsFromUser($user) {
 		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_MAIL);
-		$rs = $q->execute($s = $q->generateSelectStm(array($table),
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL);
+		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 													 array(),
 													 array(new WhereConstraint($table->getColumn(MAIL_FROM), Operator::$UGUALE, $user)),
 													 array()),
 						  $table->getName(), $this);
 		
 		//echo "<p>" . $s . "</p>"; //DEBUG
-		//echo "<p>" . $q->num_rows() . "</p>"; //DEBUG
-		if($rs !== false && $q->num_rows() == 1) {
+		//echo "<p>" . $_SESSION["q"]->num_rows() . "</p>"; //DEBUG
+		if($rs !== false && $_SESSION["q"]->num_rows() == 1) {
 			// echo serialize(mysql_fetch_assoc($rs)); //DEBUG
 			$mails = array();
-			while($q->hasNext()) {
-				$row = $q->next();
+			while($_SESSION["q"]->hasNext()) {
+				$row = $_SESSION["q"]->next();
 				$data = array("text" => $row[MAIL_TEXT],
 							  "subject" => $row[MAIL_SUBJECT],
 							  "from" => intval($row[MAIL_FROM]),

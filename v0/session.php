@@ -6,7 +6,7 @@
 	// DEBUG
 	class Session {
 		static function getUser() {
-			return 2;
+			return 1;
 		}
 	}
 	// END DEBUG
