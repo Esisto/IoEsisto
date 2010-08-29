@@ -51,11 +51,11 @@
 	// DEBUG
 	$q->execute("INSERT INTO `User` VALUES(1, 'ioesisto', 'no-reply@ioesisto.com', 'ciccia', 'Io', 'Esisto', 'm', NULL, NULL, NULL, NULL, NULL, NULL, 'admin', '2010-08-27 11:49:28', 1, 1)", "User", null);
 	if($q->affected_rows() == 1) echo "<p>INSERTED FAKE USER</p>";
-	$q->execute("INSERT INTO `MailDirectory` VALUES(1, '" . TRASH . "', 2)", "MailDirectory", null);
+	$q->execute("INSERT INTO `MailDirectory` VALUES(1, '" . TRASH . "', 1)", "MailDirectory", null);
 	$ra = $q->affected_rows();
-	$q->execute("INSERT INTO `MailDirectory` VALUES(2, '" . MAILBOX . "', 2)", "MailDirectory", null);
+	$q->execute("INSERT INTO `MailDirectory` VALUES(2, '" . MAILBOX . "', 1)", "MailDirectory", null);
 	$ra+= $q->affected_rows();
-	$q->execute("INSERT INTO `MailDirectory` VALUES(3, '" . SPAM . "', 2)", "MailDirectory", null);
+	$q->execute("INSERT INTO `MailDirectory` VALUES(3, '" . SPAM . "', 1)", "MailDirectory", null);
 	$ra+= $q->affected_rows();
 	if($ra == 3) echo "<p>INSERTED FAKE MAIL DIRECTORIES</p>";
 	// END DEBUG
