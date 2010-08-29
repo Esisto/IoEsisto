@@ -48,7 +48,7 @@ class Contact {
 		return $this;
 	}
 	function setType($type) {
-		if($type == self::$ADDRESS || $type == self::$EMAIL || $type == self::$IM || $type == self::$PHONE || $type == self::$WEBSITE)
+		//if($type == self::$ADDRESS || $type == self::$EMAIL || $type == self::$IM || $type == self::$PHONE || $type == self::$WEBSITE)
 			$this->type = $type;
 		return $this;
 	}
@@ -82,17 +82,18 @@ class Contact {
 	
 	function save() {
 		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_CONTACT);
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_CONTACT);
 		$data = array(CONTACT_CONTACT => $this->getContact(),
 					  CONTACT_NAME => $this->getName(),
 					  CONTACT_USER => $this->getUser());
 		
-		$q->execute($s = $q->generateInsertStm($table, $data), $table->getName(), $this);
+		$_SESSION["q"]->execute($s = $_SESSION["q"]->generateInsertStm($table, $data), $table->getName(), $this);
 		
 		//echo "<p>" . $s . "</p>"; //DEBUG
-		if($q->affected_rows() == 1) {
-			$this->setID($q->last_inserted_id());
+		if($_SESSION["q"]->affected_rows() == 1) {
+			$this->setID($_SESSION["q"]->last_inserted_id());
 			
 			return $this;
 		}
@@ -102,8 +103,9 @@ class Contact {
 	function update() {
 		$old = self::loadFromDatabase($this->getID());
 		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_CONTACT);
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_CONTACT);
 		
 		$data = array();
 		if($this->getContact() != $old->getContact())
@@ -111,47 +113,50 @@ class Contact {
 		if($this->getName() != $old->getName())
 			$data[CONTACT_NAME] = $this->getName();
 			
-		$q->execute($s = $q->generateUpdateStm($table, $data, array(new WhereConstraint($table->getColumn(CONTACT_ID), Operator::$UGUALE, $this->getID()))),
+		$_SESSION["q"]->execute($s = $_SESSION["q"]->generateUpdateStm($table, $data, array(new WhereConstraint($table->getColumn(CONTACT_ID), Operator::$UGUALE, $this->getID()))),
 					$table->getName(), $this);
 		
-		if($q->affected_rows() == 1)
+		if($_SESSION["q"]->affected_rows() == 1)
 			return $this;
 		
 		return false;
 	}
 	
 	function delete() {
-		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_CONTACT);
+        require_once("query.php");
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_CONTACT);
 		
-		$q->execute($s = $q->generateDeleteStm($table, array(new WhereConstraint($table->getColumn(CONTACT_ID), Operator::$UGUALE, $this->getID()))),
+		$_SESSION["q"]->execute($s = $_SESSION["q"]->generateDeleteStm($table, array(new WhereConstraint($table->getColumn(CONTACT_ID), Operator::$UGUALE, $this->getID()))),
 					$table->getName(), $this);
 		
-		if($q->affected_rows() == 1)
+		//echo "<p>" . $s . "</p>"; //DEBUG
+		if($_SESSION["q"]->affected_rows() == 1)
 			return $this;
 		return false;
 	}
 	
 	static function loadFromDatabase($id) {
 		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_CONTACT);
-		$table1 = $q->getDBSchema()->getTable(TABLE_CONTACT_TYPE);
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_CONTACT);
+		$table1 = $_SESSION["q"]->getDBSchema()->getTable(TABLE_CONTACT_TYPE);
 		
-		$q->execute($s = $q->generateSelectStm(array($table, $table1),
+		$_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table, $table1),
 											   array(new JoinConstraint($table->getColumn(CONTACT_NAME), $table1->getColumn(CONTACT_TYPE_NAME))),
 											   array(new WhereConstraint($table->getColumn(CONTACT_ID), Operator::$UGUALE, $id)),
 											   array()));
 		
-		if($q->num_rows() == 1) {
-			$row = $q->next();
+		if($_SESSION["q"]->num_rows() == 1) {
+			$row = $_SESSION["q"]->next();
 			$data = array(NAME => $row[CONTACT_NAME],
 						  CONTACT => $row[CONTACT_CONTACT],
-						  USER => $row[CONTACT_USER],
-						  TYPE => $row[CONTACT_TYPE_TYPE]);
+						  USER => $row[CONTACT_USER]);
 			
 			$c = new Contact($data);
+			$c->setType($row[CONTACT_TYPE_TYPE]);
 			return $c->setID($row[CONTACT_ID]);
 		}
 		return false;
@@ -159,23 +164,26 @@ class Contact {
 	
 	static function loadContactsForUser($userid) {
 		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_CONTACT);
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_CONTACT);
+		$table1 = $_SESSION["q"]->getDBSchema()->getTable(TABLE_CONTACT_TYPE);
 		
-		$q->execute($s = $q->generateSelectStm(array($table),
-											   array(),
-											   array(new WhereConstraint($table->getColumn(CONTACT_ID), Operator::$UGUALE, $userid)),
+		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table, $table1),
+											   array(new JoinConstraint($table->getColumn(CONTACT_NAME), $table1->getColumn(CONTACT_TYPE_NAME))),
+											   array(new WhereConstraint($table->getColumn(CONTACT_USER), Operator::$UGUALE, $userid)),
 											   array()));
 		
+		//echo "<p>" . mysql_affected_rows() . mysql_num_rows($rs) . $s . "</p>"; //DEBUG
 		$conts = array();
-		while($q->hasNext()) {
-			$row = $q->next();
+		while($_SESSION["q"]->hasNext()) {
+			$row = $_SESSION["q"]->next();
 			$data = array(NAME => $row[CONTACT_NAME],
 						  CONTACT => $row[CONTACT_CONTACT],
-						  USER => $row[CONTACT_USER],
-						  TYPE => $row[CONTACT_TYPE_TYPE]);
+						  USER => $row[CONTACT_USER]);
 			
 			$c = new Contact($data);
+			$c->setType($row[CONTACT_TYPE_TYPE]);
 			$c->setID($row[CONTACT_ID]);
 			$conts[] = $c;
 		}
@@ -184,17 +192,26 @@ class Contact {
 	
 	static function getContactsNames() {
 		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_CONTACT_TYPE);
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_CONTACT_TYPE);
 		
-		$q->execute($s = $q->generateSelectStm(array($table), array(), array(), array()));
+		$_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table), array(), array(), array()));
 		
 		$names = array();
-		while($q->hasNext()) {
-			$row = $q->next();
+		while($_SESSION["q"]->hasNext()) {
+			$row = $_SESSION["q"]->next();
 			$names[$row[CONTACT_TYPE_NAME]] = $row[CONTACT_TYPE_TYPE];
 		}
 		return $names;
+	}
+	
+	function __toString() {
+		$s = "CONTACT (name = " . $this->getName() .
+					" | value = " . $this->getContact() .
+					" | type = " . $this->getType() .
+					" | user = " . $this->getUser() . ")";
+		return $s;
 	}
 }
 
@@ -230,7 +247,7 @@ class User{
 	protected $name;			//**
 	protected $surname;			//**
 	protected $gender;			//**
-	protected $birthday;		//**
+	protected $birthday;		//** TIMESTAMP
 	protected $birthplace;		//**
 	protected $livingPlace;		//**
 	protected $avatar;			//**
@@ -242,8 +259,8 @@ class User{
 	protected $verified;		// *
 	
 	protected $contacts = array();		//
-	protected $feedback;		//valore totale feedback
-	protected $follows = array();			//chi segue
+	protected $feedback;				//valore totale feedback
+	protected $follows = array();		//chi segue
 	protected $followers = array();		//chi lo segue
 	protected $reports = array(); 		//TODO Not implemented
 	
@@ -417,29 +434,11 @@ class User{
 	 * visible			//
 	 */
 	function __construct($data) {
-		if(isset($data[NICKNAME]))
-			$this->setNickname($data[NICKNAME]);
-		if(isset($data[EMAIL]))
-			$this->setEMail($data[EMAIL]);
-		if(isset($data[PASSWORD]))
-			$this->setPassword($data[PASSWORD]);
-		if(isset($data[NAME]))
-			$this->setName($data[NAME]);
-		if(isset($data[SURNAME]))
-			$this->setSurname($data[SURNAME]);
-		if(isset($data[GENDER]))
-			$this->setGender($data[GENDER]);
-		if(isset($data[HOBBIES]))
-			$this->setHobbies($data[HOBBIES]);
-		if(isset($data[JOB]))
-			$this->setJob($data[JOB]);
-		if(isset($data[LIVING_PLACE]))
-			$this->setLivingPlace($data[LIVING_PLACE]);
-		if(isset($data[VISIBLE]))
-			$this->setVisible($data[VISIBLE]);
+		$data[VERIFIED] = false;
+		$this->setValuesFromArray($data);
 	}
 	
-	function edit($data) {
+	private function setValuesFromArray($data) {
 		if(isset($data[NICKNAME]))
 			$this->setNickname($data[NICKNAME]);
 		if(isset($data[EMAIL]))
@@ -452,30 +451,42 @@ class User{
 			$this->setSurname($data[SURNAME]);
 		if(isset($data[GENDER]))
 			$this->setGender($data[GENDER]);
+		if(isset($data[BIRTHDAY]))
+			$this->setBirthday(intval($data[BIRTHDAY]));
+		if(isset($data[BIRTHPLACE]))
+			$this->setBirthplace($data[BIRTHPLACE]);
+		if(isset($data[LIVING_PLACE]))
+			$this->setLivingPlace($data[LIVING_PLACE]);
+		if(isset($data[AVATAR]))
+			$this->setAvatar($data[AVATAR]);
 		if(isset($data[HOBBIES]))
 			$this->setHobbies($data[HOBBIES]);
 		if(isset($data[JOB]))
 			$this->setJob($data[JOB]);
-		if(isset($data[LIVING_PLACE]))
-			$this->setLivingPlace($data[LIVING_PLACE]);
+		if(isset($data[ROLE]))
+			$this->setRole($data[ROLE]);
 		if(isset($data[VISIBLE]))
 			$this->setVisible($data[VISIBLE]);
 		if(isset($data[VERIFIED]))
 			$this->setVerified($data[VERIFIED]);
-			
+	}
+	
+	function edit($data) {
+		$this->setValuesFromArray($data);
 		return $this->update();
 	}
 
 	function addFollower($user) {
 		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_FOLLOW);
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_FOLLOW);
 		
-		$q->execute($s = $q->generateInsertStm($table, array(FOLLOW_FOLLOWER => $user->getID(),
+		$_SESSION["q"]->execute($s = $_SESSION["q"]->generateInsertStm($table, array(FOLLOW_FOLLOWER => $user->getID(),
 															 FOLLOW_SUBJECT => $this->getID())),
 					$table->getName(), $this);
 		
-		if($q->affected_rows() != 1) {
+		if($_SESSION["q"]->affected_rows() != 1) {
 			//TODO Genera errore ma ritorna comunque $this
 		}
 		return $this->loadFollowers();
@@ -483,25 +494,26 @@ class User{
 	
 	function removeFollower($user) {
 		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_FOLLOW);
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_FOLLOW);
 		
-		$q->execute($s = $q->generateDeleteStm($table, array(new WhereConstraint($table->getColumn(FOLLOW_FOLLOWER), Operator::$UGUALE, $user->getID()),
+		$_SESSION["q"]->execute($s = $_SESSION["q"]->generateDeleteStm($table, array(new WhereConstraint($table->getColumn(FOLLOW_FOLLOWER), Operator::$UGUALE, $user->getID()),
 															 new WhereConstraint($table->getColumn(FOLLOW_SUBJECT), Operator::$UGUALE, $this->getID()))),
 					$table->getName(), $this);
 		
-		if($q->affected_rows() == 1) {
+		if($_SESSION["q"]->affected_rows() == 1) {
 			return false;
 		}
 		return $this->loadFollowers();
 	}
 	
-	function addFollow($user) {
+	function follow($user) {
 		$user->addFollower($this);
 		return $this->loadFollows();
 	}
 	
-	function removeFollow($user) {
+	function stopFollowing($user) {
 		if($user->removeFollower($this) !== false)
 			return $this->loadFollows();
 		return false;
@@ -509,15 +521,16 @@ class User{
 	
 	function addFeedbackFrom($user, $value) {
 		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_FEEDBACK);
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_FEEDBACK);
 		
-		$q->execute($s = $q->generateInsertStm($table, array(FEEDBACK_CREATOR => $user->getID(),
+		$_SESSION["q"]->execute($s = $_SESSION["q"]->generateInsertStm($table, array(FEEDBACK_CREATOR => $user->getID(),
 															 FEEDBACK_SUBJECT => $this->getID(),
 															 FEEDBACK_VALUE => $value)),
 					$table->getName(), $this);
 		
-		if($q->affected_rows() != 1) {
+		if($_SESSION["q"]->affected_rows() != 1) {
 			return false;
 		}
 		return $this->loadFeedback();
@@ -535,14 +548,15 @@ class User{
 
 	function save() {
 		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_USER);
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_USER);
 		$data = array();
 		
 		if(isset($this->avatar))
 			$data[USER_AVATAR] = $this->getAvatar();
 		if(isset($this->birthday))
-			$data[USER_BIRTHDAY] = $this->getBirthday();
+			$data[USER_BIRTHDAY] = date("Y/m/d", $this->getBirthday());
 		if(isset($this->birthplace))
 			$data[USER_BIRTHPLACE] = $this->getBirthplace();
 		if(isset($this->email))
@@ -566,20 +580,20 @@ class User{
 		if(isset($this->surname))
 			$data[USER_SURNAME] = $this->getSurname();
 		if(isset($this->visible))
-			$data[USER_VISIBLE] = $this->getVisible();
+			$data[USER_VISIBLE] = $this->getVisible() ? 1 : 0;
 		
-		$q->execute($s = $q->generateInsertStm($table, $data), $table->getName(), $this);
+		$_SESSION["q"]->execute($s = $_SESSION["q"]->generateInsertStm($table, $data), $table->getName(), $this);
 		
-		if($q->affected_rows() == 1) {
-			$this->setID($q->last_inserted_id());
-			$q->execute($q->generateSelectStm(array($table),
+		if($_SESSION["q"]->affected_rows() == 1) {
+			$this->setID($_SESSION["q"]->last_inserted_id());
+			$_SESSION["q"]->execute($_SESSION["q"]->generateSelectStm(array($table),
 											  array(),
 											  array(new WhereConstraint($table->getColumn(USER_ID), Operator::$UGUALE, $this->getID())),
 											  array()));
 			
-			if($q->num_rows() == 1) {
-				$row = $q->next();
-				$this->setCreationDate($row[USER_CREATION_DATE]);
+			if($_SESSION["q"]->num_rows() == 1) {
+				$row = $_SESSION["q"]->next();
+				$this->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[USER_CREATION_DATE])));
 				return $this;
 			}
 		}
@@ -589,8 +603,9 @@ class User{
 	function update() {
 		$old = self::loadFromDatabase($this->getID());
 		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_USER);
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_USER);
 		$data = array();
 		
 		if($this->getAvatar() != $old->getAvatar())
@@ -620,13 +635,14 @@ class User{
 		if($this->getSurname() != $old->getSurname())
 			$data[USER_SURNAME] = $this->getSurname();
 		if($this->getVisible() != $old->getVisible())
-			$data[USER_VISIBLE] = $this->getVisible();
-			
-		$q->execute($s = $q->generateUpdateStm($table, $data,
+			$data[USER_VISIBLE] = $this->getVisible() ? 1 : 0;
+		
+		$_SESSION["q"]->execute($s = $_SESSION["q"]->generateUpdateStm($table, $data,
 											   array(new WhereConstraint($table->getColumn(USER_ID), Operator::$UGUALE, $this->getID()))),
 					$table->getName(), $this);
 		
-		if($q->affected_rows() == 1) {
+		//echo "<p>" . $_SESSION["q"]->affected_rows() . $s . "</p>"; // DEBUG
+		if($_SESSION["q"]->affected_rows() == 1) {
 			return $this;
 		}
 		return false;
@@ -634,36 +650,57 @@ class User{
 	
 	function delete() {
 		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_USER);
-		
-		$q->execute($s = $q->generateDeleteStm($table, array(new WhereConstraint($table->getColumn(USER_ID), Operator::$UGUALE, $this->getID()))),
-					$table->getName(), $this);
-		
-		if($q->affected_rows() == 1) {
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_USER);
+		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateDeleteStm($table,
+													 array(new WhereConstraint($table->getColumn(USER_ID),Operator::$UGUALE,$this->getID()))),
+						  $table->getName(), $this);
+		//echo "<br />" . serialize($_SESSION["q"]->affected_rows()) . $s; //DEBUG
+		if($_SESSION["q"]->affected_rows() == 1) {
 			return $this;
+		}
+		return false;
+
+		//require_once("settings.php");
+		//$db = mysql_connect(DB_HOSTNAME, DB_USERNAME, DB_PASSWORD);
+		//$rs = mysql_query("DELETE FROM User WHERE us_ID = " . $this->getID(), $db);
+		//
+		//if(mysql_affected_rows($db) == 1) {
+		//	require_once("common.php");
+		//	require_once("session.php");
+		//	LogManager::addLogEntry(Session::getUser(), LogManager::$DELETE, TABLE_USER, $this, new Query());
+		//	return $this;
+		//}
+		//return false;
+	}
+	
+	static function loadByNickname($nickname) {
+		require_once("query.php");
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_USER);
+		
+		$_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table), array(),
+											   array(new WhereConstraint($table->getColumn(USER_NICKNAME), Operator::$UGUALE, $nickname)),
+											   array()));
+		
+		if($_SESSION["q"]->num_rows() == 1) {
+			return self::createFromQuery($_SESSION["q"]);
 		}
 		return false;
 	}
 	
-	static function loadFromDatabase($id, $loadDependences = true) {
-		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_USER);
-		
-		$q->execute($s = $q->generateSelectStm(array($table), array(),
-											   array(new WhereConstraint($table->getColumn(USER_ID), Operator::$UGUALE, $id)),
-											   array()));
-		
-		if($q->num_rows() == 1) {
-			$row = $q->next();
+	private static function createFromQuery() {
+		if($_SESSION["q"]->num_rows() == 1) {
+			$row = $_SESSION["q"]->next();
 			$data = array(NICKNAME => $row[USER_NICKNAME],
 						  EMAIL => $row[USER_E_MAIL],
 						  PASSWORD => $row[USER_PASSWORD],
 						  NAME => $row[USER_NAME],
 						  SURNAME => $row[USER_SURNAME],
 						  GENDER => $row[USER_GENDER],
-						  BIRTHDAY => $row[USER_BIRTHDAY],
+						  BIRTHDAY => date_timestamp_get(date_create($row[USER_BIRTHDAY])),
 						  BIRTHPLACE => $row[USER_BIRTHPLACE],
 						  LIVING_PLACE => $row[USER_LIVINGPLACE],
 						  AVATAR => $row[USER_AVATAR],
@@ -673,26 +710,73 @@ class User{
 						  VISIBLE => $row[USER_VISIBLE]);
 			
 			$user = new User($data);
-			$user->setID($row[USER_ID])->setCreationDate($row[USER_CREATION_DATE])->setVerified($row[USER_VERIFIED]);
-			if($loadDependences)
-				$user->loadContacts()->loadFeedback()->loadFollows()->loadFollowers();
+			$user->setID(intval($row[USER_ID]))->
+				   setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[USER_CREATION_DATE])))->
+				   setVerified($row[USER_VERIFIED]);
 			return $user;
 		}
 		return false;
 	}
 	
+	static function loadByMail($mail) {
+		require_once("query.php");
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_USER);
+		
+		$_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table), array(),
+											   array(new WhereConstraint($table->getColumn(USER_NICKNAME), Operator::$UGUALE, $nickname)),
+											   array()));
+		
+		if($_SESSION["q"]->num_rows() == 1) {
+			return self::createFromQuery($_SESSION["q"]);
+		}
+		return false;
+	}
+	
+	static function loadFromDatabase($id) {
+		// per fermare la ricorsività implicita di questa funzione, infatti loadFromDatabase chiama loadFollows che chiama loadFromDatabase.
+		global $loadDependences;
+		if(!isset($loadDependences)) $loadDependences = true;
+		
+		//echo "<p>" . serialize($loadDependences) . "</p>"; //DEBUG
+		require_once("query.php");
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_USER);
+		
+		$_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table), array(),
+											   array(new WhereConstraint($table->getColumn(USER_ID), Operator::$UGUALE, $id)),
+											   array()));
+		
+		//echo "<p>" . $_SESSION["q"]->num_rows() . $s . "</p>"; //DEBUG
+		if($_SESSION["q"]->num_rows() == 1) {
+			$user = self::createFromQuery($_SESSION["q"]);
+			if($loadDependences) {
+				$loadDependences = false;
+				$user->loadContacts()->loadFeedback()->loadFollows()->loadFollowers();
+				$loadDependences = true;
+			}
+			//echo "<p>" . $user . "</p>"; //DEBUG
+			return $user;
+		}
+		$loadDependences = true;
+		return false;
+	}
+	
 	function loadFollows() {
 		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_FOLLOW);
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_FOLLOW);
 		
-		$q->execute($s = $q->generateSelectStm(array($table), array(),
+		$_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table), array(),
 											   array(new WhereConstraint($table->getColumn(FOLLOW_FOLLOWER), Operator::$UGUALE, $this->getID())),
 											   array()));
 		
 		$fols = array();
-		while($q->hasNext()) {
-			$row = $q->next();
+		while($_SESSION["q"]->hasNext()) {
+			$row = $_SESSION["q"]->next();
 			$f = self::loadFromDatabase($row[FOLLOW_SUBJECT], false);
 			if($f !== false)
 				$fols[] = $f;
@@ -702,16 +786,17 @@ class User{
 	
 	function loadFollowers() {
 		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_FOLLOW);
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_FOLLOW);
 		
-		$q->execute($s = $q->generateSelectStm(array($table), array(),
+		$_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table), array(),
 											   array(new WhereConstraint($table->getColumn(FOLLOW_SUBJECT), Operator::$UGUALE, $this->getID())),
 											   array()));
 		
 		$fols = array();
-		while($q->hasNext()) {
-			$row = $q->next();
+		while($_SESSION["q"]->hasNext()) {
+			$row = $_SESSION["q"]->next();
 			$f = self::loadFromDatabase($row[FOLLOW_FOLLOWER], false);
 			if($f !== false)
 				$fols[] = $f;
@@ -725,20 +810,51 @@ class User{
 	
 	function loadFeedback() {
 		require_once("query.php");
-		$q = new Query();
-		$table = $q->getDBSchema()->getTable(TABLE_FEEDBACK);
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_FEEDBACK);
 		
-		$q->execute($s = $q->generateSelectStm(array($table), array(),
+		$_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table), array(),
 											   array(new WhereConstraint($table->getColumn(FEEDBACK_SUBJECT), Operator::$UGUALE, $this->getID())),
 											   array()));
 		
 		require_once("strings/strings.php");
 		$fb = FEEDBACK_INITIAL_VALUE;
-		while($q->hasNext()) {
-			$row = $q->next();
+		while($_SESSION["q"]->hasNext()) {
+			$row = $_SESSION["q"]->next();
 			$fb+= intval($row[FEEDBACK_VALUE]) > 0 ? 1 : -1; //se sul DB è 0 allora è -1 se è positivo allora +1;
 		}
 		return $this->setFeedback($fb);
+	}
+	
+	function __toString() {
+		$s = "<b>USER</b> (ID = " . $this->getID() .
+						"<br /> nickname = " . $this->getNickname() .
+						"<br /> mail = " . $this->getEMail() .
+						"<br /> password = " . $this->getPassword() .
+						"<br /> name = " . $this->getName() .
+						"<br /> surname = " . $this->getSurname() .
+						"<br /> gender = " . $this->getGender() .
+						"<br /> birthday = " . date("d/m/Y", $this->getBirthday()) .
+						"<br /> birthplace = " . $this->getBirthplace() .
+						"<br /> living place = " . $this->getLivingPlace() .
+						"<br /> avatar = " . $this->getAvatar() .
+						"<br /> creation date = " . date("d/m/Y G:i:s", $this->getCreationDate()) .
+						"<br /> feedback = " . $this->getFeedback() .
+						"<br /> hobbies = " . $this->getHobbies() .
+						"<br /> job = " . $this->getJob() .
+						"<br /> role = " . $this->getRole() .
+						"<br /> verified = " . ($this->getVerified() ? "true" : "false") .
+						"<br /> visible = " . ($this->getVisible() ? "true" : "false") .
+						"<br /> contacts = (";
+		$first = true;
+		foreach($this->getContacts() as $cont) {
+			if($first) $first = false;
+			else $s.= ", ";
+			$s.= $cont;
+		}
+		$s.= "))";
+		return $s;
 	}
 }
 
