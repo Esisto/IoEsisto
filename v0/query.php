@@ -25,7 +25,7 @@ class JoinConstraint {
 	}
 	
 	function generateWhereStm() {
-		return this.columnleft + " = " + this.columnright;
+		return $this->getColumnleft()->getName() . " = " . $this->getColumnright()->getName();
 	}
 	
 	function getColumnLeft() {
@@ -58,6 +58,10 @@ class WhereConstraint {
 			$s.= $alias . ".";
 		$s = $this->getColumn()->getName() . " " . $this->getOperator() . " ";
 		if(is_string($this->getData())) $s.= "'";
+		if(is_bool($this->getData())) {
+			if($this->getData()) $s.= 1;
+			else $s.= 0;
+		}
 		$s.= $this->getData();
 		if(is_string($this->getData())) $s.= "'";
 		return $s;
@@ -80,12 +84,12 @@ class Query {
 	private $db;
 	private $dbSchema = null;
 	private $query_type;
-	private $num_fields;
 	private $num_rows;
 	private $rsindex;
 	private $last_inserted_id;
 	private $affected_rows;
 	private $rs; //result set
+	private $error;
 	
 	function __construct() {
 		$this->db = connect();
@@ -348,25 +352,46 @@ class Query {
 	}
 	
 	function execute($query, $tablename = null, $object = null) {
-		$this->rs = mysql_query($query, $this->db);
+		$this->rs = mysql_query($query);
+		if(($this->error = mysql_error($this->db)) !== false)
+			echo "<p><font color='red'>" . $this->error . "</font></p>";
+		$info = mysql_info();
 		if($object == LOGMANAGER) return;
+		
 		$this->query_type = substr($query, 0, 6);
-		$this->num_fields = null;
-		$this->num_fields = $this->num_fields();
-		$this->num_rows = null;
-		$this->num_rows = $this->num_rows();
-		$this->rsindex = 0;
-		$this->last_inserted_id = null;
-		$this->last_inserted_id = $this->last_inserted_id();
-		$this->affected_rows = null;
-		$this->affected_rows = $this->affected_rows();
-		//echo $this->affected_rows(); //DEBUG
-		if($this->affected_rows() > 0) {
-			require_once("common.php");
-			require_once("session.php");
-			LogManager::addLogEntry(Session::getUser(), $this->query_type, $tablename, $object, $this);
+		echo "<p>" . $this->query_type . $info; //DEBUG
+		echo "<br />" . $query; //DEBUG
+		
+		if($this->query_type == "SELECT") {
+			$this->num_rows = mysql_num_rows($this->rs);
+			$this->rsindex = 0;
+			$this->affected_rows = 0;
+			$this->last_inserted_id = false;
+		} else if($this->query_type == "INSERT") {
+			$this->num_rows = 0;
+			$this->rsindex = false;
+			$this->affected_rows = mysql_affected_rows($this->db);
+			$this->last_inserted_id = mysql_insert_id($this->db);
+		} else if($this->query_type == "DELETE") {
+			$this->num_rows = 0;
+			$this->rsindex = false;
+			$this->affected_rows = mysql_affected_rows($this->db);
+			$this->last_inserted_id = false;
+		} else if($this->query_type == "UPDATE") {
+			$this->num_rows = 0;
+			$this->rsindex = false;
+			//con UPDATE sembra che mysql_affected_rows non funzioni…
+			$this->affected_rows = intval(substr($info, strpos($info, "Changed: ")+9, strpos($info, "Warnings: ")-1-9));
+			$this->last_inserted_id = false;
 		}
-		return $this->rs;
+		echo "<br /> aff = " . $this->affected_rows . " | num = " . $this->num_rows . " | rsi = " . $this->rsindex . " | lid = " . $this->last_inserted_id; //DEBUG
+		
+		if($this->affected_rows > 0) {
+			require_once("session.php");
+			require_once("common.php");
+			LogManager::addLogEntry(Session::getUser(), $this->query_type, $tablename, $object);
+		}
+		echo "</p>"; //DEBUG
 	}
 	
 	/**
@@ -414,33 +439,16 @@ class Query {
 	}
 	
 	function affected_rows() {
-		if(!is_null($this->affected_rows))
-			return $this->affected_rows;
-		if(!isset($this->query_type) || is_null($this->query_type) ||
-		   $this->query_type == "SELECT")
-			return 0;
-		return mysql_affected_rows($this->db);
+		return $this->affected_rows;
 	}
 	
 	function num_rows() {
-		if(!is_null($this->num_rows))
-			return $this->num_rows;
-		if(!isset($this->query_type) || is_null($this->query_type) || $this->query_type != "SELECT")
-			return 0;
-		return mysql_num_rows($this->rs);
-	}
-	
-	function num_fields() {
-		if(isset($this->num_fields) && !is_null($this->num_fields) && $this->num_fields != 0)
-			return $this->num_fields;
-		if(!isset($this->query_type) || is_null($this->query_type) || $this->query_type != "SELECT")
-			return 0;
-		$this->num_fields = mysql_num_rows($this->rs);
-		return $this->num_fields;
+		return $this->num_rows;
 	}
 	
 	function hasNext() {
-		return $this->rsindex < $this->num_fields();
+		//echo $this->rsindex . "-" . $this->num_rows; //DEBUG
+		return $this->rsindex < $this->num_rows;
 	}
 	
 	function next() {
@@ -467,11 +475,7 @@ class Query {
 	}
 	
 	function last_inserted_id() {
-		if(!is_null($this->last_inserted_id))
-			return $this->last_inserted_id;
-		if(!isset($this->query_type) || is_null($this->query_type) || $this->query_type != "INSERT")
-			return false;
-		return mysql_insert_id();
+		return $this->last_inserted_id;
 	}
 }
 
