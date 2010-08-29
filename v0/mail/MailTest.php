@@ -17,7 +17,7 @@ class MailTest {
 		$this->mail_data = array("from" => $this->author_id, "to" => "$this->author_id",
 								 "text" => "TESTO!");
 		$this->mail_data_all = array("subject" => "OGGETTO", "from" => $this->author_id, "to" => "$this->author_id",
-								 "text" => "TESTO!", "repliesTo" => 65);
+								 "text" => "TESTO!");
 		$this->mail_data2 = array("subject" => "oggetto", "from" => $this->author_id, "to" => "$this->author_id",
 								 "text" => "testo!");
 		$this->dir_name = "CARTELLA1";
@@ -113,10 +113,12 @@ class MailTest {
 	}
 	
 	function testDeleteMailFromDirectory() {
-		$data = $this->mail_data;
+		require_once("common.php");
+		$data = Filter::filterArray($this->mail_data);
 		$mail = MailManager::createMail($data);
+		//echo "<hr style='height:3px;background-color:blue;' />";
 		$dir = MailManager::loadDirectoryFromName(MAILBOX, $this->author_id);
-		$dir = MailManager::addMailToDir($mail, $dir);
+		//echo "<hr style='height:3px;background-color:blue;' />";
 		
 		$oldmailboxcount = count($dir->getMails());
 		$dir2 = MailManager::loadDirectoryFromName(TRASH, $dir->getOwner());
@@ -146,7 +148,6 @@ class MailTest {
 		$data = $this->mail_data;
 		$mail = MailManager::createMail($data);
 		$dir = MailManager::createDirectory($this->dir_name, $this->author_id);
-		$dir = MailManager::addMailToDir($mail, $dir);
 		$mailbox = MailManager::loadDirectoryFromName(MAILBOX, $this->author_id);
 		$oldmailboxcount = count($dir->getMails());
 		
@@ -170,7 +171,6 @@ class MailTest {
 		$data = $this->mail_data;
 		$mail = MailManager::createMail($data);
 		$dir = MailManager::loadDirectoryFromName(MAILBOX, $this->author_id);
-		$dir = MailManager::addMailToDir($mail, $dir);
 		$oldreadstatus = MailManager::getReadStatus($mail, $dir);
 		
 		MailManager::setReadStatus($mail, $dir, true);
@@ -189,10 +189,12 @@ class MailTest {
 		$data = $this->mail_data;
 		$mail = MailManager::createMail($data);
 		$dir = MailManager::loadDirectoryFromName(MAILBOX, $this->author_id);
-		MailManager::addMailToDir($mail, $dir);
+		//MailManager::addMailToDir($mail, $dir);
 		
-		$mail2 = MailManager::answerMail($mail, $this->mail_data2);
-		MailManager::addMailToDir($mail2, $dir);
+		$data = $this->mail_data2;
+		$data["repliesTo"] = 1;
+		$mail2 = MailManager::answerMail($mail, $data);
+		//MailManager::addMailToDir($mail2, $dir);
 		
 		$dir2 = MailManager::loadDirectory($dir->getID());
 		//echo "<p>" . serialize($oldreadstatus) . "<br />" . serialize($newstatus) . "</p>"; //DEBUG
@@ -214,7 +216,7 @@ class MailTest {
 		
 		//echo "<p>" . $oldmailboxcount . "<br />" . $newmailboxcount . "</p>"; //DEBUG
 		if($oldmailboxcount == $newmailboxcount)
-				return "<br />Send test NOT PASSED: not sent";
+			return "<br />Send test NOT PASSED: not sent";
 				
 		return "<br />Send test passed";		
 	}

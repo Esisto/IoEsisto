@@ -171,7 +171,7 @@ class MailDirectory {
 	function update() {
 		$old = self::loadFromDatabase($this->getID());
 		
-		if($row[MAIL_DIRECTORY_NAME] != $this->getName()) {
+		if($old->getName() != $this->getName()) {
 			require_once("query.php");
 			if(!isset($_SESSION["q"]))
 				$_SESSION["q"] = new Query();
@@ -240,7 +240,7 @@ class MailDirectory {
 	}
 	
 	static function loadDirectoryFromName($name, $user) {
-		$dirs = self::loadDirectoriesFrom(array(MAIL_DIRECTORY_NAME => $name, MAIL_DIRECTORY_OWNER => $user));
+		$dirs = self::loadDirectoriesFrom(array(MAIL_DIRECTORY_NAME => $name, MAIL_DIRECTORY_OWNER => intval($user)));
 		if($dirs !== false && count($dirs) == 1)
 			return $dirs[0];
 		return false;
@@ -271,7 +271,6 @@ class MailDirectory {
 				$row = $_SESSION["q"]->next();
 				$d = new MailDirectory($row[MAIL_DIRECTORY_NAME], $row[MAIL_DIRECTORY_OWNER]);
 				$d->setID(intval($row[MAIL_DIRECTORY_ID]))->loadMails();
-				$d->loadMails();
 				//echo "<p>" .$d ."</p>";
 				$dirs[] = $d;
 			}
@@ -287,9 +286,10 @@ class MailDirectory {
 		if(!isset($_SESSION["q"]))
 			$_SESSION["q"] = new Query();
 		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
+		$table1 = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL);
 		//echo "<p>" . $table . "</p>"; //DEBUG
-		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
-													 array(),
+		$rs = $_SESSION["q"]->execute($s =$_SESSION["q"]->generateSelectStm(array($table, $table1),
+													 array(new JoinConstraint($table->getColumn(MAIL_IN_DIRECTORY_MAIL), $table1->getColumn(MAIL_ID))),
 													 array(new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_DIRECTORY),Operator::$UGUALE,$this->getID())),
 													 array()),
 						  $table->getName(), $this);
@@ -300,11 +300,13 @@ class MailDirectory {
 		if($rs !== false && $_SESSION["q"]->num_rows() > 0) {
 			while($_SESSION["q"]->hasNext()) {
 				$row = $_SESSION["q"]->next();
-				$m = Mail::loadFromDatabase($row[MAIL_IN_DIRECTORY_MAIL]);
-				if($m !== false) {
-					$mails[] = $m;
-				}
-				//echo "<p>" .$m ."</p>";
+				$m = new Mail(array("from" => $row[MAIL_FROM], "to" => $row[MAIL_TO],
+								 "text" => $row[MAIL_TEXT], "subject" => $row[MAIL_SUBJECT],
+								 "repliesTo" => $row[MAIL_REPLIES_TO]));
+				$m->setID($row[MAIL_ID])->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[MAIL_CREATION_DATE])));
+				$mails[] = $m;
+				//echo "<p>" . serialize($q->hasNext()) ."</p>";
+				//echo count($mails) . "-" . $_SESSION["q"]->num_rows() . "/"; //DEBUG
 			}
 			if($_SESSION["q"]->num_rows() == count($mails))
 				return $this->setMails($mails);
@@ -395,18 +397,18 @@ class Mail {
 			if(isset($this->subject) && !is_null($this->getSubject()))
 				$data[MAIL_SUBJECT] = $this->getSubject();
 			if(isset($this->from) && !is_null($this->getFrom()))
-				$data[MAIL_FROM] = $this->getFrom();
+				$data[MAIL_FROM] = intval($this->getFrom());
 			if(isset($this->to) && !is_null($this->getTo()))
 				$data[MAIL_TO] = $this->getTo();
 			if(isset($this->text) && !is_null($this->getText()))
 				$data[MAIL_TEXT] = $this->getText();
 			if(isset($this->repliesTo) && !is_null($this->getRepliesTo()))
-				$data[MAIL_REPLIES_TO] = $this->getRepliesTo();
+				$data[MAIL_REPLIES_TO] = intval($this->getRepliesTo());
 			
 			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateInsertStm($table,$data), $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			//echo "<br />" . $_SESSION["q"]->affected_rows(); //DEBUG
-			$this->setID($_SESSION["q"]->last_inserted_id());
+			$this->setID(intval($_SESSION["q"]->last_inserted_id()));
 			//echo "<br />" . serialize($this->ID); //DEBUG
 			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 														 array(),
@@ -416,7 +418,7 @@ class Mail {
 			//echo "<br />" . $s; //DEBUG
 			while($_SESSION["q"]->hasNext()) {
 				$row = $_SESSION["q"]->next();
-				$this->setCreationDate(time($row[MAIL_CREATION_DATE]));
+				$this->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[MAIL_CREATION_DATE])));
 				//echo "<br />" . serialize($row[MAIL_CREATION_DATE]); //DEBUG
 				
 				//inserisce il messaggio nelle mailbox dei $to
@@ -464,7 +466,7 @@ class Mail {
 		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL);
 		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 													 array(),
-													 array(new WhereConstraint($table->getColumn(MAIL_ID),Operator::$UGUALE,$id)),
+													 array(new WhereConstraint($table->getColumn(MAIL_ID),Operator::$UGUALE,intval($id))),
 													 array()),
 						  $table->getName(), null);
 		
@@ -481,7 +483,7 @@ class Mail {
 							  "repliesTo" => $row[MAIL_REPLIES_TO]);
 				
 				$m = new Mail($data);
-				$m->setCreationDate(time($row[MAIL_CREATION_DATE]))->setID(intval($row[MAIL_ID]));
+				$m->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[MAIL_CREATION_DATE])))->setID(intval($row[MAIL_ID]));
 				break;
 			}
 			//echo "<p>" .$m ."</p>";
