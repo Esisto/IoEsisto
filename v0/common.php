@@ -153,7 +153,7 @@ class LogManager {
 	 *
 	 * return: l'id della entry inserita, false se non c'è riuscito.
 	 */
-	static function addLogEntry($user, $action, $tablename, $object, $query) {
+	static function addLogEntry($user, $action, $tablename, $object) {
 		if($object == LOGMANAGER) return;
 		//echo $user. $action. $tablename . serialize(is_object($object)); //DEBUG
 		if(!isset($user) || !is_numeric($user) ||
@@ -162,19 +162,19 @@ class LogManager {
 			return false;
 		
 		require_once("query.php");
-		if(!isset($query))
-			$query = new Query();
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$table = $query->getDBSchema()->getTable(TABLE_LOG);
+			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_LOG);
 			//echo "<br />" . $tablename; //DEBUG
 			
 			$data = array(LOG_ACTION => $action,
 						  LOG_TABLE => $tablename,
 						  LOG_SUBJECT => $user,
-						  LOG_OBJECT => serialize($object));
-			$s = $query->generateInsertStm($table, $data);
+						  LOG_OBJECT => sha1(serialize($object)));
+			$s = $_SESSION["q"]->generateInsertStm($table, $data);
 			//echo "<br />" . $s; //DEBUG
-			$rs = $query->execute($s, $table->getName(), LOGMANAGER);
+			$rs = $_SESSION["q"]->execute($s, $table->getName(), LOGMANAGER);
 			return mysql_insert_id();
 		}
 		return false;
