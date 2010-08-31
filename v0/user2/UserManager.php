@@ -56,8 +56,10 @@ class UserManager{
      * Aggiunge un feedback di $creator a $subject con valore $value e ritorna $creator.
      */
     static function feedbackUser($creator, $subject, $value) {
-        if($subject->addFeedbackFrom($creator, $value) !== false)
+        if($subject->addFeedbackFrom($creator, $value) !== false) {
+            $subject->loadFeedback(); //forzo il caricamento del feedback perché sembra non vada…
             return $creator;
+        }
         return false;
     }
     

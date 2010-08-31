@@ -229,34 +229,117 @@ class UserTest {
 	}
 	
 	/**
-	 * Tests deleting User objects.
-	 */
-	function testDeleteUser() {}
-	
-	/**
 	 * Tests deleting Contact objects
 	 */
-	function testDeleteContact() {}
+	function testDeleteContact() {
+		$u = UserManager::loadUserByNickname($this->user_data[NICKNAME]);
+		if($u === false)
+			$u = UserManager::loadUserByNickname($this->user_data2[NICKNAME]);
+		if($u === false)
+			$u = UserManager::createUser($this->user_data);
+		
+		$data = $this->contact_data;
+		$data[USER] = $u->getID();
+		$utente = UserManager::addContactToUser($data, $u);
+		$cs = $u->getContacts();
+		$c = $cs[count($cs)-1];
+		//echo "<p>" . $u . "</p>"; //DEBUG
+		$oldcontactscount = count($utente->getContacts());
+		
+		$utente->removeContact($c);
+		
+		if(count($utente->getContacts()) >= $oldcontactscount)
+			return "Test Contact deleting NOT PASSED: not removed.";
+		
+		return "Test Contact deleting passed.";
+	}
 	
 	/**
 	 * Tests adding feedback.
 	 */
-	function testAddFeedback() {}
+	function testAddFeedback() {
+		$u1 = UserManager::loadUserByNickname($this->user_data[NICKNAME]);
+		if($u1 === false)
+			$u1 = UserManager::createUser($this->user_data);
+		$oldfeedbackvalue = $u1->getFeedback();
+		
+		$u2 = UserManager::loadUserByNickname($this->user_data2[NICKNAME]);
+		if($u2 === false)
+			$u2 = UserManager::createUser($this->user_data2);
+		echo "<hr>";
+		
+		UserManager::feedbackUser($u2, $u1, false);
+		echo "<p>" . $oldfeedbackvalue . " - " . $u1->getFeedback() . "</p>"; //DEBUG
+		if($u1->getFeedback() == $oldfeedbackvalue)
+			return "Test feedback NOT PASSED: not updated.";
+		
+		return "Test feedback passed.";
+	}
 	
 	/**
 	 * Tests removing feedback.
 	 */
-	function testRemoveFeedback() {}
+	function testRemoveFeedback() {
+		return "NOT implemented.";
+	}
 	
 	/**
 	 * Tests following users.
 	 */
-	function testFollow() {}
+	function testFollow() {
+		$u1 = UserManager::loadUserByNickname($this->user_data[NICKNAME]);
+		if($u1 === false)
+			$u1 = UserManager::createUser($this->user_data);
+		
+		$u2 = UserManager::loadUserByNickname($this->user_data2[NICKNAME]);
+		if($u2 === false)
+			$u2 = UserManager::createUser($this->user_data2);
+
+		foreach($u1->getFollowers() as $follower) {
+			if($follower->getID() == $u2->getID())
+				UserManager::stopFollowingUser($u2, $u1);
+		}
+		
+		$oldfollowerscount = count($u1->getFollowers());
+		$oldfollowscount = count($u2->getFollows());
+		
+		UserManager::followUser($u2, $u1);
+		//echo "<p>" . $u1 . "</p>"; //DEBUG
+		
+		if(count($u1->getFollowers()) <= $oldfollowerscount)
+			return "Test follow NOT PASSED: not updated subject.";
+		if(count($u2->getFollows()) <= $oldfollowscount)
+			return "Test follow NOT PASSED: not updated follower.";
+		
+		return "Test follow passed.";
+	}
 	
 	/**
 	 * Tests removing follow.
 	 */
-	function testDeleteFollow() {}
+	function testDeleteFollow() {
+		$u1 = UserManager::loadUserByNickname($this->user_data[NICKNAME]);
+		if($u1 === false)
+			$u1 = UserManager::createUser($this->user_data);
+		
+		$u2 = UserManager::loadUserByNickname($this->user_data2[NICKNAME]);
+		if($u2 === false)
+			$u2 = UserManager::createUser($this->user_data2);
+				
+		UserManager::followUser($u2, $u1);
+		//echo "<p>" . $u1 . "</p>"; //DEBUG
+		$oldfollowerscount = count($u1->getFollowers());
+		$oldfollowscount = count($u2->getFollows());
+		
+		UserManager::stopFollowingUser($u2, $u1);
+		
+		if(count($u1->getFollowers()) >= $oldfollowerscount)
+			return "Test follow deleting NOT PASSED: not updated subject.";
+		if(count($u2->getFollows()) >= $oldfollowscount)
+			return "Test follow deleting NOT PASSED: not updated follower.";
+		
+		return "Test follow deleting passed.";	
+	}
 }
 
 ?>

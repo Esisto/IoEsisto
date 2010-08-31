@@ -45,7 +45,11 @@
 	
 	$t = new UserTest();
 	//echo $t->testUser();
-	echo $t->testContacts();
+	//echo $t->testContacts();
+	//echo $t->testDeleteContact();
+	//echo $t->testFollow();
+	//echo $t->testDeleteFollow();
+	echo $t->testAddFeedback();
 ?>
 
 </body>

@@ -489,6 +489,7 @@ class User{
 		if($_SESSION["q"]->affected_rows() != 1) {
 			//TODO Genera errore ma ritorna comunque $this
 		}
+		
 		return $this->loadFollowers();
 	}
 	
@@ -509,7 +510,9 @@ class User{
 	}
 	
 	function follow($user) {
-		$user->addFollower($this);
+		$f = $user->getFollowers();
+		if(!isset($f[$this->getID()]))
+			$user->addFollower($this);
 		return $this->loadFollows();
 	}
 	
@@ -527,7 +530,7 @@ class User{
 		
 		$_SESSION["q"]->execute($s = $_SESSION["q"]->generateInsertStm($table, array(FEEDBACK_CREATOR => $user->getID(),
 															 FEEDBACK_SUBJECT => $this->getID(),
-															 FEEDBACK_VALUE => $value)),
+															 FEEDBACK_VALUE => ($value ? 1 : 0))),
 					$table->getName(), $this);
 		
 		if($_SESSION["q"]->affected_rows() != 1) {
@@ -661,18 +664,6 @@ class User{
 			return $this;
 		}
 		return false;
-
-		//require_once("settings.php");
-		//$db = mysql_connect(DB_HOSTNAME, DB_USERNAME, DB_PASSWORD);
-		//$rs = mysql_query("DELETE FROM User WHERE us_ID = " . $this->getID(), $db);
-		//
-		//if(mysql_affected_rows($db) == 1) {
-		//	require_once("common.php");
-		//	require_once("session.php");
-		//	LogManager::addLogEntry(Session::getUser(), LogManager::$DELETE, TABLE_USER, $this, new Query());
-		//	return $this;
-		//}
-		//return false;
 	}
 	
 	static function loadByNickname($nickname) {
@@ -686,7 +677,8 @@ class User{
 											   array()));
 		
 		if($_SESSION["q"]->num_rows() == 1) {
-			return self::createFromQuery($_SESSION["q"]);
+			$u = self::createFromQuery($_SESSION["q"]);
+			return $u->loadContacts()->loadFeedback()->loadFollowers()->loadFollows();
 		}
 		return false;
 	}
@@ -729,17 +721,19 @@ class User{
 											   array()));
 		
 		if($_SESSION["q"]->num_rows() == 1) {
-			return self::createFromQuery($_SESSION["q"]);
+			$u = self::createFromQuery($_SESSION["q"]);
+			return $u->loadContacts()->loadFeedback()->loadFollowers()->loadFollows();
 		}
 		return false;
 	}
 	
-	static function loadFromDatabase($id) {
+	static function loadFromDatabase($id, $loadDependences = true) {
 		// per fermare la ricorsività implicita di questa funzione, infatti loadFromDatabase chiama loadFollows che chiama loadFromDatabase.
-		global $loadDependences;
-		if(!isset($loadDependences)) $loadDependences = true;
 		
-		//echo "<p>" . serialize($loadDependences) . "</p>"; //DEBUG
+		//DEBUG
+		if(!$loadDependences && DEBUG)
+			echo "<font color='blue'>NON carico le dipenzenze.</font>";
+		//END DEBUG
 		require_once("query.php");
 		if(!isset($_SESSION["q"]))
 			$_SESSION["q"] = new Query();
@@ -760,6 +754,7 @@ class User{
 			//echo "<p>" . $user . "</p>"; //DEBUG
 			return $user;
 		}
+		
 		$loadDependences = true;
 		return false;
 	}
@@ -777,9 +772,9 @@ class User{
 		$fols = array();
 		while($_SESSION["q"]->hasNext()) {
 			$row = $_SESSION["q"]->next();
-			$f = self::loadFromDatabase($row[FOLLOW_SUBJECT], false);
+			$f = self::loadFromDatabase(intval($row[FOLLOW_SUBJECT]), false);
 			if($f !== false)
-				$fols[] = $f;
+				$fols[$f->getID()] = $f;
 		}
 		return $this->setFollows($fols);
 	}
@@ -797,9 +792,9 @@ class User{
 		$fols = array();
 		while($_SESSION["q"]->hasNext()) {
 			$row = $_SESSION["q"]->next();
-			$f = self::loadFromDatabase($row[FOLLOW_FOLLOWER], false);
+			$f = self::loadFromDatabase(intval($row[FOLLOW_FOLLOWER]), false);
 			if($f !== false)
-				$fols[] = $f;
+				$fols[$f->getID()] = $f;
 		}
 		return $this->setFollowers($fols);
 	}
@@ -853,7 +848,21 @@ class User{
 			else $s.= ", ";
 			$s.= $cont;
 		}
-		$s.= "))";
+		$s.= ")<br /> followers = <font color='red'>(";
+		$first = true;
+		foreach($this->getFollowers() as $follower) {
+			if($first) $first = false;
+			else $s.= ", ";
+			$s.= $follower;
+		}
+		$s.= ")</font><br /> follows = <font color='green'>(";
+		$first = true;
+		foreach($this->getFollows() as $follows) {
+			if($first) $first = false;
+			else $s.= ", ";
+			$s.= $follows;
+		}
+		$s.= ")</font>)";
 		return $s;
 	}
 }

@@ -359,8 +359,11 @@ class Query {
 		if($object == LOGMANAGER) return;
 		
 		$this->query_type = substr($query, 0, 6);
-		echo "<p>" . $this->query_type . $info; //DEBUG
-		echo "<br />" . $query; //DEBUG
+		//DEBUG
+		if(DEBUG) {
+			echo "<p>" . $this->query_type . $info; //DEBUG
+			echo "<br />" . $query; //DEBUG
+		} //END DEBUG
 		
 		if($this->query_type == "SELECT") {
 			$this->num_rows = mysql_num_rows($this->rs);
@@ -384,7 +387,10 @@ class Query {
 			$this->affected_rows = intval(substr($info, strpos($info, "Changed: ")+9, strpos($info, "Warnings: ")-1-9));
 			$this->last_inserted_id = false;
 		}
-		echo "<br /> aff = " . $this->affected_rows . " | num = " . $this->num_rows . " | rsi = " . $this->rsindex . " | lid = " . $this->last_inserted_id; //DEBUG
+		//DEBUG
+		if(DEBUG)
+			echo "<br /> aff = " . $this->affected_rows . " | num = " . $this->num_rows . " | rsi = " . $this->rsindex . " | lid = " . $this->last_inserted_id; //DEBUG
+		//END DEBUG
 		
 		if($this->affected_rows > 0) {
 			require_once("session.php");

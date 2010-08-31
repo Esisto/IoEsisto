@@ -40,24 +40,21 @@ class Report {
 	 * se INSERT: crea una nuova tupla in Report.
 	 * se UPDATE: non fa nulla. Non si può modificare un report.
 	 */
-	function save($savingMode) {
-		if($savingMode == SavingMode::$INSERT) {
-			require_once("query.php");
-			if(!isset($_SESSION["q"]))
-				$_SESSION["q"] = new Query();
-			if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-				$dbs = $_SESSION["q"]->getDBSchema();
-				$table = $dbs->getTable(TABLE_REPORT);
-				$data = array(REPORT_TEXT => $this->getReport(),
-							  REPORT_POST => $this->getPost(),
-							  REPORT_USER => $this->getAuthor());
-				$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateInsertStm($table,$data), $table->getName(), $this);
-				//echo "<br />" . $s; //DEBUG
-				//echo "<br />" . serialize($rs); //DEBUG
-				$this->ID = $_SESSION["q"]->last_inserted_id();
-				//echo "<br />" . $this; //DEBUG
-				return $this->getID();
-			}
+	function save() {
+		require_once("query.php");
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
+			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_REPORT);
+			$data = array(REPORT_TEXT => $this->getReport(),
+						  REPORT_POST => $this->getPost(),
+						  REPORT_USER => $this->getAuthor());
+			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateInsertStm($table,$data), $table->getName(), $this);
+			//echo "<br />" . $s; //DEBUG
+			//echo "<br />" . serialize($rs); //DEBUG
+			$this->ID = $_SESSION["q"]->last_inserted_id();
+			//echo "<br />" . $this; //DEBUG
+			return $this->getID();
 		}
 		return false;
 	}
@@ -67,8 +64,7 @@ class Report {
 		if(!isset($_SESSION["q"]))
 			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$dbs = $_SESSION["q"]->getDBSchema();
-			$table = $dbs->getTable(TABLE_REPORT);
+			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_REPORT);
 			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateDeleteStm($table,
 														 array(new WhereConstraint($table->getColumn(REPORT_ID),Operator::$UGUALE,$this->getID()))),
 							  $table->getName(), $this);
@@ -84,9 +80,101 @@ class Report {
 	 * @Override
 	 */
 	function __toString() {
-		$s = "Vote (author = " . $this->author .
-			 " | post = " . $this->post .
-			 " | vote = " . $this->vote .
+		$s = "Report (author = " . $this->getAuthor() .
+			 " | post = " . $this->getPost() .
+			 " | report = " . $this->getReport() .
+			 ")";
+		return $s;
+	}
+}
+
+class Resource {
+	private $ID;
+	private $owner;
+	private $path;
+	private $type;
+	
+	static $VIDEO = "video";
+	static $PHOTO = "photo";
+	
+	function __construct($owner,$path,$type){
+		$this->owner = $owner;
+		$this->path = $path;
+		$this->type = $type;
+	}
+	
+	function getOwner() {
+		return $this->owner;
+	}
+	
+	function getPath() {
+		return $this->path;
+	}
+	
+	function getType() {
+		return $this->type;
+	}
+	
+	function getID() {
+		return $this->ID;
+	}
+	
+	function setID($id) {
+		$this->ID = $id;
+		return $this;
+	}
+	
+	/**
+	 * Salva il report nel database.
+	 * 
+	 * param savingMode: uno dei valori della classe SavingMode.
+	 * se INSERT: crea una nuova tupla in Report.
+	 * se UPDATE: non fa nulla. Non si può modificare un report.
+	 */
+	function save() {
+		require_once("query.php");
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
+			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_RESOURCE);
+			$data = array(RESOURCE_OWNER => $this->getOwner(),
+						  RESOURCE_PATH => $this->getPath(),
+						  RESOURCE_TYPE => $this->getType());
+			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateInsertStm($table,$data), $table->getName(), $this);
+			//echo "<br />" . $s; //DEBUG
+			//echo "<br />" . serialize($rs); //DEBUG
+			$this->setID($_SESSION["q"]->last_inserted_id());
+			//echo "<br />" . $this; //DEBUG
+			return $this->getID();
+		}
+		return false;
+	}
+	
+	function delete() {
+		require_once("query.php");
+		if(!isset($_SESSION["q"]))
+			$_SESSION["q"] = new Query();
+		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
+			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_RESOURCE);
+			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateDeleteStm($table,
+														 array(new WhereConstraint($table->getColumn(RESOURCE_ID),Operator::$UGUALE,$this->getID()))),
+							  $table->getName(), $this);
+			//echo "<br />" . $s; //DEBUG
+			if($_SESSION["q"]->affected_rows() == 1) {
+				return $this;
+			}
+		}
+		return false;			
+	}
+	
+	/**
+	 * @Override
+	 */
+	function __toString() {
+		$s = "Resource (ID = " . $this->getID() .
+			 " | owner = " . $this->getOwner() .
+			 " | path = " . $this->getPath() .
+			 " | type = " . $this->getType() .
 			 ")";
 		return $s;
 	}
