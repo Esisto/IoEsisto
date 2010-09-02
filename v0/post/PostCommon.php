@@ -94,6 +94,7 @@ class Comment {
 			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
 			$dbs = $_SESSION["q"]->getDBSchema();
+			define_tables(); defineCommentColumns();
 			$table = $dbs->getTable(TABLE_COMMENT);
 			$data = array(COMMENT_COMMENT => $this->getComment(),
 						  COMMENT_POST => $this->getPost(),
@@ -241,6 +242,7 @@ class Vote {
 			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
 			$dbs = $_SESSION["q"]->getDBSchema();
+			define_tables(); defineVoteColumns();
 			$table = $dbs->getTable(TABLE_VOTE);
 			$data = array(VOTE_VOTE => $this->getVote(),
 						  VOTE_POST => $this->getPost(),

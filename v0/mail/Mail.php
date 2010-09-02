@@ -52,6 +52,7 @@ class MailDirectory {
 		if(!isset($_SESSION["q"]))
 			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
+			define_tables(); defineMailInDirColumns();
 			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
 			$_SESSION["q"]->execute($s = $_SESSION["q"]->generateInsertStm($table,
 												   array(MAIL_IN_DIRECTORY_DIRECTORY => $this->getID(),
@@ -72,6 +73,7 @@ class MailDirectory {
 		if(!isset($_SESSION["q"]))
 			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
+			define_tables(); defineMailInDirColumns();
 			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
 			$_SESSION["q"]->execute($s = $_SESSION["q"]->generateUpdateStm($table,
 												   array(MAIL_IN_DIRECTORY_DIRECTORY => $to->getID()),
@@ -92,6 +94,7 @@ class MailDirectory {
 		if(!isset($_SESSION["q"]))
 			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
+			define_tables(); defineMailInDirColumns();
 			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
 			$_SESSION["q"]->execute($s = $_SESSION["q"]->generateDeleteStm($table,
 												   array(new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_DIRECTORY), Operator::$UGUALE, $this->getID()),
@@ -112,6 +115,7 @@ class MailDirectory {
 		if(!isset($_SESSION["q"]))
 			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
+			define_tables(); defineMailInDirColumns();
 			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
 			$_SESSION["q"]->execute($s = $_SESSION["q"]->generateUpdateStm($table, array(MAIL_IN_DIRECTORY_READ => ($read ? 1 : 0)),
 												   array(new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_DIRECTORY), Operator::$UGUALE, $this->getID()),
@@ -130,6 +134,7 @@ class MailDirectory {
 		if(!isset($_SESSION["q"]))
 			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
+			define_tables(); defineMailInDirColumns();
 			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
 			$_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 												   array(),
@@ -153,8 +158,8 @@ class MailDirectory {
 		if(!isset($_SESSION["q"]))
 			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$dbs = $_SESSION["q"]->getDBSchema();
-			$table = $dbs->getTable(TABLE_MAIL_DIRECTORY);
+			define_tables(); defineMailDirColumns();
+			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL_DIRECTORY);
 			$data = array(MAIL_DIRECTORY_NAME => $this->getName(),
 						  MAIL_DIRECTORY_OWNER => $this->getOwner());
 			
@@ -176,6 +181,7 @@ class MailDirectory {
 			if(!isset($_SESSION["q"]))
 				$_SESSION["q"] = new Query();
 			if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
+				define_tables(); defineMailDirColumns();
 				$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL_DIRECTORY);
 				$data[MAIL_DIRECTORY_NAME] = $this->getName();
 				
@@ -199,8 +205,8 @@ class MailDirectory {
 		if(!isset($_SESSION["q"]))
 			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$dbs = $_SESSION["q"]->getDBSchema();
-			$table = $dbs->getTable(TABLE_MAIL_DIRECTORY);
+			define_tables(); defineMailDirColumns();
+			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL_DIRECTORY);
 			//cerco la Mailbox dell'utente e sposto tutte le mail lì.
 			$_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 												   array(),
@@ -213,7 +219,7 @@ class MailDirectory {
 					$mailboxid = $row[MAIL_DIRECTORY_ID];
 				}
 				
-				$table1 = $dbs->getTable(TABLE_MAIL_IN_DIRECTORY);
+				$table1 = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
 				$_SESSION["q"]->execute($s = $_SESSION["q"]->generateUpdateStm($table1, array(MAIL_IN_DIRECTORY_DIRECTORY => $mailboxid),
 													   array(new WhereConstraint($table1->getColumn(MAIL_IN_DIRECTORY_DIRECTORY), Operator::$UGUALE, $this->getID()))),
 							$table1->getName(), $this);
@@ -233,6 +239,7 @@ class MailDirectory {
 	}
 	
 	static function loadUsersDirectories($user) {
+		defineMailDirColumns();
 		$dirs = self::loadDirectoriesFrom(array(MAIL_DIRECTORY_OWNER => $user));
 		if($dirs !== false && count($dirs) > 0)
 			return $dirs;
@@ -240,6 +247,7 @@ class MailDirectory {
 	}
 	
 	static function loadDirectoryFromName($name, $user) {
+		defineMailDirColumns();
 		$dirs = self::loadDirectoriesFrom(array(MAIL_DIRECTORY_NAME => $name, MAIL_DIRECTORY_OWNER => intval($user)));
 		if($dirs !== false && count($dirs) == 1)
 			return $dirs[0];
@@ -247,6 +255,7 @@ class MailDirectory {
 	}
 	
 	static function loadFromDatabase($id) {
+		defineMailDirColumns();
 		$dirs = self::loadDirectoriesFrom(array(MAIL_DIRECTORY_ID => $id));
 		if($dirs !== false && count($dirs) == 1)
 			return $dirs[0];
@@ -257,6 +266,7 @@ class MailDirectory {
 		require_once("query.php");
 		if(!isset($_SESSION["q"]))
 			$_SESSION["q"] = new Query();
+		define_tables(); defineMailColumns();
 		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL_DIRECTORY);
 		$wheres = array();
 		foreach($data as $comumnname => $d)
@@ -285,6 +295,7 @@ class MailDirectory {
 		require_once("query.php");
 		if(!isset($_SESSION["q"]))
 			$_SESSION["q"] = new Query();
+		define_tables(); defineMailColumns(); defineMailInDirColumns();
 		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
 		$table1 = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL);
 		//echo "<p>" . $table . "</p>"; //DEBUG
@@ -391,8 +402,8 @@ class Mail {
 		if(!isset($_SESSION["q"]))
 			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$dbs = $_SESSION["q"]->getDBSchema();
-			$table = $dbs->getTable(TABLE_MAIL);
+			define_tables(); defineMailColumns();
+			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL);
 			$data = array();
 			if(isset($this->subject) && !is_null($this->getSubject()))
 				$data[MAIL_SUBJECT] = $this->getSubject();
@@ -446,8 +457,8 @@ class Mail {
 		if(!isset($_SESSION["q"]))
 			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$dbs = $_SESSION["q"]->getDBSchema();
-			$table = $dbs->getTable(TABLE_MAIL);
+			define_tables(); defineMailColumns();
+			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL);
 			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateDeleteStm($table,
 														 array(new WhereConstraint($table->getColumn(MAIL_ID),Operator::$UGUALE,$this->getID()))),
 							  $table->getName(), $this);
@@ -463,6 +474,7 @@ class Mail {
 		require_once("query.php");
 		if(!isset($_SESSION["q"]))
 			$_SESSION["q"] = new Query();
+		define_tables(); defineMailColumns();
 		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL);
 		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 													 array(),
@@ -498,6 +510,7 @@ class Mail {
 		require_once("query.php");
 		if(!isset($_SESSION["q"]))
 			$_SESSION["q"] = new Query();
+		define_tables(); defineMailColumns();
 		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_MAIL);
 		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 													 array(),

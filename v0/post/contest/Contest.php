@@ -185,10 +185,12 @@ class Contest {
 		if(!isset($_SESSION["q"]))
 			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$dbs = $_SESSION["q"]->getDBSchema();
+			$dbs = $_SESSION["q"]->getDBSchema();			
+			define_tables(); defineContestColumns();
 			$table = $dbs->getTable(TABLE_CONTEST);
 			$data = array();
 			if(isset($this->title) && !is_null($this->getTitle()))
+
 				$data[CONTEST_TITLE] = $this->getTitle();
 			if(isset($this->description) && !is_null($this->getDescription()))
 				$data[CONTEST_DESCRIPTION] = $this->getDescription();
@@ -339,6 +341,7 @@ class Contest {
 		require_once("query.php");
 		if(!isset($_SESSION["q"]))
 			$_SESSION["q"] = new Query();
+		define_tables(); defineContestSubscriberColumns();
 		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_CONTEST_SUBSCRIBER);
 		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 													 array(),

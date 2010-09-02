@@ -253,6 +253,7 @@ class LogManager {
 		if(!isset($_SESSION["q"]))
 			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
+			define_tables(); defineLogColumns();
 			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_LOG);
 			//echo "<br />" . $tablename; //DEBUG
 			
@@ -274,6 +275,11 @@ class Filter {
 		return htmlspecialchars(htmlentities(addslashes($text)));
 	}
 	
+	// TODO controlla il funzionamento
+	static function textToHyperlink($text) {
+		return preg_replace("#http://([A-z0-9./-]+)#", '<a href="$1">$0</a>', $text);
+	}
+	
 	static function filterArray($array) {
 		$newarray = array();
 		foreach($array as $key => $value) {
@@ -282,6 +288,42 @@ class Filter {
 			$newarray[$key] = $value;
 		}
 		return $newarray;
+	}
+	
+	static function decodeFilteredText($text) {
+		return stripcslashes(html_entity_decode(htmlspecialchars_decode($text)));
+	}
+	
+	static function decodeFilteredArray($array) {
+		$newarray = array();
+		foreach($array as $key => $value) {
+			if(is_string($value))
+				$value = self::decodeFilteredText($value);
+			$newarray[$key] = $value;
+		}
+		return $newarray;
+	}
+	
+	static function textToPermalink($text) {
+		$permalink = iconv('UTF-8', 'ASCII//TRANSLIT', $text);
+		$permalink = preg_replace("/[^a-zA-Z0-9\/_|+ -]/", '', $permalink);
+		$permalink = strtolower(trim($permalink, '-'));
+		$permalink = preg_replace("/[\/_|+ -]+/", '_', $permalink);
+	
+		return $permalink;
+	}
+	
+	function clean($value) {
+		// Stripslashes
+		if (get_magic_quotes_gpc()) {
+			$value = stripslashes( $value );
+		}
+		
+		// Quote if not a number or a numeric string
+		if (!is_numeric($value) && !empty($value)) {
+			$value = mysql_real_escape_string($value);
+		}
+		return $value;
 	}
 }
 ?>

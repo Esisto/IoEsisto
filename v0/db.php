@@ -1,5 +1,26 @@
 <?php
 require_once("strings/strings.php");
+defineCategoryColumns();
+defineCommentColumns();
+defineContactColumns();
+defineContactTypeColumns();
+defineContestColumns();
+defineContestSubscriberColumns();
+defineFeedbackColumns();
+defineFollowColumns();
+defineLogColumns();
+defineMailColumns();
+defineMailDirColumns();
+defineMailInDirColumns();
+definePostColumns();
+defineReportColumns();
+defineResourceColumns();
+defineRoleColumns();
+defineSubCategoryColumns();
+defineTagColumns();
+defineUserColumns();
+defineVoteColumns();
+define_tables();
 
 $s = "CREATE TABLE IF NOT EXISTS `" . TABLE_CATEGORY . "` (
   `" . CATEGORY_NAME . "` varchar(50) NOT NULL,

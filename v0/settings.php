@@ -1,12 +1,14 @@
 <?php
 // Database settings.
-define("DB_HOSTNAME", "localhost:8889");
+define("DB_HOSTNAME", "localhost");
 define("DB_USERNAME", "root");
 define("DB_PASSWORD", "root");
 define("DB_NAME", "ioesisto");
+define("DB_PORT", 8889);
 
 // File System settings.
-define("USER_DIR", "user2");
+//@deprecated
+define("USER_DIR", "user"); // TODO ELIMINARE
 
 // Language settings.
 define("LANG", "en"); // selezionare il linguaggio voluto.

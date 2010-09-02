@@ -203,8 +203,7 @@ class Test {
 	 * Carica il commento dal database e lo confronta con quello salvato in memoria;
 	 */
 	function testSaveComment() {
-		
-		$data = $this->post_data_all;
+		$data = Filter::filterArray($this->post_data_all);
 		$p = PostManager::addPost($data);
 		$p1 = PostManager::commentPost($p, $this->author_id, $this->comment_text);
 		
@@ -613,6 +612,13 @@ class Test {
 		if($contest !== false)
 			return "<br />Contest deleting test NOT PASSED: loaded";
 		return "<br />Contest deleting test passed";
+	}
+	
+	function testPermalink() {
+		$data = Filter::filterArray($this->post_data_all);
+		$p = PostManager::addPost($data);
+		
+		echo $p->getPermalink();
 	}
 }
 ?>

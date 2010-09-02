@@ -124,6 +124,29 @@ class Post {
 	function getPlace() {
 		return $this->place;
 	}
+	function getAuthorName() {
+		require_once("user/UserManager.php");
+		$u = UserManager::loadUser($this->getAuthor());
+		if(!is_null($u->getNickname()))
+			return $u->getNickname();
+		return $this->getAuthor();
+	}
+	function getPermalink() {
+		$s = "http://"; //$s = ($_SERVER["HTTPS"] ? "https://" : "http://");
+		$s.= $_SERVER["SERVER_NAME"];
+		$s.= ":";
+		$s.= ($_SERVER["SERVER_PORT"] != '80' /*or whatever*/ ? $_SERVER["SERVER_PORT"] : "");
+		//$s.= "/";
+		$s.= dirname($_SERVER["PHP_SELF"]);
+		//$s.= "/";
+		$this->getAuthorName();
+		$s.= "/";
+		$s.= date("Y-m-d", $this->getCreationDate());
+		$s.= "/";
+		require_once("common.php");
+		$s.= Filter::clean($this->getTitle());
+		return $s;
+	}
 	
 	function setID($id) {
 		$this->ID = intval($id);
@@ -205,6 +228,7 @@ class Post {
 			$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
 			$dbs = $_SESSION["q"]->getDBSchema();
+			define_tables(); definePostColumns();
 			$table = $dbs->getTable(TABLE_POST);
 			$data = array(POST_TYPE => $this->getType());
 			if(isset($this->title) && !is_null($this->getTitle()))
@@ -244,6 +268,11 @@ class Post {
 				//echo "<br />" . serialize($row[POST_CREATION_DATE]); //DEBUG
 				break;
 			}
+			if(!$fp = fopen(".htaccess", "a"))
+				echo "FILE NON APERTO";
+			if(!$a = fwrite($fp, "Redirect 301 " . $this->getPermalink() . " http://localhost:8888/ioesisto/v0/\n"))
+				echo "FILE NON SCRITTO";
+			fclose($fp);
 			//echo "<br />" . $this; //DEBUG
 			return $this->ID;
 		}
@@ -263,6 +292,7 @@ class Post {
 			if(!isset($_SESSION["q"]))
 				$_SESSION["q"] = new Query();
 		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
+			define_tables(); definePostColumns();
 			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_POST);
 			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 														 array(),
@@ -325,6 +355,7 @@ class Post {
 		require_once("query.php");
 		if(!isset($_SESSION["q"]))
 			$_SESSION["q"] = new Query();
+		define_tables(); definePostColumns();
 		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_POST);
 		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateDeleteStm($table,
 													 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$this->getID()))),
@@ -347,6 +378,7 @@ class Post {
 		require_once("query.php");
 		if(!isset($_SESSION["q"]))
 			$_SESSION["q"] = new Query();
+		define_tables(); definePostColumns();
 		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_POST);
 		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 													 array(),
@@ -407,6 +439,7 @@ class Post {
 		require_once("query.php");
 		if(!isset($_SESSION["q"]))
 			$_SESSION["q"] = new Query();
+		define_tables(); defineCommentColumns();
 		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_COMMENT);
 		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 													 array(),
@@ -438,6 +471,7 @@ class Post {
 		require_once("query.php");
 		if(!isset($_SESSION["q"]))
 			$_SESSION["q"] = new Query();
+		define_tables(); defineVoteColumns();
 		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_VOTE);
 		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 													 array(),
@@ -467,6 +501,7 @@ class Post {
 		require_once("query.php");
 		if(!isset($_SESSION["q"]))
 			$_SESSION["q"] = new Query();
+		define_tables(); defineReportColumns();
 		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_REPORT);
 		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
 													 array(),
