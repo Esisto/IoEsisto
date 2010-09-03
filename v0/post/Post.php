@@ -127,6 +127,7 @@ class Post {
 	function getAuthorName() {
 		require_once("user/UserManager.php");
 		$u = UserManager::loadUser($this->getAuthor());
+		echo $u;
 		if(!is_null($u->getNickname()))
 			return $u->getNickname();
 		return $this->getAuthor();
@@ -138,8 +139,8 @@ class Post {
 		$s.= ($_SERVER["SERVER_PORT"] != '80' /*or whatever*/ ? $_SERVER["SERVER_PORT"] : "");
 		//$s.= "/";
 		$s.= dirname($_SERVER["PHP_SELF"]);
-		//$s.= "/";
-		$this->getAuthorName();
+		$s.= "/";
+		$s.= $this->getAuthorName();
 		$s.= "/";
 		$s.= date("Y-m-d", $this->getCreationDate());
 		$s.= "/";
@@ -224,12 +225,10 @@ class Post {
 	function save() {
 		require_once("post/PostCommon.php");
 		require_once("query.php");
-		if(!isset($_SESSION["q"]))
-			$_SESSION["q"] = new Query();
-		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$dbs = $_SESSION["q"]->getDBSchema();
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
 			define_tables(); definePostColumns();
-			$table = $dbs->getTable(TABLE_POST);
+			$table = Query::getDBSchema()->getTable(TABLE_POST);
 			$data = array(POST_TYPE => $this->getType());
 			if(isset($this->title) && !is_null($this->getTitle()))
 				$data[POST_TITLE] = $this->getTitle();
@@ -250,32 +249,34 @@ class Post {
 			if(isset($this->place) && !is_null($this->getPlace()))
 				$data[POST_PLACE] = $this->getPlace(); //TODO Non ancora implementato.
 			
-			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateInsertStm($table,$data), $table->getName(), $this);
+			$rs = $db->execute($s = Query::generateInsertStm($table,$data), $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
-			//echo "<br />" . $_SESSION["q"]->affected_rows(); //DEBUG
-			$this->setID($_SESSION["q"]->last_inserted_id());
-			//echo "<br />" . serialize($this->ID); //DEBUG
-			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
-														 array(),
-														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$this->getID())),
-														 array()),
-							  $table->getName(), $this);
-			//echo "<br />" . $s; //DEBUG
-			while($_SESSION["q"]->hasNext()) {
-				$row = $_SESSION["q"]->next();
-				$this->setCreationDate(time($row[POST_CREATION_DATE]));
-				$this->setModificationDate(time($row[POST_CREATION_DATE]));
-				//echo "<br />" . serialize($row[POST_CREATION_DATE]); //DEBUG
-				break;
-			}
-			if(!$fp = fopen(".htaccess", "a"))
-				echo "FILE NON APERTO";
-			if(!$a = fwrite($fp, "Redirect 301 " . $this->getPermalink() . " http://localhost:8888/ioesisto/v0/\n"))
-				echo "FILE NON SCRITTO";
-			fclose($fp);
-			//echo "<br />" . $this; //DEBUG
-			return $this->ID;
-		}
+			//echo "<br />" . $db->affected_rows(); //DEBUG
+			if($db->affected_rows() == 1) {
+				$this->setID($db->last_inserted_id());
+				//echo "<br />" . serialize($this->ID); //DEBUG
+				$rs = $db->execute($s = Query::generateSelectStm(array($table),
+															 array(),
+															 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$this->getID())),
+															 array()),
+								  $table->getName(), $this);
+				//echo "<br />" . serialize($rs); //DEBUG
+				if($db->num_rows() == 1) {
+					$row = $db->fetch_result();
+					//echo "<br />" . $row; //DEBUG
+					$this->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[POST_CREATION_DATE])));
+					$this->setModificationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[POST_CREATION_DATE])));
+					//echo "<br />" . serialize($row[POST_CREATION_DATE]); //DEBUG
+					require_once("file_manager.php");
+					$w = HTAccessManager::addRule("Redirect 301 " . $this->getPermalink() . " http://localhost:8888/ioesisto2/v0/\n");
+					if($w === false || $w == 0)
+						echo "FILE NON APERTO o NON SCRITTO";
+					
+					//echo "<br />" . $this; //DEBUG
+					return $this->ID;
+				} else $db->display_error("Post::save()");
+			} else $db->display_error("Post::save()");
+		} else $db->display_connect_error("Post::save()");
 		return false;
 	}
 	
@@ -288,21 +289,19 @@ class Post {
 	 */
 	function update() {
 		require_once("query.php");
-		if(!isset($GLOBALS["q"]))
-			if(!isset($_SESSION["q"]))
-				$_SESSION["q"] = new Query();
-		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
 			define_tables(); definePostColumns();
-			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_POST);
-			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
+			$table = Query::getDBSchema()->getTable(TABLE_POST);
+			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
 														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$this->getID())),
 														 array()),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			$data = array();
-			while($_SESSION["q"]->hasNext()) {
-				$row = $_SESSION["q"]->next();
+			if($db->num_rows() == 1) {
+				$row = $db->fetch_result();
 				//cerco le differenze e le salvo.
 				if($row[POST_TITLE] != $this->getTitle())
 					$data[POST_TITLE] = $this->getTitle();
@@ -322,25 +321,24 @@ class Post {
 				settype($row[POST_VISIBLE], "boolean");
 				if($row[POST_VISIBLE] !== $this->isVisible())
 					$data[POST_VISIBLE] = $this->isVisible() ? 1 : 0;
-				break;
-			}
-			
-			$data[POST_MODIFICATION_DATE] = date("Y/m/d G:i:s", time()); // se mi dicono di fare l'update, cambio modificationDate
-			//echo "<br />" . serialize($data); //DEBUG
-			//TODO controllare tag e categorie
-			
-			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateUpdateStm($table,
-														 $data,
-														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$this->getID()))),
-							  $table->getName(), $this);
-			//echo "<br />" . $s; //DEBUG
-			//echo "<br />" . mysql_affected_rows(); //DEBUG
-			if($_SESSION["q"]->affected_rows() == 0)
-				return false;
-			
-			//echo "<br />" . $this; //DEBUG
-			return $this->getModificationDate();
-		}
+					
+				if(count($data) == 0) return $this->getModificationDate();
+				$data[POST_MODIFICATION_DATE] = date("Y/m/d G:i:s", time()); // se mi dicono di fare l'update, cambio modificationDate
+				//echo "<br />" . serialize($data); //DEBUG
+				//TODO controllare tag e categorie
+				
+				$rs = $db->execute($s = Query::generateUpdateStm($table,
+															 $data,
+															 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$this->getID()))),
+								  $table->getName(), $this);
+				//echo "<br />" . $s; //DEBUG
+				//echo "<br />" . mysql_affected_rows(); //DEBUG
+				if($db->affected_rows() == 1) {
+					//echo "<br />" . $this; //DEBUG
+					return $this->getModificationDate();
+				} else $db->display_error("Post::update()");
+			} else $db->display_error("Post::update()");
+		} else $db->display_connect_error("Post::update()");
 		return false;
 	}
 	
@@ -353,17 +351,18 @@ class Post {
 	 */
 	function delete() {
 		require_once("query.php");
-		if(!isset($_SESSION["q"]))
-			$_SESSION["q"] = new Query();
-		define_tables(); definePostColumns();
-		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_POST);
-		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateDeleteStm($table,
-													 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$this->getID()))),
-						  $table->getName(), $this);
-		//echo "<br />" . $_SESSION["q"]->affected_rows() . $s; //DEBUG
-		if($_SESSION["q"]->affected_rows() == 1) {
-			return $this;
-		}
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			define_tables(); definePostColumns();
+			$table = Query::getDBSchema()->getTable(TABLE_POST);
+			$rs = $db->execute($s = Query::generateDeleteStm($table,
+														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$this->getID()))),
+							  $table->getName(), $this);
+			//echo "<br />" . $db->affected_rows() . $s; //DEBUG
+			if($db->affected_rows() == 1) {
+				return $this;
+			} else $db->display_error("Post::delete()");
+		} else $db->display_connect_error("Post::delete()");
 		return false;
 	}
 	
@@ -376,22 +375,21 @@ class Post {
 	 */
 	static function loadFromDatabase($id) {
 		require_once("query.php");
-		if(!isset($_SESSION["q"]))
-			$_SESSION["q"] = new Query();
-		define_tables(); definePostColumns();
-		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_POST);
-		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
-													 array(),
-													 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$id)),
-													 array()),
-						  $table->getName(), null);
-		
-		//echo "<p>" . $s . "</p>"; //DEBUG
-		//echo "<p>" . $_SESSION["q"]->num_rows() . "</p>"; //DEBUG
-		if($rs !== false && $_SESSION["q"]->num_rows() == 1) {
-			// echo serialize(mysql_fetch_assoc($rs)); //DEBUG
-			while($_SESSION["q"]->hasNext()) {
-				$row = $_SESSION["q"]->next();
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			define_tables(); definePostColumns();
+			$table = Query::getDBSchema()->getTable(TABLE_POST);
+			$rs = $db->execute($s = Query::generateSelectStm(array($table),
+														 array(),
+														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$id)),
+														 array()),
+							  $table->getName(), null);
+			
+			//echo "<p>" . $s . "</p>"; //DEBUG
+			//echo "<p>" . $db->num_rows() . "</p>"; //DEBUG
+			if($db->num_rows() == 1) {
+				//echo serialize($db->fetch_result()); //DEBUG
+				$row = $db->fetch_result();
 				$data = array("title" => $row[POST_TITLE],
 							  "subtitle" => $row[POST_SUBTITLE],
 							  "headline" => $row[POST_HEADLINE],
@@ -418,18 +416,15 @@ class Post {
 					$p = new Collection($data);
 				else
 					$p = new Post($data);
-				$p->setCreationDate(time($row[POST_CREATION_DATE]));
+				$p->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[POST_CREATION_DATE])));
 				$p->setID(intval($row[POST_ID]));
-				$p->setModificationDate(time($row[POST_MODIFICATION_DATE]));
-				break;
-			}
-			$p->loadComments()->loadVotes()->loadReports();
-			//echo "<p>" .$p ."</p>";
-			return $p;
-		} else {
-			$GLOBALS["query_error"] = NOT_FOUND;
-			return false;
-		}
+				$p->setModificationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[POST_MODIFICATION_DATE])));
+				$p->loadComments()->loadVotes()->loadReports();
+				//echo "<p>" .$p ."</p>";
+				return $p;
+			} else $db->display_error("Post::loadFromDatabase()");
+		} else $db->display_connect_error("Post::loadFromDatabase()");
+		return false;
 	}
 	
 	/**
@@ -437,30 +432,33 @@ class Post {
 	 */
 	function loadComments() {
 		require_once("query.php");
-		if(!isset($_SESSION["q"]))
-			$_SESSION["q"] = new Query();
-		define_tables(); defineCommentColumns();
-		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_COMMENT);
-		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
-													 array(),
-													 array(new WhereConstraint($table->getColumn(COMMENT_POST),Operator::$UGUALE,$this->getID())),
-													 array()),
-						  $table->getName(), $this);
-		
-		//echo "<p>" . $s . "</p>"; //DEBUG;
-		if($rs !== false) {
-			$comm = array();
-			while($_SESSION["q"]->hasNext()) {
-				$row = $_SESSION["q"]->next();
-				require_once("post/PostCommon.php");
-				$com = new Comment(array("author" => intval($row[COMMENT_AUTHOR]),
-										 "post" => intval($row[COMMENT_POST]),
-										 "comment" => $row[COMMENT_COMMENT]));
-				$com->setID($row[COMMENT_ID])->setCreationDate(time($row[COMMENT_CREATION_DATE]));
-				$comm[] = $com;
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			define_tables(); defineCommentColumns();
+			$table = Query::getDBSchema()->getTable(TABLE_COMMENT);
+			$rs = $db->execute($s = Query::generateSelectStm(array($table),
+														 array(),
+														 array(new WhereConstraint($table->getColumn(COMMENT_POST),Operator::$UGUALE,$this->getID())),
+														 array()),
+							  $table->getName(), $this);
+			
+			//echo "<p>" . $s . "</p>"; //DEBUG;
+			if($db->num_rows() > 0) {
+				$comm = array();
+				while($row = $db->fetch_result()) {
+					require_once("post/PostCommon.php");
+					$com = new Comment(array("author" => intval($row[COMMENT_AUTHOR]),
+											 "post" => intval($row[COMMENT_POST]),
+											 "comment" => $row[COMMENT_COMMENT]));
+					$com->setID($row[COMMENT_ID])->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[COMMENT_CREATION_DATE])));
+					$comm[] = $com;
+				}
+				$this->setComments($comm);
+			} else {
+				if($db->errno())
+					$db->display_error("Post::loadComments()");
 			}
-			$this->setComments($comm);
-		}
+		} else $db->display_connect_error("Post::loadComments()");
 		return $this;
 	}
 	
@@ -469,28 +467,31 @@ class Post {
 	 */
 	function loadVotes() {
 		require_once("query.php");
-		if(!isset($_SESSION["q"]))
-			$_SESSION["q"] = new Query();
-		define_tables(); defineVoteColumns();
-		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_VOTE);
-		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
-													 array(),
-													 array(new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$this->getID())),
-													 array()),
-						  $table->getName(), $this);
-		//echo "<p>" . $s . "</p>"; //DEBUG;
-		if($rs !== false) {
-			$votes = array();
-			while($_SESSION["q"]->hasNext()) {
-				$row = $_SESSION["q"]->next();
-				require_once("post/PostCommon.php");
-				$vote = new Vote(intval($row[VOTE_AUTHOR]), intval($row[VOTE_POST]), $row[VOTE_VOTE] > 0);
-				$vote->setCreationDate(time($row[VOTE_CREATION_DATE]));
-				$votes[] = $vote;
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			define_tables(); defineVoteColumns();
+			$table = Query::getDBSchema()->getTable(TABLE_VOTE);
+			$rs = $db->execute($s = Query::generateSelectStm(array($table),
+														 array(),
+														 array(new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$this->getID())),
+														 array()),
+							  $table->getName(), $this);
+			//echo "<p>" . $s . "</p>"; //DEBUG;
+			if($db->num_rows() > 0) {
+				$votes = array();
+				while($row = $db->fetch_result()) {
+					require_once("post/PostCommon.php");
+					$vote = new Vote(intval($row[VOTE_AUTHOR]), intval($row[VOTE_POST]), $row[VOTE_VOTE] > 0);
+					$vote->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[VOTE_CREATION_DATE])));
+					$votes[] = $vote;
+				}
+				//echo "<p>" . serialize($votes) . "</p>"; //DEBUG;
+				$this->setVotes($votes);
+			} else {
+				if($db->errno())
+					$db->display_error("Post::loadVotes()");
 			}
-			//echo "<p>" . serialize($votes) . "</p>"; //DEBUG;
-			$this->setVotes($votes);
-		}
+		} else $db->display_connect_error("Post::loadVotes()");
 		return $this;
 	}
 	
@@ -499,27 +500,57 @@ class Post {
 	 */
 	function loadReports() {
 		require_once("query.php");
-		if(!isset($_SESSION["q"]))
-			$_SESSION["q"] = new Query();
-		define_tables(); defineReportColumns();
-		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_REPORT);
-		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
-													 array(),
-													 array(new WhereConstraint($table->getColumn(REPORT_POST),Operator::$UGUALE,$this->getID())),
-													 array()),
-						  $table->getName(), $this);
-		if($rs !== false) {
-			$reports = array();
-			while($_SESSION["q"]->hasNext()) {
-				$row = $_SESSION["q"]->next();
-				require_once("common.php");
-				$report = new Report(intval($row[REPORT_USER]), intval($row[REPORT_POST]), $row[REPORT_TEXT]);
-				$report->setID($row[REPORT_ID]);
-				$reports[] = $report;
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			define_tables(); defineReportColumns();
+			$table = Query::getDBSchema()->getTable(TABLE_REPORT);
+			$rs = $db->execute($s = Query::generateSelectStm(array($table),
+														 array(),
+														 array(new WhereConstraint($table->getColumn(REPORT_POST),Operator::$UGUALE,$this->getID())),
+														 array()),
+							  $table->getName(), $this);
+			if($rs !== false) {
+				$reports = array();
+				while($row = $db->fetch_result()) {
+					require_once("common.php");
+					$report = new Report(intval($row[REPORT_USER]), intval($row[REPORT_POST]), $row[REPORT_TEXT]);
+					$report->setID($row[REPORT_ID]);
+					$reports[] = $report;
+				}
+				$this->setReports($reports);
+			} else {
+				if($db->errno())
+					$db->display_error("Post::loadReports()");
 			}
-			$this->setReports($reports);
-		}
+		} else $db->display_connect_error("Post::loadReports()");
 		return $this;
+	}
+	
+	/**
+	 * TODO Da testare
+	 */
+	function equals($post) {
+		if(is_a($post, "Post") || get_parent_class($post) == "post") {
+			if($this->getTitle() == $post->getTitle() &&
+				$this->getSubtitle() == $post->getSubtitle() &&
+				$this->getHeadline() == $post->getHeadline() &&
+				$this->getAuthor() == $post->getAuthor() &&
+				$this->getTags() == $post->getTags() &&
+				$this->getCategories() == $post->getCategories() &&
+				$this->getContent() == $post->getContent() &&
+				$this->isVisible() == $post->isVisible() &&
+				$this->getComments() == $post->getComments() && //TODO controllare il contenuto di comments
+				$this->getContent() == $post->getContents() && //TODO controllare il contenuto di contents
+				$this->getCreationDate() == $post->getCreationDate() &&
+				$this->getID() == $post->getID() &&
+				$this->getModificationDate() == $post->getModificationDate() &&
+				$this->getPlace() == $post->getPlace() &&
+				$this->getReports() == $post->getReports() && //TODO controllare il contenuto di reports
+				$this->getType() == $post->getType() &&
+				$this->getVotes() == $podt->getVotes()) //TODO controllare il contenuto di votes
+				return true;
+		}
+		return false;
 	}
 	
 	/**

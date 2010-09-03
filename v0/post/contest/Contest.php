@@ -125,54 +125,57 @@ class Contest {
 		if($post->getType() != $this->getSubscriberType())
 			return false;
 		require_once("query.php");
-		if(!isset($_SESSION["q"]))
-			$_SESSION["q"] = new Query();
-		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_CONTEST_SUBSCRIBER);
-			$_SESSION["q"]->execute($s = $_SESSION["q"]->generateInsertStm($table, array(CONTEST_SUBSCRIBER_POST => $post->getID(),
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			define_tables(); defineContestSubscriberColumns();
+			$table = Query::getDBSchema()->getTable(TABLE_CONTEST_SUBSCRIBER);
+			$db->execute($s = Query::generateInsertStm($table, array(CONTEST_SUBSCRIBER_POST => $post->getID(),
 																 CONTEST_SUBSCRIBER_CONTEST => $this->getID())),
 						$table->getName(), $this);
-			if($_SESSION["q"]->affected_rows() == 0)
-				return false;
-		}
-		$this->subscribers[] = $post->getID();
-		return $this;
+			if($db->affected_rows() == 1) {
+				$this->subscribers[] = $post->getID();
+				return $this;
+			} else $db->display_error("Contest::subscribePost()");
+		} else $db->display_connect_error("Contest::subscribePost()");
+		return false;
 	}
 	
 	function unsubscribePost($post) {
 		require_once("query.php");
-		if(!isset($_SESSION["q"]))
-			$_SESSION["q"] = new Query();
-		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_CONTEST_SUBSCRIBER);
-			$_SESSION["q"]->execute($s = $_SESSION["q"]->generateDeleteStm($table,
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			define_tables(); defineContestSubscriberColumns();
+			$table = Query::getDBSchema()->getTable(TABLE_CONTEST_SUBSCRIBER);
+			$db->execute($s = Query::generateDeleteStm($table,
 												   array(new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_POST), Operator::$UGUALE, $post->getID()),
 														 new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_CONTEST), Operator::$UGUALE, $this->getID()))),
 						$table->getName(), $this);
-			if($_SESSION["q"]->affected_rows() == 0)
-				return false;
-		}
-		$this->loadSubscribers();
-		return $post;
+			if($db->affected_rows() == 0) {
+				$this->loadSubscribers();
+				return $post;
+			} else $db->display_error("Contest::unsubscribePost()");
+		} else $db->display_connect_error("Contest::unsubscribePost()");
+		return false;
 	}
 	
 	function addWinner($post, $position) {
 		if($post->getType() != $this->getSubscriberType())
 			return false;
 		require_once("query.php");
-		if(!isset($_SESSION["q"]))
-			$_SESSION["q"] = new Query();
-		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_CONTEST_SUBSCRIBER);
-			$_SESSION["q"]->execute($s = $_SESSION["q"]->generateUpdateStm($table, array(CONTEST_SUBSCRIBER_PLACEMENT => $position),
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			define_tables(); defineContestSubscriberColumns();
+			$table = Query::getDBSchema()->getTable(TABLE_CONTEST_SUBSCRIBER);
+			$db->execute($s = Query::generateUpdateStm($table, array(CONTEST_SUBSCRIBER_PLACEMENT => $position),
 												   array(new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_POST), Operator::$UGUALE, $post->getID()),
 														 new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_CONTEST), Operator::$UGUALE, $this->getID()))),
 						$table->getName(), $this);
-			if($_SESSION["q"]->affected_rows() == 0)
-				return false;
-		}
-		$this->winners[$position] = $post->getID();
-		return $this;
+			if($db->affected_rows() == 0) {
+				$this->winners[$position] = $post->getID();
+				return $this;
+			} else $db->display_error("Contest::addWinner()");
+		} else $db->display_connect_error("Contest::addWinner()");
+		return false;
 	}
 	
 	/**
@@ -182,15 +185,12 @@ class Contest {
 	 */
 	function save() {
 		require_once("query.php");
-		if(!isset($_SESSION["q"]))
-			$_SESSION["q"] = new Query();
-		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$dbs = $_SESSION["q"]->getDBSchema();			
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
 			define_tables(); defineContestColumns();
-			$table = $dbs->getTable(TABLE_CONTEST);
+			$table = Query::getDBSchema()->getTable(TABLE_CONTEST);
 			$data = array();
 			if(isset($this->title) && !is_null($this->getTitle()))
-
 				$data[CONTEST_TITLE] = $this->getTitle();
 			if(isset($this->description) && !is_null($this->getDescription()))
 				$data[CONTEST_DESCRIPTION] = $this->getDescription();
@@ -205,16 +205,18 @@ class Contest {
 			if(isset($this->subscriberType) && !is_null($this->getSubscriberType()))
 				$data[CONTEST_TYPE_OF_SUBSCRIBER] = $this->getSubscriberType();
 			
-			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateInsertStm($table,$data),
+			$rs = $db->execute($s = Query::generateInsertStm($table,$data),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			//echo "<br />" . serialize($rs); //DEBUG
-			$this->setID($_SESSION["q"]->last_inserted_id());
-			//echo "<br />" . serialize($this->ID); //DEBUG
-			
-			//echo "<br />" . $this; //DEBUG
-			return $this->ID;
-		}
+			if($db->affected_rows() == 1) {
+				$this->setID($db->last_inserted_id());
+				//echo "<br />" . serialize($this->ID); //DEBUG
+				
+				//echo "<br />" . $this; //DEBUG
+				return $this->ID;
+			} else $db->display_error("Contest::save()");
+		} else $db->display_connect_error("Contest::save()");
 		return false;
 	}
 	
@@ -246,24 +248,21 @@ class Contest {
 		if($old->getSubscriberType() == $this->getSubscriberType())
 			$data[CONTEST_TYPE_OF_SUBSCRIBER] = $this->getSubscriberType();
 		require_once("query.php");
-		if(!isset($GLOBALS["q"]))
-			if(!isset($_SESSION["q"]))
-				$_SESSION["q"] = new Query();
-		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_CONTEST);
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			$table = Query::getDBSchema()->getTable(TABLE_CONTEST);
 			
-			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateUpdateStm($table,
+			$rs = $db->execute($s = Query::generateUpdateStm($table,
 														 $data,
 														 array(new WhereConstraint($table->getColumn(CONTEST_ID),Operator::$UGUALE,$this->getID()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			//echo "<br />" . mysql_affected_rows(); //DEBUG
-			if($_SESSION["q"]->affected_rows() == 0)
-				return false;
-			
-			//echo "<br />" . $this; //DEBUG
-			return $this->getID();
-		}
+			if($db->affected_rows() == 1) {
+				//echo "<br />" . $this; //DEBUG
+				return $this->getID();
+			} else $db->display_error("Contest::update()");
+		} else $db->display_connect_error("Contest::update()");
 		return false;
 	}
 	
@@ -276,19 +275,18 @@ class Contest {
 	 */
 	function delete() {
 		require_once("query.php");
-		if(!isset($_SESSION["q"]))
-			$_SESSION["q"] = new Query();
-		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$dbs = $_SESSION["q"]->getDBSchema();
-			$table = $dbs->getTable(TABLE_CONTEST);
-			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateDeleteStm($table,
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			define_tables(); defineContestColumns();
+			$table = Query::getDBSchema()->getTable(TABLE_CONTEST);
+			$rs = $db->execute($s = Query::generateDeleteStm($table,
 														 array(new WhereConstraint($table->getColumn(CONTEST_ID),Operator::$UGUALE,$this->getID()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
-			if($_SESSION["q"]->affected_rows() == 1) {
+			if($db->affected_rows() == 1) {
 				return $this;
-			}
-		}
+			} else $db->display_error("Contest::delete()");
+		} else $db->display_connect_error("Contest::delete()");
 		return false;
 	}
 	
@@ -301,90 +299,92 @@ class Contest {
 	 */
 	static function loadFromDatabase($id) {
 		require_once("query.php");
-		if(!isset($_SESSION["q"]))
-			$_SESSION["q"] = new Query();
-		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_CONTEST);
-		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
-													 array(),
-													 array(new WhereConstraint($table->getColumn(CONTEST_ID),Operator::$UGUALE,$id)),
-													 array()),
-						  $table->getName(), null);
-		
-		//echo "<p>" . $s . "</p>"; //DEBUG
-		//echo "<p>" . mysql_num_rows($rs) . "</p>"; //DEBUG
-		if($rs !== false && $_SESSION["q"]->num_rows() == 1) {
-			// echo serialize(mysql_fetch_assoc($rs)); //DEBUG
-			while($_SESSION["q"]->hasNext()) {
-				$row = $_SESSION["q"]->next();
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			$table = Query::getDBSchema()->getTable(TABLE_CONTEST);
+			$rs = $db->execute($s = Query::generateSelectStm(array($table),
+														 array(),
+														 array(new WhereConstraint($table->getColumn(CONTEST_ID),Operator::$UGUALE,$id)),
+														 array()),
+							  $table->getName(), null);
+			
+			//echo "<p>" . $s . "</p>"; //DEBUG
+			//echo "<p>" . mysql_num_rows($rs) . "</p>"; //DEBUG
+			if($db->num_rows() == 1) {
+				// echo serialize(mysql_fetch_assoc($rs)); //DEBUG
+				$row = $db->fetch_result();
 				$data = array("title" => $row[CONTEST_TITLE],
 							  "description" => $row[CONTEST_DESCRIPTION],
 							  "rules" => $row[CONTEST_RULES],
 							  "prizes"=> $row[CONTEST_PRIZES],
-							  "start" => time($row[CONTEST_START]),
-							  "end" => time($row[CONTEST_END]),
+							  "start" => date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[CONTEST_START])),
+							  "end" => date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[CONTEST_END])),
 							  //"winners" => unserialize($row["ct_winners"]),
 							  "subscriberType" => $row[CONTEST_TYPE_OF_SUBSCRIBER]);
 				$c = new Contest($data);
 				$c->setID(intval($row[CONTEST_ID]));
-				break;
-			}
-			$c->loadSubscribers()->loadWinners();
-			//echo "<p>" .$p ."</p>";
-			return $c;
-		} else {
-			$GLOBALS["query_error"] = NOT_FOUND;
-			return false;
-		}
+				$c->loadSubscribers()->loadWinners();
+				//echo "<p>" .$p ."</p>";
+				return $c;
+			} else $db->display_error("Contest::loadFromDatabase()");
+		} else $db->display_connect_error("Contest::loadFromDatabase()");
+		return false;
 	}
 
 	function loadSubscribers() {
 		require_once("query.php");
-		if(!isset($_SESSION["q"]))
-			$_SESSION["q"] = new Query();
-		define_tables(); defineContestSubscriberColumns();
-		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_CONTEST_SUBSCRIBER);
-		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
-													 array(),
-													 array(new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_CONTEST),Operator::$UGUALE,$this->getID())),
-													 array()),
-						  $table->getName(), $this);
-		
-		//echo "<p>" . $s . "</p>"; //DEBUG;
-		//echo "<p>" . mysql_num_rows($rs) . "</p>"; //DEBUG;
-		if($rs !== false) {
-			$sub = array();
-			while($_SESSION["q"]->hasNext()) {
-				$row = $_SESSION["q"]->next();
-				$sub[] = $row[CONTEST_SUBSCRIBER_POST];
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			define_tables(); defineContestSubscriberColumns();
+			$table = Query::getDBSchema()->getTable(TABLE_CONTEST_SUBSCRIBER);
+			$rs = $db->execute($s = Query::generateSelectStm(array($table),
+														 array(),
+														 array(new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_CONTEST),Operator::$UGUALE,$this->getID())),
+														 array()),
+							  $table->getName(), $this);
+			
+			//echo "<p>" . $s . "</p>"; //DEBUG;
+			//echo "<p>" . mysql_num_rows($rs) . "</p>"; //DEBUG;
+			if($db->num_rows() > 0) {
+				$sub = array();
+				while($row = $db->fetch_result()) {
+					$sub[] = $row[CONTEST_SUBSCRIBER_POST];
+				}
+				$this->setSubscribers($sub);
+			} else {
+				if($db->errno())
+					$db->display_error("Contest::loadSubscribers()");
 			}
-			$this->setSubscribers($sub);
-		}
+		} else $db->display_connect_error("Contest::loadSubscribers()");
 		return $this;
 	}
 	
 	function loadWinners() {
 		require_once("query.php");
-		if(!isset($_SESSION["q"]))
-			$_SESSION["q"] = new Query();
-		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_CONTEST_SUBSCRIBER);
-		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
-													 array(),
-													 array(new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_CONTEST),Operator::$UGUALE,$this->getID()),
-														   new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_PLACEMENT),Operator::$MAGGIORE,0)),
-													 array()),
-						  $table->getName(), $this);
-		
-		//echo "<p>" . $s . "</p>"; //DEBUG;
-		//echo "<p>" . mysql_num_rows($rs) . "</p>"; //DEBUG;
-		if($rs !== false) {
-			$win = array();
-			while($_SESSION["q"]->hasNext()) {
-				$row = $_SESSION["q"]->next();
-				$win[$row[CONTEST_SUBSCRIBER_PLACEMENT]] = $row[CONTEST_SUBSCRIBER_POST];  // Con in cs_winner il numero di posizione
-				//$win[] = $row[CONTEST_SUBSCRIBER_POST];  // Con in cs_winner true o false
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			$table = Query::getDBSchema()->getTable(TABLE_CONTEST_SUBSCRIBER);
+			$rs = $db->execute($s = Query::generateSelectStm(array($table),
+														 array(),
+														 array(new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_CONTEST),Operator::$UGUALE,$this->getID()),
+															   new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_PLACEMENT),Operator::$MAGGIORE,0)),
+														 array()),
+							  $table->getName(), $this);
+			
+			//echo "<p>" . $s . "</p>"; //DEBUG;
+			//echo "<p>" . mysql_num_rows($rs) . "</p>"; //DEBUG;
+			if($db->num_rows() > 0) {
+				$win = array();
+				while($row = $db->fetch_result()) {
+					$win[$row[CONTEST_SUBSCRIBER_PLACEMENT]] = $row[CONTEST_SUBSCRIBER_POST];  // Con in cs_winner il numero di posizione
+					//$win[] = $row[CONTEST_SUBSCRIBER_POST];  // Con in cs_winner true o false
+				}
+				$this->setWinners($win);
+			} else {
+				if($db->errno())
+					$db->display_error("Contest::loadWinners()");
 			}
-			$this->setWinners($win);
-		}
+		} else $db->display_connect_error("Contest::loadWinners()");
 		return $this;
 	}
 	

@@ -42,7 +42,7 @@ class Test {
 	function testPost() {
 		
 		$data = $this->post_data;
-		$p1 = PostManager::addPost($data);
+		$p1 = PostManager::createPost($data);
 		
 		if($p1 == null)
 			return "<br />Post test NOT PASSED: not created";
@@ -77,7 +77,7 @@ class Test {
 	function testComment() {
 		
 		$data = $this->post_data;
-		$p = PostManager::addPost($data);
+		$p = PostManager::createPost($data);
 		$p1 = PostManager::commentPost($p, $this->author_id, $this->comment_text);
 		
 		if(count($p1->getComments()) == 0)
@@ -97,7 +97,7 @@ class Test {
 	function testVote() {
 		
 		$data = $this->post_data;
-		$p = PostManager::addPost($data);
+		$p = PostManager::createPost($data);
 		$p1 = PostManager::votePost($this->author_id, $p, $this->vote_value);
 		
 		if(count($p1->getVotes()) == 0)
@@ -116,11 +116,11 @@ class Test {
 	function testEditPost() {
 		
 		$data = $this->post_data;
-		$p = PostManager::addPost($data);
+		$p = PostManager::createPost($data);
 		$data1 = $this->post_data2;
 		$p1 = PostManager::editPost($p, $data1);
 		$p = PostManager::loadPost($p1->getID());
-		//echo "<br />" . $p1 . "<br />" . $p; //DEBUG
+		echo "<br />" . $p1 . "<br />" . $p; //DEBUG
 		
 		require_once("common.php");
 		if(isset($data1["title"]))
@@ -167,7 +167,7 @@ class Test {
 		
 		$data = $this->post_data_all;
 		
-		$p1 = PostManager::addPost($data);
+		$p1 = PostManager::createPost($data);
 		$post = PostManager::loadPost($p1->getID());
 		//echo $p1 . "<br />" . $post; //DEBUG
 		
@@ -204,7 +204,7 @@ class Test {
 	 */
 	function testSaveComment() {
 		$data = Filter::filterArray($this->post_data_all);
-		$p = PostManager::addPost($data);
+		$p = PostManager::createPost($data);
 		$p1 = PostManager::commentPost($p, $this->author_id, $this->comment_text);
 		
 		if(count($p1->getComments()) == 0)
@@ -239,7 +239,7 @@ class Test {
 	 */
 	function testDeletePost() {
 		$data = $this->post_data_all;
-		$p = PostManager::addPost($data);
+		$p = PostManager::createPost($data);
 		$p1 = PostManager::votePost($this->author_id, $p, $this->vote_value);
 		$p1 = PostManager::commentPost($p, $this->author_id, $this->comment_text);
 		
@@ -276,7 +276,7 @@ class Test {
 	function testDeleteComment() {
 		
 		$data = $this->post_data_all;
-		$p = PostManager::addPost($data);
+		$p = PostManager::createPost($data);
 		$p1 = PostManager::commentPost($p, $this->author_id, $this->comment_text);
 		
 		if(count($p1->getComments()) == 0)
@@ -308,7 +308,7 @@ class Test {
 	function testSaveVote() {
 		
 		$data = $this->post_data_all;
-		$p = PostManager::addPost($data);
+		$p = PostManager::createPost($data);
 		$p1 = PostManager::votePost($this->author_id, $p, $this->vote_value);
 		
 		if(count($p1->getVotes()) == 0)
@@ -344,7 +344,7 @@ class Test {
 	function testDeleteVote() {
 		
 		$data = $this->post_data_all;
-		$p = PostManager::addPost($data);
+		$p = PostManager::createPost($data);
 		$p1 = PostManager::votePost($this->author_id, $p, $this->vote_value);
 		
 		if(count($p1->getVotes()) == 0)
@@ -402,7 +402,7 @@ class Test {
 	
 	function testAddPostToCollection() {
 		$data = $this->post_data_all;
-		$p = PostManager::addPost($data);
+		$p = PostManager::createPost($data);
 		$data1 = $this->collection_data_all;
 		//$data1["content"] = array($p);
 		$c = CollectionManager::addCollection($data1);
@@ -427,7 +427,7 @@ class Test {
 	function testSaveCollection() {
 		require_once("common.php");
 		$data = $this->post_data_all;
-		$p = PostManager::addPost($data);
+		$p = PostManager::createPost($data);
 		$data1 = $this->collection_data_all;
 		//$data1["content"] = array($p);
 		$p1 = CollectionManager::addCollection($data1);
@@ -472,7 +472,7 @@ class Test {
 	function testSaveVoteOnCollection() {
 		require_once("post/PostManager.php");
 		$data = $this->post_data_all;
-		$p = PostManager::addPost($data);
+		$p = PostManager::createPost($data);
 		$data1 = $this->collection_data_all;
 		$p2 = CollectionManager::addCollection($data1);
 		$p1 = CollectionManager::voteCollection($this->author_id, $p2, $this->vote_value);
@@ -507,12 +507,12 @@ class Test {
 	 */
 	function testSaveContest() {
 		//$data = $this->post_data_all;
-		//$p = PostManager::addPost($data);
+		//$p = PostManager::createPost($data);
 		$data1 = $this->contest_data_all;
 		$p1 = ContestManager::createContest($data1);
 		
 		$contest = ContestManager::loadContest($p1->getID());
-		echo "<p>" . $p1 . "</p><p>" . $contest . "</p>"; //DEBUG
+		//echo "<p>" . $p1 . "</p><p>" . $contest . "</p>"; //DEBUG
 		
 		if($contest === false)
 			return "<br />Contest saving test NOT PASSED: not created";
@@ -539,7 +539,7 @@ class Test {
 	 */
 	function testSubscribeToContest() {
 		$data = $this->post_data_all;
-		$p = PostManager::addPost($data);
+		$p = PostManager::createPost($data);
 		$data1 = $this->contest_data_all;
 		$p1 = ContestManager::createContest($data1);
 		$p2 = ContestManager::subscribePostToContest($p, $p1);
@@ -563,7 +563,7 @@ class Test {
 	 */
 	function testUnsubscribeToContest() {
 		$data = $this->post_data_all;
-		$p = PostManager::addPost($data);
+		$p = PostManager::createPost($data);
 		$data1 = $this->contest_data_all;
 		$p1 = ContestManager::createContest($data1);
 		$p2 = ContestManager::subscribePostToContest($p, $p1);
@@ -579,7 +579,7 @@ class Test {
 		$contest2 = ContestManager::loadContest($p2->getID());
 		//echo "<p>" . $p2 . "</p><p>" . $contest2 . "</p>"; //DEBUG
 		
-		if(count($p2->getSubscribers()) != 0)
+		if(count($contest2->getSubscribers()) != 0)
 			return "<br />Contest subscribing test NOT PASSED: not removed";
 		if(count($contest2->getSubscribers()) != 0)
 			return "<br />Contest unsubscribing test NOT PASSED: loaded";
@@ -593,7 +593,7 @@ class Test {
 	 */
 	function testDeleteContest() {
 		$data = $this->post_data_all;
-		$p = PostManager::addPost($data);
+		$p = PostManager::createPost($data);
 		$data1 = $this->contest_data_all;
 		$p1 = ContestManager::createContest($data1);
 		$p2 = ContestManager::subscribePostToContest($p, $p1);
@@ -616,7 +616,7 @@ class Test {
 	
 	function testPermalink() {
 		$data = Filter::filterArray($this->post_data_all);
-		$p = PostManager::addPost($data);
+		$p = PostManager::createPost($data);
 		
 		echo $p->getPermalink();
 	}

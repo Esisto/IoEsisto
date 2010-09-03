@@ -42,37 +42,37 @@ class Report {
 	 */
 	function save() {
 		require_once("query.php");
-		if(!isset($_SESSION["q"]))
-			$_SESSION["q"] = new Query();
-		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_REPORT);
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			$table = Query::getDBSchema()->getTable(TABLE_REPORT);
 			$data = array(REPORT_TEXT => $this->getReport(),
 						  REPORT_POST => $this->getPost(),
 						  REPORT_USER => $this->getAuthor());
-			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateInsertStm($table,$data), $table->getName(), $this);
+			$rs = $db->execute($s = Query::generateInsertStm($table,$data), $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			//echo "<br />" . serialize($rs); //DEBUG
-			$this->ID = $_SESSION["q"]->last_inserted_id();
-			//echo "<br />" . $this; //DEBUG
-			return $this->getID();
-		}
+			if($db->affected_rows() == 1) {
+				$this->ID = $db->last_inserted_id();
+				//echo "<br />" . $this; //DEBUG
+				return $this->getID();
+			} else $db->display_error("Report::save()");
+		} else $db->display_connect_error("Report::save()");
 		return false;
 	}
 	
 	function delete() {
 		require_once("query.php");
-		if(!isset($_SESSION["q"]))
-			$_SESSION["q"] = new Query();
-		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_REPORT);
-			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateDeleteStm($table,
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			$table = Query::getDBSchema()->getTable(TABLE_REPORT);
+			$rs = $db->execute($s = Query::generateDeleteStm($table,
 														 array(new WhereConstraint($table->getColumn(REPORT_ID),Operator::$UGUALE,$this->getID()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
-			if($_SESSION["q"]->affected_rows() == 1) {
+			if($db->affected_rows() == 1) {
 				return $this;
-			}
-		}
+			} else $db->display_error("Report::delete()");
+		} else $db->display_connect_error("Report::delete()");
 		return false;			
 	}
 	
@@ -133,37 +133,37 @@ class Resource {
 	 */
 	function save() {
 		require_once("query.php");
-		if(!isset($_SESSION["q"]))
-			$_SESSION["q"] = new Query();
-		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_RESOURCE);
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			$table = Query::getDBSchema()->getTable(TABLE_RESOURCE);
 			$data = array(RESOURCE_OWNER => $this->getOwner(),
 						  RESOURCE_PATH => $this->getPath(),
 						  RESOURCE_TYPE => $this->getType());
-			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateInsertStm($table,$data), $table->getName(), $this);
+			$rs = $db->execute($s = Query::generateInsertStm($table,$data), $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			//echo "<br />" . serialize($rs); //DEBUG
-			$this->setID($_SESSION["q"]->last_inserted_id());
-			//echo "<br />" . $this; //DEBUG
-			return $this->getID();
-		}
+			if($db->affected_rows() == 1) {
+				$this->setID($db->last_inserted_id());
+				//echo "<br />" . $this; //DEBUG
+				return $this->getID();
+			} else $db->display_error("Resource::save()");
+		} else $db->display_connect_error("Resource::save()");
 		return false;
 	}
 	
 	function delete() {
 		require_once("query.php");
-		if(!isset($_SESSION["q"]))
-			$_SESSION["q"] = new Query();
-		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_RESOURCE);
-			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateDeleteStm($table,
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			$table = Query::getDBSchema()->getTable(TABLE_RESOURCE);
+			$rs = $db->execute($s = Query::generateDeleteStm($table,
 														 array(new WhereConstraint($table->getColumn(RESOURCE_ID),Operator::$UGUALE,$this->getID()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
-			if($_SESSION["q"]->affected_rows() == 1) {
+			if($db->affected_rows() == 1) {
 				return $this;
-			}
-		}
+			} else $db->display_error("Resource::delete()");
+		} else $db->display_connect_error("Resource::delete()");
 		return false;			
 	}
 	
@@ -194,25 +194,23 @@ class LogManager {
 	 */
 	static function getLog($from, $to) {
 		require_once("query.php");
-		if(!isset($GLOBALS["q"]))
-			if(!isset($_SESSION["q"]))
-				$_SESSION["q"] = new Query();
-		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$dbs = $_SESSION["q"]->getDBSchema();
-			$table = $dbs->getTable(TABLE_LOG);
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			define_tables(); defineLogColumns();
+			$table = Query::getDBSchema()->getTable(TABLE_LOG);
 			$s = "";
 			if(is_numeric($from) && $from != 0) {
-				$s1 = $_SESSION["q"]->generateSelectStm(array($table), array(),
+				$s1 = Query::generateSelectStm(array($table), array(),
 											array(new WhereConstraint($table->getColumn(LOG_TIMESTAMP),Operator::$MAGGIOREUGUALE,$from)),
 											array());
 			}
 			if(is_numeric($to) && $to != 0) {
-				$s2 = $_SESSION["q"]->generateSelectStm(array($table), array(),
+				$s2 = Query::generateSelectStm(array($table), array(),
 											array(new WhereConstraint($table->getColumn(LOG_TIMESTAMP),Operator::$MINOREUGUALE,$to)),
 											array("order" => 1, "by" => LOG_TIMESTAMP));
 			}
 			if(is_numeric($from) && $from != 0 && is_numeric($to) && $to != 0) {
-				$s = $_SESSION["q"]->generateComplexSelectStm(array($s1, $s2), array(SelectOperator::$INTERSECT));
+				$s = Query::generateComplexSelectStm(array($s1, $s2), array(SelectOperator::$INTERSECT));
 			} else if(is_numeric($from) && $from != 0) {
 				$s = $s1;
 			} else if(is_numeric($to) && $to != 0) {
@@ -221,14 +219,16 @@ class LogManager {
 				return array();
 			}
 			//echo "<br />" . $s; //DEBUG
-			$rs = $_SESSION["q"]->execute($s, $table->getName(), LOGMANAGER);
+			$rs = $db->execute($s, $table->getName(), LOGMANAGER);
 			$log_result = array();
-			while($row = mysql_fetch_row) {
-				$log_result[] = $row;
-			}
-			//echo "<br />" . serialize($log_result); //DEBUG
-			return $log_result;
-		}
+			if($db->num_rows() > 0) {
+				while($row = mysql_fetch_row) {
+					$log_result[] = $row;
+				}
+				//echo "<br />" . serialize($log_result); //DEBUG
+				return $log_result;
+			} else $db->display_error("LogManager::getLog()");
+		} else $db->display_connect_error("LogManager::getLog()");
 		return array();
 	}
 	
@@ -250,22 +250,26 @@ class LogManager {
 			return false;
 		
 		require_once("query.php");
-		if(!isset($_SESSION["q"]))
-			$_SESSION["q"] = new Query();
-		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
 			define_tables(); defineLogColumns();
-			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_LOG);
+			$table = Query::getDBSchema()->getTable(TABLE_LOG);
 			//echo "<br />" . $tablename; //DEBUG
 			
-			$data = array(LOG_ACTION => $action,
+			$sha1ed = sha1(serialize($object));
+			$id = sha1($sha1ed . $action . $table . $user . time());
+			$data = array(LOG_ID => $id,
+						  LOG_ACTION => $action,
 						  LOG_TABLE => $tablename,
 						  LOG_SUBJECT => $user,
-						  LOG_OBJECT => sha1(serialize($object)));
-			$s = $_SESSION["q"]->generateInsertStm($table, $data);
+						  LOG_OBJECT => $sha1ed);
+			$s = Query::generateInsertStm($table, $data);
 			//echo "<br />" . $s; //DEBUG
-			$rs = $_SESSION["q"]->execute($s, $table->getName(), LOGMANAGER);
-			return mysql_insert_id();
-		}
+			$rs = mysql_query($s, $db->dblink); //devo fare così è non usare DBManager::execute() perché non avrei affected_rows.
+			if(mysql_affected_rows($db->dblink)) {
+				return $id;
+			} else $db->display_error("LogManager::addLogEntry()");
+		} else $db->display_connect_error("LogManager::addLogEntry()");
 		return false;
 	}
 }

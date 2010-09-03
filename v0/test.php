@@ -19,38 +19,38 @@
 	require_once(USER_DIR . "/UserTest.php");
 	
 	$t = new Test();
-	echo $t->testEditPost();
-	echo $t->testAddPostToCollection();
-	echo $t->testSavePost();
-	echo $t->testSaveComment();
-	echo $t->testDeletePost();
-	echo $t->testDeleteComment();
-	echo $t->testSaveVote();
-	echo $t->testDeleteVote();
-	echo $t->testSaveCollection();
-	echo $t->testSaveVoteOnCollection();
-	echo $t->testSaveContest();
-	echo $t->testSubscribeToContest();
-	echo $t->testUnsubscribeToContest();
-	echo $t->testDeleteContest();
+	//echo $t->testEditPost();
+	//echo $t->testAddPostToCollection();
+	//echo $t->testSavePost();
+	//echo $t->testSaveComment();
+	//echo $t->testDeletePost();
+	//echo $t->testDeleteComment();
+	//echo $t->testSaveVote();
+	//echo $t->testDeleteVote();
+	//echo $t->testSaveCollection();
+	//echo $t->testSaveVoteOnCollection();
+	//echo $t->testSaveContest();
+	//echo $t->testSubscribeToContest();
+	//echo $t->testUnsubscribeToContest();
+	//echo $t->testDeleteContest();
 	echo $t->testPermalink();
 	
-	$t = new MailTest();
-	echo $t->testMail();
-	echo $t->testDirectory();
-	echo $t->testDeleteMailFromDirectory();
-	echo $t->testDeleteDirectory();
-	echo $t->testSetReadStatus();
-	echo $t->testAnswerMail();
-	echo $t->testSendMail();
+	//$t = new MailTest();
+	//echo $t->testMail();
+	//echo $t->testDirectory();
+	//echo $t->testDeleteMailFromDirectory();
+	//echo $t->testDeleteDirectory();
+	//echo $t->testSetReadStatus();
+	//echo $t->testAnswerMail();
+	//echo $t->testSendMail();
 	
 	$t = new UserTest();
-	echo $t->testUser();
-	echo $t->testContacts();
-	echo $t->testDeleteContact();
-	echo $t->testFollow();
-	echo $t->testDeleteFollow();
-	echo $t->testAddFeedback();
+	//echo $t->testUser();
+	//echo $t->testContacts();
+	//echo $t->testDeleteContact();
+	//echo $t->testFollow();
+	//echo $t->testDeleteFollow();
+	//echo $t->testAddFeedback();
 ?>
 
 </body>

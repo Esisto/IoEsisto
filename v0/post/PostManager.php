@@ -25,7 +25,7 @@ class PostManager {
 	 * 
 	 * return: l'articolo creato.
 	 */
-	static function addPost($data) {
+	static function createPost($data) {
 		require_once("common.php");
 		if(isset($data["ID"])) unset($data["ID"]);
 		$data = Filter::filterArray($data);

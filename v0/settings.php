@@ -3,7 +3,7 @@
 define("DB_HOSTNAME", "localhost");
 define("DB_USERNAME", "root");
 define("DB_PASSWORD", "root");
-define("DB_NAME", "ioesisto");
+define("DB_NAME", "ioesisto2");
 define("DB_PORT", 8889);
 
 // File System settings.

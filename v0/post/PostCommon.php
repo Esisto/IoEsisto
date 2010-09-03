@@ -10,8 +10,10 @@ class PostType {
 	static $PLAYLIST = "playlist";
 }
 
+//TODO
 class Category {
 	private $name;
+	private $parent;
 	
 	/**
 	 * @Override
@@ -21,6 +23,7 @@ class Category {
 	}
 }
 
+//TODO
 class Tag {
 	private $name;
 	
@@ -90,54 +93,52 @@ class Comment {
 	 */
 	function save() {
 		require_once("query.php");
-		if(!isset($_SESSION["q"]))
-			$_SESSION["q"] = new Query();
-		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$dbs = $_SESSION["q"]->getDBSchema();
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
 			define_tables(); defineCommentColumns();
-			$table = $dbs->getTable(TABLE_COMMENT);
+			$table = Query::getDBSchema()->getTable(TABLE_COMMENT);
 			$data = array(COMMENT_COMMENT => $this->getComment(),
 						  COMMENT_POST => $this->getPost(),
 						  COMMENT_AUTHOR => $this->getAuthor());
-			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateInsertStm($table,$data),
+			$rs = $db->execute($s = Query::generateInsertStm($table,$data),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			//echo "<br />" . serialize($rs); //DEBUG
-			$this->ID = $_SESSION["q"]->last_inserted_id();
-			//echo "<br />" . serialize($this->ID); //DEBUG
-			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
-														 array(),
-														 array(new WhereConstraint($table->getColumn(COMMENT_ID),Operator::$UGUALE,$this->getID())),
-														 array()),
-							  $table->getName(), $this);
-			//echo "<br />" . $s; //DEBUG
-			while($_SESSION["q"]->hasNext()) {
-				$row = $_SESSION["q"]->next();
-				$this->creationDate = time($row[COMMENT_CREATION_DATE]);
-				//echo "<br />" . serialize($row[COMMENT_CREATION_DATE]); //DEBUG
-				break;
-			}
-			//echo "<br />" . $this; //DEBUG
-			return $this->ID;
-		}
+			if($db->affected_rows() == 1) {
+				$this->ID = $db->last_inserted_id();
+				//echo "<br />" . serialize($this->ID); //DEBUG
+				$rs = $db->execute($s = Query::generateSelectStm(array($table),
+															 array(),
+															 array(new WhereConstraint($table->getColumn(COMMENT_ID),Operator::$UGUALE,$this->getID())),
+															 array()),
+								  $table->getName(), $this);
+				//echo "<br />" . $s; //DEBUG
+				if($db->num_rows() == 1) {
+					$row = $db->fetch_result();
+					$this->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[COMMENT_CREATION_DATE])));
+					//echo "<br />" . serialize($row[COMMENT_CREATION_DATE]); //DEBUG
+					//echo "<br />" . $this; //DEBUG
+					return $this->ID;
+				} else $db->display_error("Comment::save()");
+			} else $db->display_error("Comment::save()");
+		} else $db->display_connect_error("Comment::save()");
 		return false;
 	}
 	
 	function delete() {
 		require_once("query.php");
-		if(!isset($_SESSION["q"]))
-			$_SESSION["q"] = new Query();
-		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$dbs = $_SESSION["q"]->getDBSchema();
-			$table = $dbs->getTable(TABLE_COMMENT);
-			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateDeleteStm($table,
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			define_tables(); defineCommentColumns();
+			$table = Query::getDBSchema()->getTable(TABLE_COMMENT);
+			$rs = $db->execute($s = Query::generateDeleteStm($table,
 														 array(new WhereConstraint($table->getColumn(COMMENT_ID),Operator::$UGUALE,$this->getID()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
-			if($_SESSION["q"]->affected_rows() == 1) {
+			if($db->affected_rows() == 1) {
 				return $this;
-			}
-		}
+			} else $db->display_error("Comment::delete()");
+		} else $db->display_connect_error("Comment::delete()");
 		return false;
 	}
 	
@@ -150,31 +151,27 @@ class Comment {
 	 */
 	static function loadFromDatabase($id) {
 		require_once("query.php");
-		if(!isset($_SESSION["q"]))
-			$_SESSION["q"] = new Query();
-		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_COMMENT);
-		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
-													 array(),
-													 array(new WhereConstraint($table->getColumn(COMMENT_ID),Operator::$UGUALE,$id)),
-													 array()),
-						  $table->getName(), null);
-		if($rs !== false && $_SESSION["q"]->num_rows() == 1) {
-			while($_SESSION["q"]->hasNext()) {
-				$row = $_SESSION["q"]->next();
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			$table = Query::getDBSchema()->getTable(TABLE_COMMENT);
+			$rs = $db->execute($s = Query::generateSelectStm(array($table),
+														 array(),
+														 array(new WhereConstraint($table->getColumn(COMMENT_ID),Operator::$UGUALE,$id)),
+														 array()),
+							  $table->getName(), null);
+			if($db->num_rows() == 1) {
+				$row = $db->fetch_result();
 				$data = array("comment" => $row[COMMENT_COMMENT],
 							  "author" => intval($row[COMMENT_AUTHOR]),
 							  "post" => intval($row[COMMENT_POST]));
 				$c = new Comment($data);
 				$c->setID(intval($row[COMMENT_ID]));
-				$c->setCreationDate(time($row[COMMENT_CREATION_DATE]));
-				break;
-			}
-			$c->loadReports();
-			return $c;
-		} else{
-			$GLOBALS["query_error"] = NOT_FOUND;
-			return false;
-		}
+				$c->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[COMMENT_CREATION_DATE])));
+				$c->loadReports();
+				return $c;
+			} else $db->display_error("Comment::loadFromDatabase()");
+		} else $db->display_connect_error("Comment::loadFromDatabase()");
+		return false;
 	}
 	
 	/**
@@ -238,45 +235,43 @@ class Vote {
 	 */
 	function save() {
 		require_once("query.php");
-		if(!isset($_SESSION["q"]))
-			$_SESSION["q"] = new Query();
-		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$dbs = $_SESSION["q"]->getDBSchema();
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
 			define_tables(); defineVoteColumns();
-			$table = $dbs->getTable(TABLE_VOTE);
+			$table = Query::getDBSchema()->getTable(TABLE_VOTE);
 			$data = array(VOTE_VOTE => $this->getVote(),
 						  VOTE_POST => $this->getPost(),
 						  VOTE_AUTHOR => $this->getAuthor());
-			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateInsertStm($table,$data),
+			$db->execute($s = Query::generateInsertStm($table,$data),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			//echo "<br />" . serialize($rs); //DEBUG
-			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
-														 array(),
-														 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::$UGUALE,$this->getAuthor()),
-															   new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$this->getPost())),
-														 array()),
-							  $table->getName(), $this);
-			//echo "<br />" . $s; //DEBUG
-			while($_SESSION["q"]->hasNext()) {
-				$row = $_SESSION["q"]->next();
-				$this->creationDate = time($row[VOTE_CREATION_DATE]);
-				//echo "<br />" . serialize($row[VOTE_CREATION_DATE]); //DEBUG
-				break;
-			}
-			//echo "<br />" . $this; //DEBUG
-			return $this->creationDate;
-		}
+			if($db->affected_rows() == 1) {
+				$db->execute($s = Query::generateSelectStm(array($table),
+															 array(),
+															 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::$UGUALE,$this->getAuthor()),
+																   new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$this->getPost())),
+															 array()),
+								  $table->getName(), $this);
+				//echo "<br />" . $s; //DEBUG
+				if($db->num_rows() == 1) {
+					$row = $db->fetch_result();
+					$this->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[VOTE_CREATION_DATE])));
+					//echo "<br />" . serialize($row[VOTE_CREATION_DATE]); //DEBUG
+					//echo "<br />" . $this; //DEBUG
+					return $this->creationDate;
+				} else $db->display_error("Vote::save()");
+			} else $db->display_error("Vote::save()");
+		} else $db->display_connect_error("Vote::save()");
 		return false;
 	}
 		
 	function update() {
 		require_once("query.php");
-		if(!isset($_SESSION["q"]))
-			$_SESSION["q"] = new Query();
-		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_VOTE);
-			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			$table = Query::getDBSchema()->getTable(TABLE_VOTE);
+			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
 														 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::$UGUALE,$this->getAuthor()),
 															   new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$this->getPost())),
@@ -284,47 +279,45 @@ class Vote {
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			$data = array();
-			while($_SESSION["q"]->hasNext()) {
-				$row = $_SESSION["q"]->next();
+			if($db->num_rows() == 1) {
+				$row = $db->fetch_result();
 				//cerco le differenze e le salvo.
 				if($row[VOTE_VOTE] != $this->getVote())
 					$data[VOTE_VOTE] = $this->getVote();
 				break;
-			}
-			//echo "<br />" . serialize($data); //DEBUG
-			
-			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateUpdateStm($table,
-														 $data,
-														 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::$UGUALE,$this->getAuthor()),
-															   new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$this->getPost()))),
-							  $table->getName(), $this);
-			//echo "<br />" . $s; //DEBUG
-			//echo "<br />" . $rs; //DEBUG
-			if($_SESSION["q"]->affected_rows() == 0)
-				return false;
-			
-			//echo "<br />" . $this; //DEBUG
-			return $this;
-		}
+				//echo "<br />" . serialize($data); //DEBUG
+				
+				$rs = $db->execute($s = Query::generateUpdateStm($table,
+															 $data,
+															 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::$UGUALE,$this->getAuthor()),
+																   new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$this->getPost()))),
+								  $table->getName(), $this);
+				//echo "<br />" . $s; //DEBUG
+				//echo "<br />" . $rs; //DEBUG
+				if($db->affected_rows() == 1) {
+					//echo "<br />" . $this; //DEBUG
+					return $this;
+				} else $db->display_error("Vote::update()");
+			} else $db->display_error("Vote::update()");
+		} else $db->display_connect_error("Vote::update()");
 		return false;
 	}
 	
 	function delete() {
 		require_once("query.php");
-		if(!isset($_SESSION["q"]))
-			$_SESSION["q"] = new Query();
-		if($GLOBALS["db_status"] != DB_NOT_CONNECTED) {
-			$dbs = $_SESSION["q"]->getDBSchema();
-			$table = $dbs->getTable(TABLE_VOTE);
-			$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateDeleteStm($table,
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			define_tables(); defineVoteColumns();
+			$table = Query::getDBSchema()->getTable(TABLE_VOTE);
+			$rs = $db->execute($s = Query::generateDeleteStm($table,
 														 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::$UGUALE,$this->getAuthor()),
 															   new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$this->getPost()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
-			if($_SESSION["q"]->affected_rows() == 1) {
+			if($db->affected_rows() == 1) {
 				return $this;
-			}
-		}
+			} else $db->display_error("Vote::delete()");
+		} else $db->display_connect_error("Vote::delete()");
 		return false;			
 	}
 	
@@ -337,26 +330,23 @@ class Vote {
 	 */
 	static function loadFromDatabase($author, $post) {
 		require_once("query.php");
-		if(!isset($_SESSION["q"]))
-			$_SESSION["q"] = new Query();
-		$table = $_SESSION["q"]->getDBSchema()->getTable(TABLE_VOTE);
-		$rs = $_SESSION["q"]->execute($s = $_SESSION["q"]->generateSelectStm(array($table),
-													 array(),
-													 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::$UGUALE,$author),
-														   new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$post)),
-													 array()),
-						  $table->getName(), null);
-		if($rs !== false && $_SESSION["q"]->num_rows() == 1) {
-			while($_SESSION["q"]->hasNext()) {
-				$row = $_SESSION["q"]->next();
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			$table = Query::getDBSchema()->getTable(TABLE_VOTE);
+			$rs = $db->execute($s = Query::generateSelectStm(array($table),
+														 array(),
+														 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::$UGUALE,$author),
+															   new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$post)),
+														 array()),
+							  $table->getName(), null);
+			if($db->num_rows() == 1) {
+				$row = $db->fetch_result();
 				$v = new Vote(intval($row[VOTE_AUTHOR]), intval($row[VOTE_POST]), $row[VOTE_VOTE] > 0);
-				$v->setCreationDate(time($row[VOTE_CREATION_DATE]));
+				$v->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[VOTE_CREATION_DATE])));
 				return $v;
-			}
-		} else{
-			$GLOBALS["query_error"] = NOT_FOUND;
-			return false;
-		}
+			} else $db->display_error("Vote::loadFromDatabase()");
+		} else $db->display_connect_error("Vote::LoadFromDatabase()");
+		return false;
 	}
 	
 	/**

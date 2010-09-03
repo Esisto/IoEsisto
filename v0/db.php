@@ -155,12 +155,12 @@ CREATE TABLE IF NOT EXISTS `" . TABLE_FOLLOW . "` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 CREATE TABLE IF NOT EXISTS `" . TABLE_LOG . "` (
-  `" . LOG_ID . "` bigint(20) NOT NULL AUTO_INCREMENT,
+  `" . LOG_ID . "` varchar(40) NOT NULL,
   `" . LOG_TIMESTAMP . "` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `" . LOG_ACTION . "` enum('INSERT','UPDATE','DELETE') NOT NULL,
   `" . LOG_TABLE . "` varchar(20) NOT NULL,
   `" . LOG_SUBJECT . "` bigint(20) NULL,
-  `" . LOG_OBJECT . "` blob NOT NULL,
+  `" . LOG_OBJECT . "` varchar(40) NOT NULL,
   PRIMARY KEY (`" . LOG_ID . "`),
   KEY `" . LOG_USER_FKEY . "` (`" . LOG_SUBJECT . "`),
   FOREIGN KEY (`" . LOG_SUBJECT . "`) REFERENCES `" . TABLE_USER . "` (`" . USER_ID . "`) ON DELETE SET NULL

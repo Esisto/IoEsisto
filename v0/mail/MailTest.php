@@ -51,7 +51,7 @@ class MailTest {
 				return "<br />Mail test NOT PASSED: repliesTo";
 		
 		$mail2 = MailManager::loadMail($mail->getID());
-		echo "<p>" . $mail . "<br />" . $mail2 . "</p>"; //DEBUG
+		//echo "<p>" . $mail . "<br />" . $mail2 . "</p>"; //DEBUG
 		if($mail === false)
 			return "<br />Mail test NOT PASSED: not saved";
 		if($mail->getSubject() != $mail2->getSubject())
@@ -95,7 +95,7 @@ class MailTest {
 		
 		$dir = MailManager::addMailToDir($mail, $dir);
 		$dir2 = MailManager::loadDirectory($dir->getID());
-		echo "<p>" . $dir . "<br />" . $dir2 . "</p>"; //DEBUG
+		//echo "<p>" . $dir . "<br />" . $dir2 . "</p>"; //DEBUG
 		if($dir2 === false)
 			return "<br />Directory test NOT PASSED: not updated";
 		if($dir->getMails() != $dir2->getMails())
@@ -103,7 +103,7 @@ class MailTest {
 			
 		$dir = MailManager::editDirectory($dir, $this->dir_name2);
 		$dir2 = MailManager::loadDirectory($dir->getID());
-		echo "<p>" . $dir . "<br />" . $dir2 . "</p>"; //DEBUG
+		//echo "<p>" . $dir . "<br />" . $dir2 . "</p>"; //DEBUG
 		if($dir2 === false)
 			return "<br />Directory test NOT PASSED: not updated";
 		if($dir->getName() != $dir2->getName())

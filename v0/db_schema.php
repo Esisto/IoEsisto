@@ -28,6 +28,10 @@ class Table {
 		return false;
 	}
 	
+	function getColumns() {
+		return $this->columns;
+	}
+	
 	function __toString() {
 		$s = "<b>TABLE</b> (name = <u>" . $this->name . "</u>" .
 			 " | columns = (<br />";
@@ -115,6 +119,7 @@ class DBSchema {
 			} else {
 				$this->loadFromDatabase();
 				$GLOBALS["db_schema_status"] = "Schema loaded from database"; //DEBUG
+				$this->save();
 			}
 		} else {
 			$t = array();
@@ -123,8 +128,8 @@ class DBSchema {
 			}
 			$this->tables = $t;
 			$GLOBALS["db_schema_status"] = "Schame passed by user";
+			$this->save();
 		}
-		$this->save();
 	}
 	
 	/**
@@ -143,7 +148,8 @@ class DBSchema {
 	function loadFromDatabase() {
 		require_once("query.php");
 		
-		$db = connect();
+		$db = mysql_connect(DB_HOSTNAME . ":" . DB_PORT, DB_USERNAME, DB_PASSWORD);
+		mysql_select_db(DB_NAME, $db);
 		//echo serialize($db); //DEBUG
 		if(isset($db)) {
 			$rs = mysql_query("SHOW TABLES", $db);

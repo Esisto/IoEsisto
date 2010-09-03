@@ -81,20 +81,20 @@ class WhereConstraint {
 }
 
 class Query {
-	private $db;
-	private $dbSchema = null;
-	private $query_type;
-	private $num_rows;
-	private $rsindex;
-	private $last_inserted_id;
-	private $affected_rows;
-	private $rs; //result set
-	private $error;
+	private static $dbSchema = null;
 	
-	function __construct() {
-		$this->db = connect();
+	
+	var $query_type; //deprecated
+	var $num_rows; //deprecated
+	private $rsindex; //deprecated
+	var $last_inserted_id; //deprecated
+	var $affected_rows; //deprecated
+	private $rs; //deprecated
+	var $error; //deprecated
+	
+	function initDBSchema() {
 		require_once("db_schema.php");
-		$this->dbSchema = new DBSchema(null);
+		self::$dbSchema = new DBSchema(null);
 	}
 		
 	/**
@@ -112,7 +112,7 @@ class Query {
 	 *
 	 * 	return stringa contenente la query SELECT desiderata. FALSE se c'è un errore.
 	 */
-	function generateSelectStm($tables, $joinconst, $whereconst, $options) {
+	static function generateSelectStm($tables, $joinconst, $whereconst, $options) {
 		if(!isset($tables) || !is_array($tables) ||
 		   (count($tables)>1 && !isset($joinconst)) ||
 		   (isset($joinconst) && !is_array($joinconst)) ||
@@ -127,7 +127,7 @@ class Query {
 		$s.= " FROM ";
 		$first = true;
 		for($i=0; $i<count($tables); $i++) {
-			if(!$this->tableExists($tables[$i])) continue;
+			if(!self::tableExists($tables[$i])) continue;
 			if(!$first) $s.= ", ";
 			else $first = false;
 			$t = $tables[$i];
@@ -137,8 +137,8 @@ class Query {
 		// WHERE
 		$first = true;
 		for($i=0; $i<count($joinconst); $i++) {
-			if(!$this->columnExists($joinconst[$i]->getColumnLeft()) ||
-			   !$this->columnExists($joinconst[$i]->getColumnLeft()))
+			if(!self::columnExists($joinconst[$i]->getColumnLeft()) ||
+			   !self::columnExists($joinconst[$i]->getColumnLeft()))
 				continue;
 			if($first) {
 				$s.= " WHERE ";
@@ -150,7 +150,7 @@ class Query {
 		}
 		if(count($tables)>1 && $first) return false;
 		for($i=0; $i<count($whereconst); $i++) {
-			if(!$this->columnExists($whereconst[$i]->getColumn()))
+			if(!self::columnExists($whereconst[$i]->getColumn()))
 				continue;
 			if($first) {
 				$s.= " WHERE ";
@@ -167,7 +167,7 @@ class Query {
 			$s1= " ORDER BY ";
 			$first = true;
 			for($i=0; $i<count($by); $i++) {
-				if($by[$i] == null || $this->columnExists($by[$i])) continue;
+				if($by[$i] == null || self::columnExists($by[$i])) continue;
 				if($first) $first = false;
 				else $s1.= ", ";
 				$s1.= $by[$i];
@@ -189,7 +189,7 @@ class Query {
 			$s1= " GROUP BY ";
 			$first = true;
 			for($i=0; $i<count($group); $i++) {
-				if($group[$i] == null || $this->columnExists($group[$i])) continue;
+				if($group[$i] == null || self::columnExists($group[$i])) continue;
 				if($first) $first = false;
 				else $s1.= ", ";
 				$s1.= $group[$i];
@@ -211,7 +211,7 @@ class Query {
 	 *
 	 *	return: lo statement composto. Se c'è un errore FALSE
 	 */
-	function generateComplexSelectStm($selectstms, $operators) {
+	static function generateComplexSelectStm($selectstms, $operators) {
 		if(!isset($selectstms) || !is_array($selectstms) || count($selectstms) == 0 ||
 		   !isset($operators) || !is_array($operators) ||
 		   (count($operators) != 1 && count($operators) != (count($selectstms)-1)))
@@ -242,18 +242,18 @@ class Query {
 	 *
 	 * return: lo statement Insert. Se c'è un errore FALSE.
 	 */
-	function generateInsertStm($table, $data) {
+	static function generateInsertStm($table, $data) {
 		if(!isset($table) || $table == null || $table == "" ||
 		   !isset($data) || !is_array($data) || count($data) == 0)
 			return false;
 		
-		if(!$this->tableExists($table)) return false;
+		if(!self::tableExists($table)) return false;
 		$s = "INSERT INTO " . $table->getName();
 		$s.= " (";
 		$val = " VALUES (";
 		$first = true;
 		foreach($data as $column => $d) {
-			if($column == null && $column == "" || !$this->columnExists($table->getColumn($column))) continue;
+			if($column == null && $column == "" || !self::columnExists($table->getColumn($column))) continue;
 			if(!$first) {
 				$s.= ", ";
 				$val.= ", ";
@@ -281,12 +281,12 @@ class Query {
 	 *
 	 * return: lo statement Delete. Se c'è un errore FALSE.
 	 */
-	function generateDeleteStm($table, $whereconst) {
+	static function generateDeleteStm($table, $whereconst) {
 		if(!isset($table) || $table == null || $table == "" ||
 		   !isset($whereconst) || !is_array($whereconst) || count($whereconst) == 0)
 			return false;
 		
-		if(!$this->tableExists($table)) return false;
+		if(!self::tableExists($table)) return false;
 		$s = "DELETE FROM " . $table->getName();
 		
 		$first = true;
@@ -295,7 +295,7 @@ class Query {
 			$s1.= " WHERE ";
 		for($i=0; $i<count($whereconst); $i++) {
 			if($whereconst[$i] == null && $whereconst[$i] == "" ||
-			   !$this->columnExists($whereconst[$i]->getColumn())) continue;
+			   !self::columnExists($whereconst[$i]->getColumn())) continue;
 			if($first) $first = false;
 			else $s1.= " AND ";
 			$s1.= $whereconst[$i]->generateWhereStm();
@@ -315,16 +315,16 @@ class Query {
 	 *
 	 * return: lo statement Update. Se c'è un errore FALSE.
 	 */
-	function generateUpdateStm($table, $data, $whereconst) {
+	static function generateUpdateStm($table, $data, $whereconst) {
 		if(!isset($table) || $table == null || $table == "" ||
 		   !isset($data) || !is_array($data) || count($data) == 0)
 			return false;
 		
-		if(!$this->tableExists($table)) return false;
+		if(!self::tableExists($table)) return false;
 		$s = "UPDATE " . $table->getName() . " SET ";
 		$first = true;
 		foreach($data as $column => $d) {
-			if($column == null && $column == "" || !$this->columnExists($table->getColumn($column))) continue;
+			if($column == null && $column == "" || !self::columnExists($table->getColumn($column))) continue;
 			if($first) $first = false;
 			else $s.= ", ";
 			$s.= $column . " = ";
@@ -340,7 +340,7 @@ class Query {
 			$s1.= " WHERE ";
 		for($i=0; $i<count($whereconst); $i++) {
 			if($whereconst[$i] == null && $whereconst[$i] == "" ||
-			   !$this->columnExists($whereconst[$i]->getColumn())) continue;
+			   !self::columnExists($whereconst[$i]->getColumn())) continue;
 			if($first) $first = false;
 			else $s1.= " AND ";
 			$s1.= $whereconst[$i]->generateWhereStm();
@@ -351,55 +351,6 @@ class Query {
 		return $s;
 	}
 	
-	function execute($query, $tablename = null, $object = null) {
-		$this->rs = mysql_query($query);
-		if(($this->error = mysql_error($this->db)) !== false)
-			echo "<p><font color='red'>" . $this->error . "</font></p>";
-		$info = mysql_info();
-		if($object == LOGMANAGER) return;
-		
-		$this->query_type = substr($query, 0, 6);
-		//DEBUG
-		if(DEBUG) {
-			echo "<p>" . $this->query_type . $info; //DEBUG
-			echo "<br />" . $query; //DEBUG
-		} //END DEBUG
-		
-		if($this->query_type == "SELECT") {
-			$this->num_rows = mysql_num_rows($this->rs);
-			$this->rsindex = 0;
-			$this->affected_rows = 0;
-			$this->last_inserted_id = false;
-		} else if($this->query_type == "INSERT") {
-			$this->num_rows = 0;
-			$this->rsindex = false;
-			$this->affected_rows = mysql_affected_rows($this->db);
-			$this->last_inserted_id = mysql_insert_id($this->db);
-		} else if($this->query_type == "DELETE") {
-			$this->num_rows = 0;
-			$this->rsindex = false;
-			$this->affected_rows = mysql_affected_rows($this->db);
-			$this->last_inserted_id = false;
-		} else if($this->query_type == "UPDATE") {
-			$this->num_rows = 0;
-			$this->rsindex = false;
-			//con UPDATE sembra che mysql_affected_rows non funzioni…
-			$this->affected_rows = intval(substr($info, strpos($info, "Changed: ")+9, strpos($info, "Warnings: ")-1-9));
-			$this->last_inserted_id = false;
-		}
-		//DEBUG
-		if(DEBUG)
-			echo "<br /> aff = " . $this->affected_rows . " | num = " . $this->num_rows . " | rsi = " . $this->rsindex . " | lid = " . $this->last_inserted_id; //DEBUG
-		//END DEBUG
-		
-		if($this->affected_rows > 0) {
-			require_once("session.php");
-			require_once("common.php");
-			LogManager::addLogEntry(Session::getUser(), $this->query_type, $tablename, $object);
-		}
-		echo "</p>"; //DEBUG
-	}
-	
 	/**
 	 * Controlla che una tabella esista sul database.
 	 * 
@@ -408,13 +359,11 @@ class Query {
 	 * return: true o false.
 	 */
 	function tableExists($table) {
-		if($this->dbSchema == null) {
-			require_once("db_schema.php");
-			$this->dbSchema = new DBSchema();
-		}
+		if(self::$dbSchema == null)
+			self::initDBSchema();
 		
 		//echo $table; //DEBUG
-		return false !== $this->dbSchema->getTable($table->getName());
+		return false !== self::$dbSchema->getTable($table->getName());
 	}
 	
 	/**
@@ -425,78 +374,134 @@ class Query {
 	 * return: true o false.
 	 */
 	function columnExists($column) {
-		if($this->dbSchema == null) {
-			require_once("db_schema.php");
-			$this->dbSchema = new DBSchema();
-		}
+		if(self::$dbSchema == null)
+			self::initDBSchema();
 		
 		if($column === false) return false;
-		if(!$this->tableExists($this->dbSchema->getTable($column->getTable()))) return false;
-		$table = $this->dbSchema->getTable($column->getTable());
+		if(!self::tableExists(self::$dbSchema->getTable($column->getTable()))) return false;
+		$table = self::$dbSchema->getTable($column->getTable());
 		return $table->getColumn($column->getName()) !== false;
 	}
 	
-	//function __destruct() {
-	//	mysql_close($this->db);
-	//}
+	static function getDBSchema() {
+		if(self::$dbSchema == null)
+			self::initDBSchema();
+		return self::$dbSchema;
+	}
+}
+
+class DBManager {
+	var $dblink = null; //it is public so I can use it directly
+	var $result = null;
+	private $errno;
+	private $error;
+	private $affected_rows;
+	private $num_rows;
+	private $last_inserted_id;
+	private $info;
+	private $query_type;
 	
-	function getDBSchema() {
-		return $this->dbSchema;
+	function __construct() {
+		$this->connect();
 	}
 	
-	function affected_rows() {
-		return $this->affected_rows;
+	function execute($query, $tablename = null, $object = null) {
+		if(isset($this->result) && !is_null($this->result))
+			$this->free_result();
+		
+		$this->result = mysql_query($query, $this->dblink);
+		$this->info = mysql_info($this->dblink);
+		$this->errno = mysql_errno($this->dblink);
+		$this->error = mysql_error($this->dblink);
+		if($this->errno())
+			$this->display_error("DBManager::execute()");
+		if($object == LOGMANAGER) return;
+		
+		$this->query_type = substr($query, 0, 6);
+		//DEBUG
+		if(DEBUG) {
+			echo "<p>" . $this->query_type . ": " . $this->info(); //DEBUG
+			//echo "<br /><font color='green'>" . var_export($this->result, true) . "</font>";
+			echo "<br />" . $query; //DEBUG
+		}
+
+		if($this->query_type == "SELECT") {
+			$this->num_rows = mysql_num_rows($this->result);
+		} else $this->num_rows = 0;
+		if($this->query_type == "INSERT") {
+			$this->last_inserted_id = mysql_insert_id($this->dblink);
+		} else $this->last_inserted_id = false;
+		if($this->query_type == "INSERT" || $this->query_type == "DELETE") {
+			$this->affected_rows = mysql_affected_rows($this->dblink);
+		} else $this->affected_rows = 0;
+		if($this->query_type == "UPDATE")
+			$this->affected_rows = intval(substr($this->info(), strpos($this->info(), "Changed: ")+9, strpos($this->info(), "Warnings: ")-1-9));
+		
+		//DEBUG		
+		if(DEBUG)
+			echo "<br /> aff = " . $this->affected_rows() . " | num = " . $this->num_rows() . " | lid = " . $this->last_inserted_id() . "</p>"; //DEBUG
+		//END DEBUG
+		if($this->affected_rows() > 0) {
+			require_once("session.php");
+			require_once("common.php");
+			LogManager::addLogEntry(Session::getUser(), substr($query, 0, 6), $tablename, $object);
+		}
+		return $this->result;
 	}
+	
+	function affected_rows() { return $this->affected_rows; }
+	function error() { return $this->error; }
+	function errno() { return $this->errno; }
+	function connect_error() { return $this->error; }
+	function connect_errno() { return $this->errno; }
+	function info() { return $this->info; }
+	function last_inserted_id() { return $this->last_inserted_id; }
 	
 	function num_rows() {
 		return $this->num_rows;
 	}
-	
-	function hasNext() {
-		//echo $this->rsindex . "-" . $this->num_rows; //DEBUG
-		return $this->rsindex < $this->num_rows;
+	function fetch_result() {
+		return mysql_fetch_assoc($this->result);
+	}
+	function fetch_field() {
+		if(is_a($this->result, "misqli_result"))
+			return $this->result->fetch_field;
+		return false;
+	}
+	function free_result() {
+		//if(is_object($this->result) && is_a($this->result, "misqli_result")) $this->result->free();
+		//if(is_bool($this->result)) $this->result = null;
 	}
 	
-	function next() {
-		if(!isset($this->query_type) || is_null($this->query_type) || $this->query_type != "SELECT")
-			return false;
-		$this->rsindex++;
-		return mysql_fetch_assoc($this->rs);
-	}
-	
-	function getField($fieldname) {
-		if(!isset($this->query_type) || is_null($this->query_type) || $this->query_type != "SELECT")
-			return null;
-		return mysql_result($this->rs, $this->rsindex, $fieldname);
-	}
-	
-	function fields() {
-		if(!isset($this->query_type) || is_null($this->query_type) || $this->query_type != "SELECT")
-			return array();
-		$fields = array();
-		while($row = mysql_fetch_field($this->rs)) {
-			$fields[] = $row["name"];
+	function connect() {
+		require_once("settings.php"); //file che contiene i dati d'accesso.
+		require_once("strings/" . LANG . "strings.php");
+		
+		$this->dblink = mysql_connect(DB_HOSTNAME . ":" . DB_PORT, DB_USERNAME, DB_PASSWORD);
+		
+		if(!mysql_errno() && mysql_select_db(DB_NAME, $this->dblink)) {
+			$GLOBALS[DB_STATUS] = DB_CONNECTED . DB_HOSTNAME . "/" . DB_NAME;
+		} else {
+			$GLOBALS[DB_STATUS] = DB_NOT_CONNECTED;
+			echo "<p><b>CONNECTION ERROR " . mysql_errno($this->dblink) . ": </b><font color='red'>" . mysql_error($this->dblink) . "</font></p>";
 		}
-		return $fields;
+		
+		//echo serialize($db); //DEBUG
+		return $this->dblink;
 	}
 	
-	function last_inserted_id() {
-		return $this->last_inserted_id;
+	function display_error($from) {
+		if($this->errno())
+			echo "<p><b>$from:</b> SQL ERROR " . $this->errno() . ": <font color='red'>" . $this->error() . "</font></p>";
+		echo "<p><b>$from:</b> NO SQL ERROR</p>"; //DEBUG deve dare un errore solo se c'è!
+	}
+	
+	function display_connect_error($from) {
+		if($this->errno())
+			echo "<p><b>$from:</b> CONNECTION ERROR " . $this->errno() . ": <font color='red'>" . $this->error() . "</font></p>";
+		echo "<p><b>$from:</b> NO CONNECTION ERROR</p>"; //DEBUG deve dare un errore solo se c'è!
 	}
 }
 
-function connect() {
-	require_once("settings.php"); //file che contiene i dati d'accesso.
-	require_once("strings/" . LANG . "strings.php");
-	
-	$db = mysql_connect(DB_HOSTNAME, DB_USERNAME, DB_PASSWORD);
-	if(false !== $db && mysql_select_db(DB_NAME,$db))
-		$GLOBALS[DB_STATUS] = DB_CONNECTED . DB_HOSTNAME . "/" . DB_NAME;
-	else
-		$GLOBALS[DB_STATUS] = DB_NOT_CONNECTED;
-	
-	
-	//echo serialize($db); //DEBUG
-	return $db;
-}
+
 ?>
