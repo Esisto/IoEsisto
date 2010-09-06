@@ -3,6 +3,20 @@ ini_set("display_errors", "On");
 error_reporting(E_ALL);
 
 require_once("post/PostManager.php");
+echo $_SERVER["REQUEST_URI"];
+echo "<br />";
+
+$s = $_SERVER["REQUEST_URI"];
+$s = trim($s, "\\");
+$parts = explode("/", $s);
+$authorname = $parts[4];
+$postname = $parts[6];
+$postdate = date_timestamp_get(date_create_from_format("Y-m-d", $parts[5]));
+$script = $parts[3];
+
+echo "REQUEST TO LOAD " . $script . " from: " . $authorname . ", with the title of: " . $postname . ", created the day: " . date("d/m/Y", $postdate);
+echo "<br />";
+
 
 
 

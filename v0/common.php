@@ -276,7 +276,7 @@ class LogManager {
 
 class Filter {
 	static function filterText($text) {
-		return htmlspecialchars(htmlentities(addslashes($text)));
+		return self::clean($text);
 	}
 	
 	// TODO controlla il funzionamento
@@ -313,14 +313,14 @@ class Filter {
 		$permalink = preg_replace("/[^a-zA-Z0-9\/_|+ -]/", '', $permalink);
 		$permalink = strtolower(trim($permalink, '-'));
 		$permalink = preg_replace("/[\/_|+ -]+/", '_', $permalink);
-	
+		
 		return $permalink;
 	}
 	
 	function clean($value) {
 		// Stripslashes
 		if (get_magic_quotes_gpc()) {
-			$value = stripslashes( $value );
+			$value = stripslashes($value);
 		}
 		
 		// Quote if not a number or a numeric string

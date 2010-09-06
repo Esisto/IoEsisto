@@ -43,8 +43,8 @@
 	//echo $t->testSetReadStatus();
 	//echo $t->testAnswerMail();
 	//echo $t->testSendMail();
-	
-	$t = new UserTest();
+	//
+	//$t = new UserTest();
 	//echo $t->testUser();
 	//echo $t->testContacts();
 	//echo $t->testDeleteContact();

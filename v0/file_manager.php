@@ -18,6 +18,13 @@ class FileManager {
 		return false;
 	}
 	
+	static function getServerPath() {
+		$s = "http://"; //$s = ($_SERVER["HTTPS"] ? "https://" : "http://");
+		$s.= $_SERVER["SERVER_NAME"];
+		$s.= ":";
+		$s.= ($_SERVER["SERVER_PORT"] != '80' /*or whatever*/ ? $_SERVER["SERVER_PORT"] : "");
+		return $s;
+	}
 }
 
 class HTAccessManager {

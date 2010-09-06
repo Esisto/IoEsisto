@@ -127,19 +127,20 @@ class Post {
 	function getAuthorName() {
 		require_once("user/UserManager.php");
 		$u = UserManager::loadUser($this->getAuthor());
-		echo $u;
 		if(!is_null($u->getNickname()))
 			return $u->getNickname();
 		return $this->getAuthor();
 	}
 	function getPermalink() {
-		$s = "http://"; //$s = ($_SERVER["HTTPS"] ? "https://" : "http://");
-		$s.= $_SERVER["SERVER_NAME"];
-		$s.= ":";
-		$s.= ($_SERVER["SERVER_PORT"] != '80' /*or whatever*/ ? $_SERVER["SERVER_PORT"] : "");
+		require_once("file_manager.php");
+		$s = FileManager::getServerPath();
 		//$s.= "/";
-		$s.= dirname($_SERVER["PHP_SELF"]);
-		$s.= "/";
+		$s.= $this->getRelativePermalink();
+		return $s;
+	}
+	private function getRelativePermalink() {
+		$s = dirname($_SERVER["PHP_SELF"]);
+		$s.= "/Post/";
 		$s.= $this->getAuthorName();
 		$s.= "/";
 		$s.= date("Y-m-d", $this->getCreationDate());
@@ -267,11 +268,6 @@ class Post {
 					$this->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[POST_CREATION_DATE])));
 					$this->setModificationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[POST_CREATION_DATE])));
 					//echo "<br />" . serialize($row[POST_CREATION_DATE]); //DEBUG
-					require_once("file_manager.php");
-					$w = HTAccessManager::addRule("Redirect 301 " . $this->getPermalink() . " http://localhost:8888/ioesisto2/v0/\n");
-					if($w === false || $w == 0)
-						echo "FILE NON APERTO o NON SCRITTO";
-					
 					//echo "<br />" . $this; //DEBUG
 					return $this->ID;
 				} else $db->display_error("Post::save()");
