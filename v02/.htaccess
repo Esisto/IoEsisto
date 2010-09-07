@@ -1,9 +1,7 @@
-
 <IfModule mod_rewrite.c>
 RewriteEngine On
-RewriteBase /ioesisto/v0/
+RewriteBase /ioesisto/v02/
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule . /ioesisto/v02/index.php [L]
 </IfModule>
-

@@ -276,7 +276,8 @@ class LogManager {
 
 class Filter {
 	static function filterText($text) {
-		return htmlspecialchars(htmlentities(addslashes($text)));
+		//return self::clean(htmlentities(addslashes(self::escape_utf8($text))));
+		return htmlspecialchars(htmlentities(self::clean($text)));
 	}
 	
 	// TODO controlla il funzionamento
@@ -294,8 +295,20 @@ class Filter {
 		return $newarray;
 	}
 	
+	private static function escape_utf8($text) {
+		$text = str_replace("&", "&amp", $text);
+		$text = str_replace("à", "&agrave", $text);
+		$text = str_replace("è", "&egrave", $text);
+		$text = str_replace("é", "&eacute", $text);
+		$text = str_replace("ì", "&igrave", $text);
+		$text = str_replace("ò", "&ograve", $text);
+		$text = str_replace("ù", "&ugrave", $text);
+		return $text;
+	}
+	
 	static function decodeFilteredText($text) {
-		return stripcslashes(html_entity_decode(htmlspecialchars_decode($text)));
+		//return html_entity_decode(stripslashes($text));
+		return stripslashes(html_entity_decode(htmlspecialchars_decode($text)));
 	}
 	
 	static function decodeFilteredArray($array) {
@@ -320,7 +333,7 @@ class Filter {
 	function clean($value) {
 		// Stripslashes
 		if (get_magic_quotes_gpc()) {
-			$value = stripslashes( $value );
+			$value = stripslashes($value);
 		}
 		
 		// Quote if not a number or a numeric string

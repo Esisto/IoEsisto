@@ -19,21 +19,22 @@
 	require_once(USER_DIR . "/UserTest.php");
 	
 	$t = new Test();
-	echo $t->testEditPost();
-	echo $t->testAddPostToCollection();
-	echo $t->testSavePost();
-	echo $t->testSaveComment();
+	//echo $t->testEditPost();
+	//echo $t->testAddPostToCollection();
+	//echo $t->testSavePost();
+	//echo $t->testSaveComment();
 	//echo $t->testDeletePost();
 	//echo $t->testDeleteComment();
-	echo $t->testSaveVote();
+	//echo $t->testSaveVote();
 	//echo $t->testDeleteVote();
-	echo $t->testSaveCollection();
-	echo $t->testSaveVoteOnCollection();
-	echo $t->testSaveContest();
-	echo $t->testSubscribeToContest();
-	echo $t->testUnsubscribeToContest();
+	//echo $t->testSaveCollection();
+	//echo $t->testSaveVoteOnCollection();
+	//echo $t->testSaveContest();
+	//echo $t->testSubscribeToContest();
+	//echo $t->testUnsubscribeToContest();
 	//echo $t->testDeleteContest();
-	echo $t->testPermalink();
+	//echo $t->testPermalink();
+	echo $t->insertFirstNews();
 	
 	//$t = new MailTest();
 	//echo $t->testMail();

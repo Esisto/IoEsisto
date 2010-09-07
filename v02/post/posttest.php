@@ -20,6 +20,10 @@ class Test {
 		$this->author_id = 1;
 		$this->vote_value = true;
 		$this->comment_text = "COMMENTO!";
+		$this->post_serious = array("title" => "Nasce PubliChi", "subtitle" => "Un nuovo sito dedicato alla libera informazione.", "headline" => "Giornalista fai da te? No PubliChi? Ahi Ahi Ahi!",
+								 "author"=> $this->author_id, "categories" => "Novità, Web", "tags" => "Giornali, Notizie, Informazione",
+								 "content" => "Nasce il sito che permette agli utenti di scrivere le notizie come se fossero dei giornalisti. PubliChi, il nome del sito, mette insieme la personalià di un blog (notizie, foto, video) con la comunicazione di un social network ma non è nessuna di queste due cose: nasce infatti come sito di editoria giornalistica libera. Stanchi di giornali e telegiornali che informano solo su quello che decidono loro, gli ideatori di PubliChi vogliono che siano gli utenti stessi ad informare il mondo. Con la diffusione degli smartphone si può dare in tempo reale la notizia di un incidente in autostrada, di un disagio in metropolitana, di ritardi alle stazioni. Che si stia mettendo male per i giornali seri e professionali?",
+								 "visible" => true, "type" => PostType::$NEWS, "place" => "45.5239725, 9.1709894");
 		$this->post_data = array("title" => "UN BEL TITOLO", "subtitle" => "SOTTOTITOLO", "headline" => "L'OCCHIELLO",
 								 "author"=> $this->author_id, "tags" => "tag1, tag2, tag3",
 								 "content" => "CONTENUTO NON FILTRATO",
@@ -620,6 +624,11 @@ class Test {
 		
 		echo $p->getPermalink();
 		echo "<br />" . $p->getFullPermalink();
+	}
+	
+	function insertFirstNews() {
+		$p = PostManager::createPost($this->post_serious);
+		echo $p->getFullPermalink();
 	}
 }
 ?>

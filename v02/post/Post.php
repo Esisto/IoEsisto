@@ -62,7 +62,7 @@ class Post {
 		if(isset($data["type"]))
 			$this->setType($data["type"]);
 		if(isset($data["place"]))
-			$this->setCategories($data["place"]);
+			$this->setPlace($data["place"]);
 	}
 	
 	function addComment($comment) {
@@ -118,6 +118,26 @@ class Post {
 	}
 	function getVotes() {
 		return $this->votes;
+	}
+	function getAvgVote() {
+		require_once("query.php");
+		if(count($this->getVotes()) == 0) return 0;
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			define_tables(); defineVoteColumns();
+			$table = Query::getDBSchema()->getTable(TABLE_VOTE);
+			$rs = $db->execute($s = Query::generateSelectStm(array($table),
+														 array(),
+														 array(new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$this->getID())),
+														 array("avg" => $table->getColumn(VOTE_VOTE))));
+			echo "<p>" . $s . "</p>"; //DEBUG;
+			if($db->num_rows() == 1) {
+				$row = $db->fetch_row();
+				echo serialize($row);
+				return floatval($row[0]);
+			} else $db->display_error("Post::getAvgVote()");
+		} else $db->display_connect_error("Post::getAvgVote()");
+		return false;
 	}
 	function getReports() {
 		return $this->reports;
@@ -593,7 +613,7 @@ class Post {
 				$this->getContent() == $post->getContent() &&
 				$this->isVisible() == $post->isVisible() &&
 				$this->getComments() == $post->getComments() && //TODO controllare il contenuto di comments
-				$this->getContent() == $post->getContents() && //TODO controllare il contenuto di contents
+				$this->getContent() == $post->getContent() && //TODO controllare il contenuto di contents
 				$this->getCreationDate() == $post->getCreationDate() &&
 				$this->getID() == $post->getID() &&
 				$this->getModificationDate() == $post->getModificationDate() &&

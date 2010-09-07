@@ -10,7 +10,7 @@ class SearchManager {
 	 */
 	static function searchBy($what, $keys, $options) {
 		foreach($what as $class) {
-			echo "<p><b>WILL SEARCH " . $class . "</b> WITH KEYS: " . serialize($keys) . " AND OPTIONS: " . serialize($options) . "</p>";
+			//echo "<p><b>WILL SEARCH " . $class . "</b> WITH KEYS: " . serialize($keys) . " AND OPTIONS: " . serialize($options) . "</p>"; //DEBUG
 			if($class == "Post") return self::searchPostsBy($keys, $options);
 			// if user… if contest…
 		}
@@ -24,11 +24,13 @@ class SearchManager {
 		$wheres = array();
 		foreach($keys as $key => $value) {
 			if($key == "name" || $key == "title")
-				$wheres[] = new WhereConstraint($table->getColumn(POST_TITLE), Operator::$LIKE, $value);
+				$wheres[] = new WhereConstraint($table->getColumn(POST_TITLE), Operator::$LIKE, "%" . Filter::filterText($value) . "%");
 			if($key == "permalink")
 				$wheres[] = new WhereConstraint($table->getColumn(POST_PERMALINK), Operator::$UGUALE, $value);
 			if($key == "id")
 				$wheres[] = new WhereConstraint($table->getColumn(POST_ID), Operator::$UGUALE, $value);
+			if($key == "tag")
+				$wheres[] = new WhereConstraint($table->getColumn(POST_TAGS), Operator::$LIKE, "%" . Filter::filterText($value) . "%");
 			if($key == "day") {
 				if(!is_numeric($value))
 					$value = date_timestamp_get(date_create_from_format("Y-m-d", $value));

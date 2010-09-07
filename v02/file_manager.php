@@ -25,6 +25,10 @@ class FileManager {
 		$s.= ($_SERVER["SERVER_PORT"] != '80' /*or whatever*/ ? $_SERVER["SERVER_PORT"] : "");
 		return $s;
 	}
+	
+	static function appendToRootPath($subdirs) {
+		return self::getServerPath() . dirname($_SERVER["PHP_SELF"]) . "/" . $subdirs;
+	}
 }
 
 class HTAccessManager {

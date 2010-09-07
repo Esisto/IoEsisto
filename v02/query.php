@@ -105,6 +105,8 @@ class Query {
 	 * param whereconst: le condizioni sugli attributi come array di WhereConstraint (opzionale).
 	 * param options: opzioni aggiuntive, il sistema cerca:
 	 * 			count: se usare l'operatore count. (boolean)
+	 * 			avg: se usare l'operatore average. (colonna su cui calcolare la media)
+	 * 			sum: se usare l'operatore somma. (colonna su cui calcolare la somma) //TODO
 	 * 			limit: se usare l'operatore limit. (int, se 0 non usa limit)
 	 * 			order: se usare l'operatore order. (int, >0 per ASC, altrimenti DESC)
 	 * 			by: se usare l'operatore order. (array di stringhe, se vuoto non usa order)
@@ -121,8 +123,17 @@ class Query {
 			return false;
 		// SELECT
 		$s = "SELECT ";
-		if(isset($options["count"])) $s.= "COUNT(*)";
-		else $s.= "*";
+		$set_star = false;
+		if(isset($options["count"])) {
+			$s.= "COUNT(*)";
+			$set_star = true;
+		} else if(isset($options["avg"])) {
+			if(self::columnExists($options["avg"])) {
+				$set_star = true;
+				$s.= "AVG(" . $options["avg"]->getName() . ")";
+			}
+		}
+		if(!$set_star) $s.= "*";
 		// FROM
 		$s.= " FROM ";
 		$first = true;
@@ -461,8 +472,11 @@ class DBManager {
 	function num_rows() {
 		return $this->num_rows;
 	}
-	function fetch_result() {
-		return mysql_fetch_assoc($this->result);
+	function fetch_result($mode = MYSQL_ASSOC) {
+		return mysql_fetch_array($this->result, $mode);
+	}
+	function fetch_row() {
+		return self::fetch_result(MYSQL_NUM);
 	}
 	function fetch_field() {
 		if(is_a($this->result, "misqli_result"))
