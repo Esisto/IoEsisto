@@ -1,0 +1,128 @@
+<html>
+	<head>
+		<title>Gallery</title>
+		<style>
+			#previmage, #nextimage {
+				opacity: 0.0;
+			}
+		
+			#imagediv {
+				height: 600px;
+				margin: 0 auto;
+			}
+			
+			#image, #previmage, #nextimage {
+				width: 800px;
+				height: auto;
+				position: absolute;
+				top: 0px;
+				left: 0px;
+			}
+		</style>
+
+		<script language="javascript">
+			var currimage = 1;
+			var imgnumber = 3;
+			function init() {
+				//recupero il div imagediv
+				var imagediv = document.getElementById("imagediv");
+				//creo due nuove immagini (tag img) per fare il fade.
+				var previmage = document.createElement("img");
+				previmage.setAttribute("id", "previmage");
+				var nextimage = document.createElement("img");
+				nextimage.setAttribute("id", "nextimage");
+				//recupero l'immagine image e setto la prima immagine (anche se c'è già)
+				var image = document.getElementById("image");
+				image.setAttribute("src", "img/1.jpg");
+				nextimage.setAttribute("src", "img/2.jpg");
+				nextimage.setAttribute("src", "img/0.jpg");
+				
+				//inserisco i due nuovi elementi prima e dopo image
+				imagediv.insertBefore(previmage, image);
+				imagediv.appendChild(nextimage);
+				
+				imagediv.setAttribute("style", "height: " + image.getAttribute("height") + "px;");
+			}
+			
+			var interval;
+			function next() {
+				var image = document.getElementById("image");
+				var nextimage = document.getElementById("nextimage");
+				var previmage = document.getElementById("previmage");
+				
+				previmage.setAttribute("src", "img/" + currimage + ".jpg");
+				//seleziono l'immagine corrente
+				currimage = (currimage+1)%imgnumber;
+				interval = setInterval("fadenext()", 50);
+			}
+			
+			var opacity = 0;
+			function fadenext() {
+				opacity++;
+				var image = document.getElementById("image");
+				var nextimage = document.getElementById("nextimage");
+				if(opacity == 10) {
+					image.setAttribute("style", "opacity: 0.0;");
+					nextimage.setAttribute("style", "opacity: 1.0;");
+					clearInterval(interval);
+					image.setAttribute("src", "img/" + currimage + ".jpg");
+					image.setAttribute("style", "opacity: 1.0;");
+					nextimage.setAttribute("style", "opacity: 0.0;");
+					nextimage.setAttribute("src", "img/" + (currimage+1)%imgnumber + ".jpg");
+					opacity = 0;
+				} else {
+					image.setAttribute("style", "opacity: 0." + (10 - opacity) + ";");
+					nextimage.setAttribute("style", "opacity: 0." + (opacity) + ";");
+				}
+			}
+			
+			function prev() {
+				var image = document.getElementById("image");
+				var nextimage = document.getElementById("nextimage");
+				var previmage = document.getElementById("previmage");
+				
+				previmage.setAttribute("src", "img/" + currimage + ".jpg");
+				//seleziono l'immagine corrente
+				currimage = (currimage+imgnumber-1)%imgnumber;
+				interval = setInterval("fadeprev()", 50);
+			}
+			
+			var opacity = 0;
+			function fadeprev() {
+				opacity++;
+				var image = document.getElementById("image");
+				var previmage = document.getElementById("previmage");
+				if(opacity == 10) {
+					image.setAttribute("style", "opacity: 0.0;");
+					previmage.setAttribute("style", "opacity: 1.0;");
+					clearInterval(interval);
+					image.setAttribute("src", "img/" + currimage + ".jpg");
+					image.setAttribute("style", "opacity: 1.0;");
+					previmage.setAttribute("style", "opacity: 0.0;");
+					previmage.setAttribute("src", "img/" + (currimage+imgnumber-1)%imgnumber + ".jpg");
+					opacity = 0;
+				} else {
+					image.setAttribute("style", "opacity: 0." + (10 - opacity) + ";");
+					previmage.setAttribute("style", "opacity: 0." + (opacity) + ";");
+				}
+			}
+		</script>
+
+	</head>
+	<body onload="javascript:init()">
+		
+		<div id="gallery">
+			<div>
+				<div id="imagediv">
+					<img id="image" src="img/1.jpg" />
+				</div>
+				<p id="description">Descrizione</p>
+			</div>
+			<div id="commands">
+				<div id="prev"><a href="javascript:prev();">Precedente</a></div>
+				<div id="slideonoff"><a href="javascript:slideon();">Slide On</a></div>
+				<div id="next"><a href="javascript:next();">Successiva</a></div>
+			</div>
+		</div>
+	</body>
+</html>
