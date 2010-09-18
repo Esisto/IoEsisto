@@ -38,14 +38,14 @@ if($request["script"] == "Post") {
 	$posts = SearchManager::searchBy(array("Post"), array("tag" => $request["tagname"]), array("limit" => 4, "order" => "DESC", "by" => array("ps_creationDate")));
 	foreach($posts as $p) {
 		require_once("post/PostPage.php");
-		PostPage::showPost($p);
+		PostPage::showShortPost($p);
 	}
 } else if($request["script"] == "Category") {
 	//echo "<p><font color='green'>REQUEST TO LOAD post which category is " . $request["categoryname"] . ".</font></p>"; //DEBUG
 	$posts = SearchManager::searchBy(array("Post"), array("category" => $request["categoryname"]), array("limit" => 4, "order" => "DESC", "by" => array("ps_creationDate")));
 	foreach($posts as $p) {
 		require_once("post/PostPage.php");
-		PostPage::showPost($p);
+		PostPage::showShortPost($p);
 	}
 }
 

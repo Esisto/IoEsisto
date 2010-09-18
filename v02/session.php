@@ -6,7 +6,12 @@
 	// DEBUG
 	class Session {
 		static function getUser() {
+			//$_SESSION["user"]
+			//check exists
+			//return getID()
 			return 1;
+			//se non esiste
+			header("location: http://fgdfhdf/?err=errore…");
 		}
 	}
 	// END DEBUG

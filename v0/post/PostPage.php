@@ -13,7 +13,7 @@ class PostPage {
 	static function showCommentForm() {
 	?>
         <form name="" action="" method="get"> <!-- TODO -->
-            <input type="submit" value="">
+            <input type="submit" value="" />
         </form>
         <?php
 	}

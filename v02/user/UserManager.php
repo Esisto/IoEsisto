@@ -25,13 +25,22 @@ class UserManager{
     }
     
     static function login($data, $pwd) {
-        if($nick) {
+        if(!isset($_POST["nick"])) {
+            ?>
+            <form action="" method="post">
+                
+                
+                
+            </form>
+            <?php
             
+        } else {
             //TODO check nick e password,
             //TODO comincia la sessione
             //TODO registra le variabili
             //TODO salva cookie
         }
+        
     }
     
     static function logout($session) {
