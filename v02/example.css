@@ -4,6 +4,12 @@
 	margin: 0 auto;
 	font-family: Georgia, "Times New Roman", Times, serif;
 }
+.shortpost {
+	padding: 20px 0;
+	width: 300px;
+	margin: 0 auto;
+	font-family: Georgia, "Times New Roman", Times, serif;
+}
 .news {
 	background-color: #00ff5e;
 }

@@ -29,7 +29,7 @@ class MapManager {
 		<?php
 	}
 	
-	static function printInfoInElement($place, $elementid) {
+	static function printInfoInElement($place, $elementid, $types = null) {
 		$latlng = explode(", ", $place);
 		?>
 		<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>

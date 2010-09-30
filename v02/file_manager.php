@@ -30,17 +30,4 @@ class FileManager {
 		return self::getServerPath() . dirname($_SERVER["PHP_SELF"]) . "/" . $subdirs;
 	}
 }
-
-class HTAccessManager {
-	
-	static function parse() {
-		
-	}
-	
-	static function addRule($rule) {
-		return FileManager::appendToFile(".htaccess", $rule);
-	}
-}
-
-
 ?>
