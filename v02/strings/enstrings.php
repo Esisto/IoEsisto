@@ -10,6 +10,17 @@ define("NOT_FOUND", "Not found");
 // MAIL STRINGS
 define("NO_SUBJECT", "No subject");
 
+//USER STRINGS
+define("NO_USERNAME", "missing username");
+define("NO_PASSWORD","missing password");
+define("NO_NICKNAME", "missing nickname");
+define("DIFFERENT_PASSWORD","passwords do not match");
+define("NO_EMAIL","missing email");
+define("INVALID_DATE","insert a date complete of day, month and year");
+define("CURRENT_PASSWORD", "current password");
+define("NEW_PASSWORD","new password");
+define("CHECK_PASSWORD","check password");
+
 function format_datetime($date) {
 	$today = date_timestamp_get(date_create_from_format("Y-m-d G:i", date("Y-m-d", time()) . " 00:00"));
 	$tomorrow = date_timestamp_get(date_create_from_format("Y-m-d G:i", date("Y-m-d", time()+24*60*60) . " 00:00"));

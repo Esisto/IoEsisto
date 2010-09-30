@@ -4,6 +4,15 @@
 // tutte le stringhe definite
 define("DB_NOT_CONNECTED", "Non connesso.");
 define("DB_CONNECTED", "Connesso a ");
+define("NO_USERNAME", "username non presente");
+define("NO_PASSWORD","password non presente");
+define("NO_NICKNAME", "nickname non presente");
+define("DIFFERENT_PASSWORD","le password non corrispondono");
+define("NO_EMAIL","email non presente");
+define("INVALID_DATE","inserisci una data completa di giorno, mese e anno");
+define("CURRENT_PASSWORD", "password attuale");
+define("NEW_PASSWORD","nuova password");
+define("CHECK_PASSWORD","verifica password");
 
 // date
 function format_datetime($date) {
