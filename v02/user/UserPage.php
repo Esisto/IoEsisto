@@ -5,6 +5,7 @@ require_once("strings/" . LANG . "strings.php");
 require_once("file_manager.php");
 
 class UserPage {
+	
 	function showLoginForm($error = null){
 		if($error==null && count($_POST) > 0){
 			if(isset($_POST["username"]))
