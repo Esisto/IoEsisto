@@ -24,7 +24,7 @@ class CollectionManager {
 	 * 
 	 * return: la collection creata o FALSE se c'è un errose
 	 */
-	static function addCollection($data) {
+	static function createCollection($data) {
 		require_once("common.php");
 		$data = Filter::filterArray($data);
 		
