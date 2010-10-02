@@ -22,7 +22,7 @@ class Post {
 	/**
 	 * Crea un oggetto post.
 	 *
-	 * param data: array associativo contenente i dati.
+	 * @param data: array associativo contenente i dati.
 	 * Le chiavi ricercate dal sistema per questo array sono:
 	 * title: titolo del post (string filtrata)
 	 * subtitle: sottotitolo del post (string filtrata)
@@ -35,7 +35,7 @@ class Post {
 	 * type: tipo di post, deve essere incluso in PostType
 	 * place: db v0 id di un luogo in db, db v0.2 stringa (secondo le regole delle API Google)
 	 * 
-	 * return: l'articolo creato.
+	 * @return: l'articolo creato.
 	 */
 	function __construct($data) {
 		if(!is_array($data) && is_numeric($data)) {
@@ -116,12 +116,23 @@ class Post {
 	function getComments() {
 		return $this->comments;
 	}
+	/**
+	 * @deprecated il voto viene caricato attraverso getAvgVote()
+	 */
 	function getVotes() {
 		return $this->votes;
 	}
+	
+	/**
+	 * Recupera il voto come la media tra tutti i valori salvati nella tabella Vote.
+	 * Sta al livello di vista decidere come visualizare questo parametro: stelline, valore scritto, faccine...
+	 * @return: un valore float.
+	 */
+	private $avgVote = null;
 	function getAvgVote() {
+		if(!is_null($this->avgVote)) return $this->avgVote;
+		
 		require_once("query.php");
-		if(count($this->getVotes()) == 0) return 0;
 		$db = new DBManager();
 		if(!$db->connect_errno()) {
 			define_tables(); defineVoteColumns();
@@ -133,8 +144,9 @@ class Post {
 			echo "<p>" . $s . "</p>"; //DEBUG;
 			if($db->num_rows() == 1) {
 				$row = $db->fetch_row();
-				echo serialize($row);
-				return floatval($row[0]);
+				//echo serialize($row);
+				$this->avgVote = floatval($row[0]);
+				return $this->avgVote;
 			} else $db->display_error("Post::getAvgVote()");
 		} else $db->display_connect_error("Post::getAvgVote()");
 		return false;
@@ -155,7 +167,7 @@ class Post {
 	/**
 	 * Restituisce il permalink dell'articolo. Può essere forzato il caricamento del pramalink dai dati.
 	 *
-	 * param $reload: true o false (deafult false). Se true ricarica il permalink dai dati ma non ne salva lo stato.
+	 * @param $reload: true o false (deafult false). Se true ricarica il permalink dai dati ma non ne salva lo stato.
 	 */
 	function getPermalink($reload = false) {
 		if($reload) {
@@ -264,7 +276,7 @@ class Post {
 	 * Le dipendenze salvate sono quelle che dipendono dall'autore ovvero: tag e categorie.
 	 * Potrebbe salvare alcune tuple in Tag.
 	 *
-	 * return: ID della tupla inserita (o aggiornata), FALSE se c'è un errore.
+	 * @return: ID della tupla inserita (o aggiornata), FALSE se c'è un errore.
 	 */
 	function save() {
 		require_once("post/PostCommon.php");
@@ -328,7 +340,7 @@ class Post {
 	 * Le dipendenze aggiornate sono quelle che dipendono dall'autore ovvero: tag e categorie
 	 * Potrebbe salvare alcune tuple in Tag.
 	 *
-	 * return: modificationDate o FALSE se c'è un errore.
+	 * @return: modificationDate o FALSE se c'è un errore.
 	 */
 	function update() {
 		require_once("query.php");
@@ -394,7 +406,7 @@ class Post {
 	 * Con le Foreign Key e ON DELETE, anche le dipendenze dirette vengono cancellate.
 	 * Non vengono cancellate le dipendenze nelle Collection.
 	 *
-	 * return: l'oggetto cancellato o FALSE se c'è un errore.
+	 * @return: l'oggetto cancellato o FALSE se c'è un errore.
 	 */
 	function delete() {
 		require_once("query.php");
@@ -472,8 +484,8 @@ class Post {
 	 * Crea un post caricando i dati dal database.
 	 * È come fare una ricerca sul database e poi fare new Post().
 	 *
-	 * param $id: l'ID del post da caricare.
-	 * return: il post caricato o FALSE se non lo trova.
+	 * @param $id: l'ID del post da caricare.
+	 * @return: il post caricato o FALSE se non lo trova.
 	 */
 	static function loadFromDatabase($id) {
 		require_once("query.php");
@@ -536,6 +548,7 @@ class Post {
 	}
 	
 	/**
+	 * @deprecated il voto viene caricato attraverso getAvgVote()
 	 * Carica in this i voti recuperati dal database per questo post (deve avere un ID!).
 	 */
 	function loadVotes() {
