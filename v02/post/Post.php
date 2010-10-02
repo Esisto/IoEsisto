@@ -139,7 +139,7 @@ class Post {
 			$table = Query::getDBSchema()->getTable(TABLE_VOTE);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$this->getID())),
+														 array(new WhereConstraint($table->getColumn(VOTE_POST),Operator::$EQUAL,$this->getID())),
 														 array("avg" => $table->getColumn(VOTE_VOTE))));
 			echo "<p>" . $s . "</p>"; //DEBUG;
 			if($db->num_rows() == 1) {
@@ -317,7 +317,7 @@ class Post {
 				//echo "<br />" . serialize($this->ID); //DEBUG
 				$rs = $db->execute($s = Query::generateSelectStm(array($table),
 															 array(),
-															 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$this->getID())),
+															 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$EQUAL,$this->getID())),
 															 array()),
 								  $table->getName(), $this);
 				//echo "<br />" . serialize($rs); //DEBUG
@@ -350,7 +350,7 @@ class Post {
 			$table = Query::getDBSchema()->getTable(TABLE_POST);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$this->getID())),
+														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$EQUAL,$this->getID())),
 														 array()),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
@@ -388,7 +388,7 @@ class Post {
 				
 				$rs = $db->execute($s = Query::generateUpdateStm($table,
 															 $data,
-															 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$this->getID()))),
+															 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$EQUAL,$this->getID()))),
 								  $table->getName(), $this);
 				//echo "<br />" . $s; //DEBUG
 				//echo "<br />" . mysql_affected_rows(); //DEBUG
@@ -415,7 +415,7 @@ class Post {
 			define_tables(); definePostColumns();
 			$table = Query::getDBSchema()->getTable(TABLE_POST);
 			$rs = $db->execute($s = Query::generateDeleteStm($table,
-														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$this->getID()))),
+														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$EQUAL,$this->getID()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $db->affected_rows() . $s; //DEBUG
 			if($db->affected_rows() == 1) {
@@ -432,7 +432,7 @@ class Post {
 			define_tables(); definePostColumns();
 			$table = Query::getDBSchema()->getTable(TABLE_POST);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table), array(),
-															 array(new WhereConstraint($table->getColumn(POST_PERMALINK),Operator::$UGUALE,$permalink)),
+															 array(new WhereConstraint($table->getColumn(POST_PERMALINK),Operator::$EQUAL,$permalink)),
 															 array("count" => 2)));
 			if($db->num_rows() == 1) {
 				$row = $db->fetch_result();
@@ -495,7 +495,7 @@ class Post {
 			$table = Query::getDBSchema()->getTable(TABLE_POST);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$id)),
+														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$EQUAL,$id)),
 														 array()),
 							  $table->getName(), null);
 			
@@ -523,7 +523,7 @@ class Post {
 			$table = Query::getDBSchema()->getTable(TABLE_COMMENT);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(COMMENT_POST),Operator::$UGUALE,$this->getID())),
+														 array(new WhereConstraint($table->getColumn(COMMENT_POST),Operator::$EQUAL,$this->getID())),
 														 array()),
 							  $table->getName(), $this);
 			
@@ -559,7 +559,7 @@ class Post {
 			$table = Query::getDBSchema()->getTable(TABLE_VOTE);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$this->getID())),
+														 array(new WhereConstraint($table->getColumn(VOTE_POST),Operator::$EQUAL,$this->getID())),
 														 array()),
 							  $table->getName(), $this);
 			//echo "<p>" . $s . "</p>"; //DEBUG;
@@ -592,7 +592,7 @@ class Post {
 			$table = Query::getDBSchema()->getTable(TABLE_REPORT);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(REPORT_POST),Operator::$UGUALE,$this->getID())),
+														 array(new WhereConstraint($table->getColumn(REPORT_POST),Operator::$EQUAL,$this->getID())),
 														 array()),
 							  $table->getName(), $this);
 			if($rs !== false) {

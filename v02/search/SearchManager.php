@@ -31,9 +31,9 @@ class SearchManager {
 			if($key == "name" || $key == "title")
 				$wheres[] = new WhereConstraint($table->getColumn(POST_TITLE), Operator::$LIKE, "%" . Filter::filterText($value) . "%");
 			if($key == "permalink")
-				$wheres[] = new WhereConstraint($table->getColumn(POST_PERMALINK), Operator::$UGUALE, intval($value));
+				$wheres[] = new WhereConstraint($table->getColumn(POST_PERMALINK), Operator::$EQUAL, intval($value));
 			if($key == "id")
-				$wheres[] = new WhereConstraint($table->getColumn(POST_ID), Operator::$UGUALE, intval($value));
+				$wheres[] = new WhereConstraint($table->getColumn(POST_ID), Operator::$EQUAL, intval($value));
 			if($key == "tag")
 				$wheres[] = new WhereConstraint($table->getColumn(POST_TAGS), Operator::$LIKE, "%" . Filter::filterText($value) . "%");
 			if($key == "day") {
@@ -43,8 +43,8 @@ class SearchManager {
 				$dayend = date("Y-m-d", $value + 24*60*60);
 				
 				//echo "<br />" . $daystart . "-" . $dayend; //DEBUG
-				$wheres[] = new WhereConstraint($table->getColumn(POST_CREATION_DATE), Operator::$MAGGIOREUGUALE, $daystart);
-				$wheres[] = new WhereConstraint($table->getColumn(POST_CREATION_DATE), Operator::$MINORE, $dayend);
+				$wheres[] = new WhereConstraint($table->getColumn(POST_CREATION_DATE), Operator::$GREATEROREQUAL, $daystart);
+				$wheres[] = new WhereConstraint($table->getColumn(POST_CREATION_DATE), Operator::$LESSER, $dayend);
 			}
 			if($key == "category")
 				$wheres[] = new WhereConstraint($table->getColumn(POST_CATEGORY), Operator::$LIKE, "%" . Filter::filterText($value) . "%");
@@ -53,7 +53,7 @@ class SearchManager {
 			if($key == "content")
 				$wheres[] = new WhereConstraint($table->getColumn(POST_CONTENT), Operator::$LIKE, "%" . Filter::filterText($value) . "%");
 			if($key == "author")
-				$wheres[] = new WhereConstraint($table->getColumn(POST_AUTHOR), Operator::$UGUALE, intval($value));			
+				$wheres[] = new WhereConstraint($table->getColumn(POST_AUTHOR), Operator::$EQUAL, intval($value));			
 		}
 		$newopt = array();
 		foreach($options as $key => $value) {

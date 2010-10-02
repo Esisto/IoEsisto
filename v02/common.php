@@ -65,7 +65,7 @@ class Report {
 		if(!$db->connect_errno()) {
 			$table = Query::getDBSchema()->getTable(TABLE_REPORT);
 			$rs = $db->execute($s = Query::generateDeleteStm($table,
-														 array(new WhereConstraint($table->getColumn(REPORT_ID),Operator::$UGUALE,$this->getID()))),
+														 array(new WhereConstraint($table->getColumn(REPORT_ID),Operator::$EQUAL,$this->getID()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			if($db->affected_rows() == 1) {
@@ -155,7 +155,7 @@ class Resource {
 		if(!$db->connect_errno()) {
 			$table = Query::getDBSchema()->getTable(TABLE_RESOURCE);
 			$rs = $db->execute($s = Query::generateDeleteStm($table,
-														 array(new WhereConstraint($table->getColumn(RESOURCE_ID),Operator::$UGUALE,$this->getID()))),
+														 array(new WhereConstraint($table->getColumn(RESOURCE_ID),Operator::$EQUAL,$this->getID()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			if($db->affected_rows() == 1) {
@@ -199,12 +199,12 @@ class LogManager {
 			$s = "";
 			if(is_numeric($from) && $from != 0) {
 				$s1 = Query::generateSelectStm(array($table), array(),
-											array(new WhereConstraint($table->getColumn(LOG_TIMESTAMP),Operator::$MAGGIOREUGUALE,$from)),
+											array(new WhereConstraint($table->getColumn(LOG_TIMESTAMP),Operator::$GREATEROREQUAL,$from)),
 											array());
 			}
 			if(is_numeric($to) && $to != 0) {
 				$s2 = Query::generateSelectStm(array($table), array(),
-											array(new WhereConstraint($table->getColumn(LOG_TIMESTAMP),Operator::$MINOREUGUALE,$to)),
+											array(new WhereConstraint($table->getColumn(LOG_TIMESTAMP),Operator::$LESSEROREQUAL,$to)),
 											array("order" => 1, "by" => LOG_TIMESTAMP));
 			}
 			if(is_numeric($from) && $from != 0 && is_numeric($to) && $to != 0) {
@@ -294,8 +294,8 @@ class LogManager {
 //				$exists = PostManager::postExists($id);
 			}
 			if($exists) {
-				$wheres = array(new WhereConstraint($table->getColumn("alog_type"), Operator::$UGUALE, $type),
-								new WhereConstraint($table->getColumn("alog_id"), Operator::$UGUALE, $id));
+				$wheres = array(new WhereConstraint($table->getColumn("alog_type"), Operator::$EQUAL, $type),
+								new WhereConstraint($table->getColumn("alog_id"), Operator::$EQUAL, $id));
 				$db->execute($s = Query::generateSelectStm(array($table), array(), $wheres, array()));
 				if($db->num_rows() == 1) {
 					$row = $db->fetch_result();

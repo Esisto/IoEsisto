@@ -147,8 +147,8 @@ class Contest {
 			define_tables(); defineContestSubscriberColumns();
 			$table = Query::getDBSchema()->getTable(TABLE_CONTEST_SUBSCRIBER);
 			$db->execute($s = Query::generateDeleteStm($table,
-												   array(new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_POST), Operator::$UGUALE, $post->getID()),
-														 new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_CONTEST), Operator::$UGUALE, $this->getID()))),
+												   array(new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_POST), Operator::$EQUAL, $post->getID()),
+														 new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_CONTEST), Operator::$EQUAL, $this->getID()))),
 						$table->getName(), $this);
 			if($db->affected_rows() == 0) {
 				$this->loadSubscribers();
@@ -167,8 +167,8 @@ class Contest {
 			define_tables(); defineContestSubscriberColumns();
 			$table = Query::getDBSchema()->getTable(TABLE_CONTEST_SUBSCRIBER);
 			$db->execute($s = Query::generateUpdateStm($table, array(CONTEST_SUBSCRIBER_PLACEMENT => $position),
-												   array(new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_POST), Operator::$UGUALE, $post->getID()),
-														 new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_CONTEST), Operator::$UGUALE, $this->getID()))),
+												   array(new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_POST), Operator::$EQUAL, $post->getID()),
+														 new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_CONTEST), Operator::$EQUAL, $this->getID()))),
 						$table->getName(), $this);
 			if($db->affected_rows() == 0) {
 				$this->winners[$position] = $post->getID();
@@ -254,7 +254,7 @@ class Contest {
 			
 			$rs = $db->execute($s = Query::generateUpdateStm($table,
 														 $data,
-														 array(new WhereConstraint($table->getColumn(CONTEST_ID),Operator::$UGUALE,$this->getID()))),
+														 array(new WhereConstraint($table->getColumn(CONTEST_ID),Operator::$EQUAL,$this->getID()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			//echo "<br />" . mysql_affected_rows(); //DEBUG
@@ -280,7 +280,7 @@ class Contest {
 			define_tables(); defineContestColumns();
 			$table = Query::getDBSchema()->getTable(TABLE_CONTEST);
 			$rs = $db->execute($s = Query::generateDeleteStm($table,
-														 array(new WhereConstraint($table->getColumn(CONTEST_ID),Operator::$UGUALE,$this->getID()))),
+														 array(new WhereConstraint($table->getColumn(CONTEST_ID),Operator::$EQUAL,$this->getID()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			if($db->affected_rows() == 1) {
@@ -304,7 +304,7 @@ class Contest {
 			$table = Query::getDBSchema()->getTable(TABLE_CONTEST);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(CONTEST_ID),Operator::$UGUALE,$id)),
+														 array(new WhereConstraint($table->getColumn(CONTEST_ID),Operator::$EQUAL,$id)),
 														 array()),
 							  $table->getName(), null);
 			
@@ -339,7 +339,7 @@ class Contest {
 			$table = Query::getDBSchema()->getTable(TABLE_CONTEST_SUBSCRIBER);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_CONTEST),Operator::$UGUALE,$this->getID())),
+														 array(new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_CONTEST),Operator::$EQUAL,$this->getID())),
 														 array()),
 							  $table->getName(), $this);
 			
@@ -366,8 +366,8 @@ class Contest {
 			$table = Query::getDBSchema()->getTable(TABLE_CONTEST_SUBSCRIBER);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_CONTEST),Operator::$UGUALE,$this->getID()),
-															   new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_PLACEMENT),Operator::$MAGGIORE,0)),
+														 array(new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_CONTEST),Operator::$EQUAL,$this->getID()),
+															   new WhereConstraint($table->getColumn(CONTEST_SUBSCRIBER_PLACEMENT),Operator::$GREATER,0)),
 														 array()),
 							  $table->getName(), $this);
 			

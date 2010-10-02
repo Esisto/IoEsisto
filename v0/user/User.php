@@ -116,7 +116,7 @@ class Contact {
 			if($this->getName() != $old->getName())
 				$data[CONTACT_NAME] = $this->getName();
 				
-			$db->execute($s = Query::generateUpdateStm($table, $data, array(new WhereConstraint($table->getColumn(CONTACT_ID), Operator::$UGUALE, $this->getID()))),
+			$db->execute($s = Query::generateUpdateStm($table, $data, array(new WhereConstraint($table->getColumn(CONTACT_ID), Operator::$EQUAL, $this->getID()))),
 						$table->getName(), $this);
 			
 			if($db->affected_rows() == 1) {
@@ -133,7 +133,7 @@ class Contact {
 			define_tables(); defineContactColumns();
 			$table = Query::getDBSchema()->getTable(TABLE_CONTACT);
 			
-			$db->execute($s = Query::generateDeleteStm($table, array(new WhereConstraint($table->getColumn(CONTACT_ID), Operator::$UGUALE, $this->getID()))),
+			$db->execute($s = Query::generateDeleteStm($table, array(new WhereConstraint($table->getColumn(CONTACT_ID), Operator::$EQUAL, $this->getID()))),
 						$table->getName(), $this);
 			
 			//echo "<p>" . $s . "</p>"; //DEBUG
@@ -154,7 +154,7 @@ class Contact {
 			
 			$db->execute($s = Query::generateSelectStm(array($table, $table1),
 												   array(new JoinConstraint($table->getColumn(CONTACT_NAME), $table1->getColumn(CONTACT_TYPE_NAME))),
-												   array(new WhereConstraint($table->getColumn(CONTACT_ID), Operator::$UGUALE, $id)),
+												   array(new WhereConstraint($table->getColumn(CONTACT_ID), Operator::$EQUAL, $id)),
 												   array()));
 			
 			if($db->num_rows() == 1) {
@@ -181,7 +181,7 @@ class Contact {
 			
 			$rs = $db->execute($s = Query::generateSelectStm(array($table, $table1),
 												   array(new JoinConstraint($table->getColumn(CONTACT_NAME), $table1->getColumn(CONTACT_TYPE_NAME))),
-												   array(new WhereConstraint($table->getColumn(CONTACT_USER), Operator::$UGUALE, $userid)),
+												   array(new WhereConstraint($table->getColumn(CONTACT_USER), Operator::$EQUAL, $userid)),
 												   array()));
 			
 			//echo "<p>" . mysql_affected_rows() . mysql_num_rows($rs) . $s . "</p>"; //DEBUG
@@ -521,8 +521,8 @@ class User{
 			define_tables(); defineFollowColumns();
 			$table = Query::getDBSchema()->getTable(TABLE_FOLLOW);
 			
-			$db->execute($s = Query::generateDeleteStm($table, array(new WhereConstraint($table->getColumn(FOLLOW_FOLLOWER), Operator::$UGUALE, $user->getID()),
-																 new WhereConstraint($table->getColumn(FOLLOW_SUBJECT), Operator::$UGUALE, $this->getID()))),
+			$db->execute($s = Query::generateDeleteStm($table, array(new WhereConstraint($table->getColumn(FOLLOW_FOLLOWER), Operator::$EQUAL, $user->getID()),
+																 new WhereConstraint($table->getColumn(FOLLOW_SUBJECT), Operator::$EQUAL, $this->getID()))),
 						$table->getName(), $this);
 			
 			if($db->affected_rows() == 1)
@@ -617,7 +617,7 @@ class User{
 				$this->setID($db->last_inserted_id());
 				$db->execute(Query::generateSelectStm(array($table),
 												  array(),
-												  array(new WhereConstraint($table->getColumn(USER_ID), Operator::$UGUALE, $this->getID())),
+												  array(new WhereConstraint($table->getColumn(USER_ID), Operator::$EQUAL, $this->getID())),
 												  array()));
 				
 				if($db->num_rows() == 1) {
@@ -669,7 +669,7 @@ class User{
 				$data[USER_VISIBLE] = $this->getVisible() ? 1 : 0;
 			
 			$db->execute($s = Query::generateUpdateStm($table, $data,
-												   array(new WhereConstraint($table->getColumn(USER_ID), Operator::$UGUALE, $this->getID()))),
+												   array(new WhereConstraint($table->getColumn(USER_ID), Operator::$EQUAL, $this->getID()))),
 						$table->getName(), $this);
 			
 			//echo "<p>" . $db->affected_rows() . $s . "</p>"; // DEBUG
@@ -687,7 +687,7 @@ class User{
 			define_tables(); defineUserColumns();
 			$table = Query::getDBSchema()->getTable(TABLE_USER);
 			$rs = $db->execute($s = Query::generateDeleteStm($table,
-														 array(new WhereConstraint($table->getColumn(USER_ID),Operator::$UGUALE,$this->getID()))),
+														 array(new WhereConstraint($table->getColumn(USER_ID),Operator::$EQUAL,$this->getID()))),
 							  $table->getName(), $this);
 			//echo "<br />" . serialize($db->affected_rows()) . $s; //DEBUG
 			if($db->affected_rows() == 1) {
@@ -705,7 +705,7 @@ class User{
 			$table = Query::getDBSchema()->getTable(TABLE_USER);
 			
 			$db->execute($s = Query::generateSelectStm(array($table), array(),
-												   array(new WhereConstraint($table->getColumn(USER_NICKNAME), Operator::$UGUALE, $nickname)),
+												   array(new WhereConstraint($table->getColumn(USER_NICKNAME), Operator::$EQUAL, $nickname)),
 												   array()));
 			
 			if($db->num_rows() == 1) {
@@ -749,7 +749,7 @@ class User{
 			$table = Query::getDBSchema()->getTable(TABLE_USER);
 			
 			$db->execute($s = Query::generateSelectStm(array($table), array(),
-												   array(new WhereConstraint($table->getColumn(USER_NICKNAME), Operator::$UGUALE, $nickname)),
+												   array(new WhereConstraint($table->getColumn(USER_NICKNAME), Operator::$EQUAL, $nickname)),
 												   array()));
 			
 			if($db->num_rows() == 1) {
@@ -774,7 +774,7 @@ class User{
 			$table = Query::getDBSchema()->getTable(TABLE_USER);
 			
 			$db->execute($s = Query::generateSelectStm(array($table), array(),
-												   array(new WhereConstraint($table->getColumn(USER_ID), Operator::$UGUALE, $id)),
+												   array(new WhereConstraint($table->getColumn(USER_ID), Operator::$EQUAL, $id)),
 												   array()));
 			
 			//echo "<p>" . $db->num_rows() . $s . "</p>"; //DEBUG
@@ -800,7 +800,7 @@ class User{
 			$table = Query::getDBSchema()->getTable(TABLE_FOLLOW);
 			
 			$db->execute($s = Query::generateSelectStm(array($table), array(),
-												   array(new WhereConstraint($table->getColumn(FOLLOW_FOLLOWER), Operator::$UGUALE, $this->getID())),
+												   array(new WhereConstraint($table->getColumn(FOLLOW_FOLLOWER), Operator::$EQUAL, $this->getID())),
 												   array()));
 			
 			if($db->num_rows() > 0) {
@@ -828,7 +828,7 @@ class User{
 			$table = Query::getDBSchema()->getTable(TABLE_FOLLOW);
 			
 			$db->execute($s = Query::generateSelectStm(array($table), array(),
-												   array(new WhereConstraint($table->getColumn(FOLLOW_SUBJECT), Operator::$UGUALE, $this->getID())),
+												   array(new WhereConstraint($table->getColumn(FOLLOW_SUBJECT), Operator::$EQUAL, $this->getID())),
 												   array()));
 			if($db->num_rows() > 0) {
 				$fols = array();
@@ -858,7 +858,7 @@ class User{
 			$table = Query::getDBSchema()->getTable(TABLE_FEEDBACK);
 			
 			$db->execute($s = Query::generateSelectStm(array($table), array(),
-												   array(new WhereConstraint($table->getColumn(FEEDBACK_SUBJECT), Operator::$UGUALE, $this->getID())),
+												   array(new WhereConstraint($table->getColumn(FEEDBACK_SUBJECT), Operator::$EQUAL, $this->getID())),
 												   array()));
 			if($db->num_rows() > 0) {
 				require_once("strings/strings.php");

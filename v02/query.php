@@ -1,11 +1,11 @@
 <?php
 
 class Operator {
-	static $UGUALE = "=";
-	static $MINORE = "<";
-	static $MINOREUGUALE = "<=";
-	static $MAGGIORE = ">";
-	static $MAGGIOREUGUALE = ">=";
+	static $EQUAL = "=";
+	static $LESSER = "<";
+	static $LESSEROREQUAL = "<=";
+	static $GREATER = ">";
+	static $GREATEROREQUAL = ">=";
 	static $LIKE = "LIKE";
 }
 
@@ -46,13 +46,13 @@ class WhereConstraint {
 		$this->column = $column;
 		$this->operator = $operator;
 		if($this->operator == null || $this->operator == "")
-			$this->operator = Operator::$UGUALE;
+			$this->operator = Operator::$EQUAL;
 		$this->data = $data;
 	}
 	
 	function generateWhereStm(/*$alias*/) {
 		if($this->operator == null || $this->operator == "")
-			$this->operator = Operator::$UGUALE;
+			$this->operator = Operator::$EQUAL;
 		$s = "";
 		if(isset($alias) && !is_null($alias) && $alias != "")
 			$s.= $alias . ".";
