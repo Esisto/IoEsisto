@@ -167,6 +167,13 @@ CREATE TABLE IF NOT EXISTS `" . TABLE_LOG . "` (
   FOREIGN KEY (`" . LOG_SUBJECT . "`) REFERENCES `" . TABLE_USER . "` (`" . USER_ID . "`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
+CREATE TABLE IF NOT EXISTS `AccessLog` (
+  `alog_type` varchar(10) NOT NULL,
+  `alog_id` bigint(20) NOT NULL,
+  `alog_count` bigint(20) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`alog_type`, `alog_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
 CREATE TABLE IF NOT EXISTS `" . TABLE_MAIL . "` (
   `" . MAIL_ID . "` bigint(20) NOT NULL AUTO_INCREMENT,
   `" . MAIL_SUBJECT . "` varchar(50) DEFAULT NULL,
