@@ -14,9 +14,19 @@ class UserManager{
         $u = $user->save();
         //echo "<p>" . $user . "</p>"; //DEBUG
         if($u !== false) {
+        	//invia una mail per permettere all'utente di convalidare la sua casella.
         	$code = self::generateValidationCode($u);
         	mail($u->getMail(), "Iscrizione a IoEsisto", self::generateValidationMailMessage($code));
         	
+        	//genera una collection di preferiti
+        	require_once 'post/collection/CollectionManager.php';
+        	$data = array("title" => "Preferiti",
+        				  "author" => $u->getID(),
+        				  "categories" => "favourites",
+        				  "visible" => false);
+        	CollectionManager::createCollection($data);
+        	
+        	//genera tre directory email: mailbox, cestino e spam
 			require_once("mail/MailManager.php");
 			MailManager::createDirectory(MAILBOX, $u->getID());
 			MailManager::createDirectory(TRASH, $u->getID());
