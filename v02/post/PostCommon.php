@@ -87,7 +87,7 @@ class Comment {
 	/**
 	 * Salva il commento nel database.
 	 * 
-	 * param savingMode: uno dei valori della classe SavingMode.
+	 * @param savingMode: uno dei valori della classe SavingMode.
 	 * se INSERT: crea una nuova tupla in Post.
 	 * se UPDATE: confronta il Post con quello presente nel database e aggiorna le differenze.
 	 */
@@ -146,8 +146,8 @@ class Comment {
 	 * Crea un commento caricando i dati dal database.
 	 * È come fare una ricerca sul database e poi fare new Comment().
 	 *
-	 * param $id: l'ID del commento da caricare.
-	 * return: il commento caricato o FALSE se non lo trova.
+	 * @param $id: l'ID del commento da caricare.
+	 * @return: il commento caricato o FALSE se non lo trova.
 	 */
 	static function loadFromDatabase($id) {
 		require_once("query.php");
@@ -229,7 +229,7 @@ class Vote {
 	/**
 	 * Salva il voto nel database.
 	 * 
-	 * param savingMode: uno dei valori della classe SavingMode.
+	 * @param savingMode: uno dei valori della classe SavingMode.
 	 * se INSERT: crea una nuova tupla in Post.
 	 * se UPDATE: confronta il Post con quello presente nel database e aggiorna le differenze.
 	 */
@@ -325,8 +325,8 @@ class Vote {
 	 * Crea un voto caricando i dati dal database.
 	 * È come fare una ricerca sul database e poi fare new Vote().
 	 *
-	 * param $id: l'ID del voto da caricare.
-	 * return: il voto caricato o FALSE se non lo trova.
+	 * @param $id: l'ID del voto da caricare.
+	 * @return: il voto caricato o FALSE se non lo trova.
 	 */
 	static function loadFromDatabase($author, $post) {
 		require_once("query.php");

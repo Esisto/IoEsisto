@@ -4,9 +4,9 @@ class SearchManager {
 	/**
 	 * Ricerca oggetti di tipo $what con gli elementi di ricerca $keys e le opzioni $options
 	 *
-	 * param $what: array di oggetti da cercare, deve essere un classname. es: "Post", "User", "Contest". Se vuoto cerca ovunque.
-	 * param $keys: array delle chiavi da ricercare per esempio: name, creation interval, ecc…
-	 * param $options: array di opzioni: limit, order, group.
+	 * @param $what: array di oggetti da cercare, deve essere un classname. es: "Post", "User", "Contest". Se vuoto cerca ovunque.
+	 * @param $keys: array delle chiavi da ricercare per esempio: name, creation interval, ecc…
+	 * @param $options: array di opzioni: limit, order, group.
 	 */
 	static function searchBy($what, $keys, $options) {
 		foreach($what as $class) {

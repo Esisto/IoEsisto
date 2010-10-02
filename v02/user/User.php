@@ -439,7 +439,7 @@ class User{
 	}
 
 	/**
-	 * param $data: array associativo con le seguenti chiavi:
+	 * @param $data: array associativo con le seguenti chiavi:
 	 * nickname			//
 	 * email			//
 	 * password			//

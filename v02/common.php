@@ -36,7 +36,6 @@ class Report {
 	/**
 	 * Salva il report nel database.
 	 * 
-	 * param savingMode: uno dei valori della classe SavingMode.
 	 * se INSERT: crea una nuova tupla in Report.
 	 * se UPDATE: non fa nulla. Non si può modificare un report.
 	 */
@@ -127,7 +126,6 @@ class Resource {
 	/**
 	 * Salva il report nel database.
 	 * 
-	 * param savingMode: uno dei valori della classe SavingMode.
 	 * se INSERT: crea una nuova tupla in Report.
 	 * se UPDATE: non fa nulla. Non si può modificare un report.
 	 */
@@ -188,9 +186,9 @@ class LogManager {
 	/**
 	 * Recupera il contenuto del Log da $from a $to.
 	 * 
-	 * param $from: data TimeStamp da cui selezionare le entry del Log. Se 0 parte dall'inizio.
-	 * param $to: data TimeStamp in cui finire la selezione delle entry del Log. Se 0 arriva fino alla fine.
-	 * return: array contenente tutte le entry.
+	 * @param $from: data TimeStamp da cui selezionare le entry del Log. Se 0 parte dall'inizio.
+	 * @param $to: data TimeStamp in cui finire la selezione delle entry del Log. Se 0 arriva fino alla fine.
+	 * @return: array contenente tutte le entry.
 	 */
 	static function getLog($from, $to) {
 		require_once("query.php");
@@ -235,11 +233,11 @@ class LogManager {
 	/**
 	 * Aggiunge una entry al Log.
 	 *
-	 * param $user: l'utente che ha fatto l'azione.
-	 * param $action: l'azione eseguita dall'utente, fa parte delle chiavi di LogManager::$actions.
-	 * param $object: l'oggetto che subisce l'azione (prima che venga eseguita).
+	 * @param $user: l'utente che ha fatto l'azione.
+	 * @param $action: l'azione eseguita dall'utente, fa parte delle chiavi di LogManager::$actions.
+	 * @param $object: l'oggetto che subisce l'azione (prima che venga eseguita).
 	 *
-	 * return: l'id della entry inserita, false se non c'è riuscito.
+	 * @return: l'id della entry inserita, false se non c'è riuscito.
 	 */
 	static function addLogEntry($user, $action, $tablename, $object) {
 		if($object == LOGMANAGER) return;
@@ -271,6 +269,49 @@ class LogManager {
 			} else $db->display_error("LogManager::addLogEntry()");
 		} else $db->display_connect_error("LogManager::addLogEntry()");
 		return false;
+	}
+
+	static function getAccessCount($type, $id) {
+		if($type == null || $type == "" || $id == null)
+			return 0;
+			
+		require_once("query.php");
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			define_tables(); defineLogColumns();
+			$table = Query::getDBSchema()->getTable("AccessLog");
+			
+			$exists = false;
+			if($type == "Post") {
+				require_once 'post/PostManager.php';
+				$exists = PostManager::postExists($id);
+			} else if ($type == "User") {
+				require_once 'post/PostManager.php';
+				$exists = PostManager::postExists($id);
+			} elseif ($type == "Partner") {
+				//TODO: implementa Partner
+//				require_once 'post/PostManager.php';
+//				$exists = PostManager::postExists($id);
+			}
+			if($exists) {
+				$wheres = array(new WhereConstraint($table->getColumn("alog_type"), Operator::$UGUALE, $type),
+								new WhereConstraint($table->getColumn("alog_id"), Operator::$UGUALE, $id));
+				$db->execute($s = Query::generateSelectStm(array($table), array(), $wheres, array()));
+				if($db->num_rows() == 1) {
+					$row = $db->fetch_result();
+					$data = array("alog_count" => ++$row["alog_count"]);
+					$db->execute($s = Query::generateUpdateStm($table, $data, $wheres), null, LOGMANAGER);
+					if($db->affected_rows() == 1)
+						return $row["alog_count"];
+				} else {
+					$data = array("alog_type" => $type, "alog_id" => $id);
+					$db->execute($s = Query::generateInsertStm($table, $data));
+					if($db->affected_rows() == 1);
+						return 1;
+				}
+			}
+			return 0;
+		}
 	}
 }
 

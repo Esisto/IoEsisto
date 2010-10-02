@@ -15,7 +15,7 @@ class Contest {
 	/**
 	 * Crea un oggetto post.
 	 *
-	 * param data: array associativo contenente i dati.
+	 * @param data: array associativo contenente i dati.
 	 * Le chiavi ricercate dal sistema per questo array sono:
 	 * title: titolo del post (string filtrata)
 	 * description: descrizione
@@ -26,7 +26,7 @@ class Contest {
 	 * subscriberType: tipo di post accettati nel contest. Di tipo PostType.
 	 * subscribers: array di post iscritti
 	 * 
-	 * return: il contest creato.
+	 * @return: il contest creato.
 	 */
 	function __construct($data) {
 		if(isset($data["title"]))
@@ -181,7 +181,7 @@ class Contest {
 	/**
 	 * Salva il contest e le sue dipendenze nel database.
 	 *
-	 * return: ID della tupla inserita, FALSE se c'è un errore.
+	 * @return: ID della tupla inserita, FALSE se c'è un errore.
 	 */
 	function save() {
 		require_once("query.php");
@@ -225,7 +225,7 @@ class Contest {
 	 * Le dipendenze aggiornate sono quelle che dipendono dall'autore ovvero: tag e categorie
 	 * Potrebbe salvare alcune tuple in Tag.
 	 *
-	 * return: $this o FALSE se c'è un errore.
+	 * @return: $this o FALSE se c'è un errore.
 	 */
 	function update() {
 		$old = Contest::loadFromDatabase($this->getID());
@@ -271,7 +271,7 @@ class Contest {
 	 * Con le Foreign Key e ON DELETE, anche le dipendenze dirette vengono cancellate.
 	 * Non vengono cancellate le dipendenze nelle Collection.
 	 *
-	 * return: l'oggetto cancellato o FALSE se c'è un errore.
+	 * @return: l'oggetto cancellato o FALSE se c'è un errore.
 	 */
 	function delete() {
 		require_once("query.php");
@@ -294,8 +294,8 @@ class Contest {
 	 * Crea un post caricando i dati dal database.
 	 * È come fare una ricerca sul database e poi fare new Post().
 	 *
-	 * param $id: l'ID del post da caricare.
-	 * return: il post caricato o FALSE se non lo trova.
+	 * @param $id: l'ID del post da caricare.
+	 * @return: il post caricato o FALSE se non lo trova.
 	 */
 	static function loadFromDatabase($id) {
 		require_once("query.php");

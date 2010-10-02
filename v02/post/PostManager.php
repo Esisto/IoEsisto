@@ -9,7 +9,7 @@ class PostManager {
 	/**
 	 * Aggiunge un post "semplice" al sistema.
 	 *
-	 * param data: array associativo contenente i dati.
+	 * @param data: array associativo contenente i dati.
 	 * Le chiavi ricercate dal sistema per questo array sono:
 	 * title: titolo del post (string filtrata)
 	 * subtitle: sottotitolo del post (string filtrata)
@@ -19,9 +19,9 @@ class PostManager {
 	 * categories: array di oggetti Category
 	 * content: il testo di un articolo (string filtrata), l'indirizzo del videoreportage o l'elenco di indirizzi delle foto di un fotoreportage
 	 * visibile: indica la visibilità dell'articolo se non visibile è da considerare come una bozza (boolean)
-	 * param type: tipo di post, deve essere incluso in PostType
+	 * @param type: tipo di post, deve essere incluso in PostType
 	 * 
-	 * return: l'articolo creato.
+	 * @return: l'articolo creato.
 	 */
 	static function createPost($data) {
 		require_once("common.php");
@@ -47,7 +47,7 @@ class PostManager {
 	/**
 	 * Modifica un post "semplice".
 	 * 
-	 * param data: array associativo contenente i dati.
+	 * @param data: array associativo contenente i dati.
 	 * Le chiavi ricercate dal sistema per questo array sono:
 	 * title: titolo del post (string filtrata)
 	 * subtitle: sottotitolo del post (string filtrata)
@@ -57,7 +57,7 @@ class PostManager {
 	 * content: il testo di un articolo (filtrato), l'indirizzo del videoreportage o l'elenco di indirizzi di foto di un fotoreportage
 	 * visibile: indica la visibilità dell'articolo se non visibile è da considerare come una bozza (boolean)
 	 *
-	 * return: l'articolo modificato.
+	 * @return: l'articolo modificato.
 	 */
 	static function editPost($post, $data) {
 		require_once("common.php");
@@ -87,8 +87,8 @@ class PostManager {
 	/**
 	 * Elimina il post dal sistema.
 	 *
-	 * param post: il post da eliminare.
-	 * return: il post eliminato.
+	 * @param post: il post da eliminare.
+	 * @return: il post eliminato.
 	 */
 	static function deletePost($post) {
 		return $post->delete();
@@ -97,10 +97,10 @@ class PostManager {
 	/**
 	 * Aggiunge un report al post selezionato e lo salva nel database.
 	 *
-	 * param $author: id dell'autore del commento
-	 * param $post: variabile di tipo Post
-	 * param $report: testo del report
-	 * return: post aggiornato.
+	 * @param $author: id dell'autore del commento
+	 * @param $post: variabile di tipo Post
+	 * @param $report: testo del report
+	 * @return: post aggiornato.
 	 */
 	static function reportPost($author, $post, $report) {
 		require_once("common.php");
@@ -116,10 +116,10 @@ class PostManager {
 	/**
 	 * Aggiunge un report al commento selezionato e lo salva nel database.
 	 *
-	 * param $author: id dell'autore del commento
-	 * param $comment: variabile di tipo Comment
-	 * param $report: testo del report
-	 * return: commento aggiornato.
+	 * @param $author: id dell'autore del commento
+	 * @param $comment: variabile di tipo Comment
+	 * @param $report: testo del report
+	 * @return: commento aggiornato.
 	 */
 	static function reportComment($author, $comment, $report) {
 		//TODO Not iplemented
@@ -129,10 +129,10 @@ class PostManager {
 	/**
 	 * Aggiunge un voto al post selezionato e lo salva nel database.
 	 *
-	 * param author: id dell'autore del voto
-	 * param post: variabile di tipo Post
-	 * param comment: il voto
-	 * return: post aggiornato.
+	 * @param author: id dell'autore del voto
+	 * @param post: variabile di tipo Post
+	 * @param comment: il voto
+	 * @return: post aggiornato.
 	 */
 	static function votePost($author, $post, $vote) {
 		require_once("post/PostCommon.php");
@@ -146,10 +146,10 @@ class PostManager {
 	/**
 	 * Aggiunge un commento al post selezionato e lo salva nel database.
 	 *
-	 * param author: id dell'autore del commento
-	 * param post: variabile di tipo Post
-	 * param comment: testo del commento
-	 * return post: aggiornato.
+	 * @param author: id dell'autore del commento
+	 * @param post: variabile di tipo Post
+	 * @param comment: testo del commento
+	 * @return post: aggiornato.
 	 */
 	static function commentPost($post, $author, $comment) {
 		require_once("common.php");
@@ -166,8 +166,8 @@ class PostManager {
 	/**
 	 * Elimina il commento dal sistema.
 	 *
-	 * param comment: il commento da eliminare.
-	 * return: il commento eliminato.
+	 * @param comment: il commento da eliminare.
+	 * @return: il commento eliminato.
 	 */
 	static function removeComment($comment) {
 		require_once("post/PostCommon.php");
@@ -182,9 +182,9 @@ class PostManager {
 	 * Iscrive un Post ad un Contest.
 	 * TODO FORSE DA METTERE IN ContestManager.
 	 *
-	 * param post: il post da iscrivere.
-	 * param contest: il contest a cui iscrivere il post
-	 * return: il contest aggiornato.
+	 * @param post: il post da iscrivere.
+	 * @param contest: il contest a cui iscrivere il post
+	 * @return: il contest aggiornato.
 	 */
 	static function subscribePostToContest($post, $contest) {
 		require_once("post/contest/ContestManager.php");

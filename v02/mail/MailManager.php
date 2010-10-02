@@ -44,9 +44,9 @@ class MailManager {
 	/**
 	 * Sposta $mail da $olddir a $newdir.
 	 *
-	 * param $mail: un oggetto Mail.
-	 * param $olddir: un oggetto MailDirectory. Se null, aggiunge $mail a $newdir.
-	 * param $newdir: un oggetto MailDirectory.
+	 * @param $mail: un oggetto Mail.
+	 * @param $olddir: un oggetto MailDirectory. Se null, aggiunge $mail a $newdir.
+	 * @param $newdir: un oggetto MailDirectory.
 	 */
 	static function addMailToDir($mail, $newdir) {
 		return self::moveMailToDir($mail, null, $newdir);
@@ -55,9 +55,9 @@ class MailManager {
 	/**
 	 * Sposta $mail da $olddir a $newdir.
 	 *
-	 * param $mail: un oggetto Mail.
-	 * param $olddir: un oggetto MailDirectory. Se null, aggiunge $mail a $newdir.
-	 * param $newdir: un oggetto MailDirectory.
+	 * @param $mail: un oggetto Mail.
+	 * @param $olddir: un oggetto MailDirectory. Se null, aggiunge $mail a $newdir.
+	 * @param $newdir: un oggetto MailDirectory.
 	 */
 	static function moveMailToDir($mail, $olddir, $newdir) {
 		if($olddir != null)
@@ -70,8 +70,8 @@ class MailManager {
 	 * @deprecated use moveToTrashInstead
 	 * Cancella $mail dalle directory di $user
 	 * 
-	 * param $mail: un oggetto Mail.
-	 * param $user: uno user id.
+	 * @param $mail: un oggetto Mail.
+	 * @param $user: uno user id.
 	 */
 	static function deleteMail($mail, $user) {
 		$dir = self::loadDirectoryFromName(TRASH, $user);
@@ -81,8 +81,8 @@ class MailManager {
 	/**
 	 * Sposta $mail da $olddir nella cartella cartella spam dello stesso owner di $olddir.
 	 * 
-	 * param $mail: un oggetto Mail.
-	 * param $olddir: un oggetto MailDirectory.
+	 * @param $mail: un oggetto Mail.
+	 * @param $olddir: un oggetto MailDirectory.
 	 */
 	static function moveToSpam($mail, $olddir) {
 		$spam = self::loadDirectoryFromName(SPAM, $olddir->getOwner());
@@ -91,8 +91,8 @@ class MailManager {
 	
 	/**
 	 *
-	 * param $mail: un oggetto Mail.
-	 * param $olddir: un oggetto MailDirectory.
+	 * @param $mail: un oggetto Mail.
+	 * @param $olddir: un oggetto MailDirectory.
 	 */
 	static function moveToTrash($mail, $olddir) {
 		$trash = self::loadDirectoryFromName(TRASH, $olddir->getOwner());
@@ -101,7 +101,7 @@ class MailManager {
 	
 	/**
 	 *
-	 * param $user: uno user id.
+	 * @param $user: uno user id.
 	 */
 	static function getMailSent($user) {
 		return Mail::loadMailsFromUser($user);
@@ -109,7 +109,7 @@ class MailManager {
 	
 	/**
 	 *
-	 * param $user: uno user id.
+	 * @param $user: uno user id.
 	 */
 	static function loadUsersDirectories($user) {
 		return MailDirectory::loadUsersDirectories($user);
@@ -117,8 +117,8 @@ class MailManager {
 	
 	/**
 	 *
-	 * param $dirname: il nome di una MailDirectory.
-	 * param $user: uno user id.
+	 * @param $dirname: il nome di una MailDirectory.
+	 * @param $user: uno user id.
 	 */
 	static function loadDirectoryFromName($dirname, $user) {
 		return MailDirectory::loadDirectoryFromName($dirname, $user);
@@ -126,7 +126,7 @@ class MailManager {
 	
 	/**
 	 *
-	 * param $id: l'id di una Maildirectory.
+	 * @param $id: l'id di una Maildirectory.
 	 */
 	static function loadDirectory($id) {
 		return MailDirectory::loadFromDatabase($id);
@@ -134,7 +134,7 @@ class MailManager {
 	
 	/**
 	 *
-	 * param $id: l'id di una Mail
+	 * @param $id: l'id di una Mail
 	 */
 	static function loadMail($id) {
 		return Mail::loadFromDatabase($id);
