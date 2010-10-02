@@ -83,15 +83,6 @@ class WhereConstraint {
 class Query {
 	private static $dbSchema = null;
 	
-	
-	var $query_type; //deprecated
-	var $num_rows; //deprecated
-	private $rsindex; //deprecated
-	var $last_inserted_id; //deprecated
-	var $affected_rows; //deprecated
-	private $rs; //deprecated
-	var $error; //deprecated
-	
 	function initDBSchema() {
 		require_once("db_schema.php");
 		self::$dbSchema = new DBSchema(null);
@@ -131,6 +122,11 @@ class Query {
 			if(self::columnExists($options["avg"])) {
 				$set_star = true;
 				$s.= "AVG(" . $options["avg"]->getName() . ")";
+			}
+		} else if(isset($options["sum"])) {
+			if(self::columnExists($options["sum"])) {
+				$set_star = true;
+				$s.= "SUM(" . $options["sum"]->getName() . ")";
 			}
 		}
 		if(!$set_star) $s.= "*";
