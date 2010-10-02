@@ -3,3 +3,9 @@ v0/*
 plugin da installare (anche sul server)/*
 v02/db_schema.dbs
 .htaccess
+.buildpath
+.project
+.settings/.jsdtscope
+.settings/org.eclipse.php.core.prefs
+.settings/org.eclipse.wst.jsdt.ui.superType.container
+.settings/org.eclipse.wst.jsdt.ui.superType.name

@@ -371,7 +371,7 @@ class Filter {
 		return $permalink;
 	}
 	
-	function clean($value) {
+	static function clean($value) {
 		// Stripslashes
 		if (get_magic_quotes_gpc()) {
 			$value = stripslashes($value);
@@ -382,6 +382,23 @@ class Filter {
 			$value = mysql_real_escape_string($value);
 		}
 		return $value;
+	}
+	
+	/**
+	 * Converte un array di stringhe in una unica stringa dove le varie stringhe sono separate da virgole.
+	 * @param array $array un array di stringhe.
+	 * @param string $separator una stringa contenente un separatore. (Default ",")
+	 * @return una stringa con tutti i dati dell'array.
+	 */
+	static function arrayToText($array, $separator = ",") {
+		$s = "";
+		$first = true;
+		foreach ($array as $value) {
+			if($first) $first = false;
+			else $s.= $separator;
+			$s.= $value;
+		}
+		return $s;
 	}
 }
 ?>

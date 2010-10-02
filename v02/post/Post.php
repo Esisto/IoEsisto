@@ -1,6 +1,7 @@
 <?php
 
 class Post {
+	protected static $DEFAULT_CATEGORY = "News";	//TODO: trovare un valore per questo…
 	protected $ID;						// id recuperato dal database
 	protected $permalink;				// permalink generato automaticamente dal titolo ecc…
 	protected $type;					// appartenente a PostType
@@ -180,10 +181,15 @@ class Post {
 				return $this->getPermalink(true);
 		}
 	}
+	
+	/**
+	 * Secondo la convenzione decisa e approvata da me� XD
+	 * il permalink �: /Post/%nome autore%/%data di creazione%/%titolo%
+	 */
 	private function getRelativePermalink() {
 		require_once("common.php");
-		$s = Filter::textToPermalink($this->getAuthorName());
-		$s.= "/Post/";
+		$s = "/Post/";
+		$s.= Filter::textToPermalink($this->getAuthorName());
 		if(isset($this->creationDate)) {
 			$s.= date("Y-m-d", $this->getCreationDate());
 			$s.= "/";
@@ -294,8 +300,14 @@ class Post {
 				$data[POST_HEADLINE] = $this->getHeadline();
 			if(isset($this->tags) && !is_null($this->getTags()))
 				$data[POST_TAGS] = $this->getTags();
-			if(isset($this->categories) && !is_null($this->getCategories()))
+			if(isset($this->categories) && !is_null($this->getCategories())) {
+				// check sulle categorie, eliminazione di quelle che non esistono nel sistema, se vuoto inserimento di quella di default
+				$new_cat = CategoryManager::filterWrongCategories(explode(",", $this->getCategories()));
+				if(count($new_cat) == 0)
+					$new_cat[] = self::$DEFAULT_CATEGORY;
+				$this->setCategories(Filter::arrayToText($new_cat));
 				$data[POST_CATEGORIES] = $this->getCategories();
+			}
 			if(isset($this->content) && !is_null($this->getContent()))
 				$data[POST_CONTENT] = serialize($this->getContent());
 			if(isset($this->visible) && !is_null($this->isVisible()))
@@ -326,6 +338,10 @@ class Post {
 					//echo "<br />" . $row; //DEBUG
 					$this->setPermalink($row[POST_PERMALINK]);
 					$this->setModificationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[POST_CREATION_DATE])));
+					
+					//salvo i tag che non esistono
+					TagManager::createTags(explode(",", $data["tags"]));
+					
 					//echo "<br />" . serialize($row[POST_CREATION_DATE]); //DEBUG
 					//echo "<br />" . $this; //DEBUG
 					return $this->ID;
@@ -370,9 +386,14 @@ class Post {
 					$data[POST_PLACE] = $this->getPlace();
 				if($row[POST_TAGS] != $this->getTags())
 					$data[POST_TAGS] = $this->getTags();
-				//TODO salvare tag non esistenti
-				if($row[POST_CATEGORIES] != $this->getCategories())
+				if($row[POST_CATEGORIES] != $this->getCategories()) {
+					// check sulle categorie, eliminazione di quelle che non esistono nel sistema, se vuoto inserimento di quella di default
+					$new_cat = CategoryManager::filterWrongCategories(explode(",", $this->getCategories()));
+					if(count($new_cat) == 0)
+						$new_cat[] = self::$DEFAULT_CATEGORY;
+					$this->setCategories(Filter::arrayToText($new_cat));
 					$data[POST_CATEGORIES] = $this->getCategories();
+				}
 				settype($row[POST_VISIBLE], "boolean");
 				if($row[POST_VISIBLE] !== $this->isVisible())
 					$data[POST_VISIBLE] = $this->isVisible() ? 1 : 0;
@@ -384,7 +405,6 @@ class Post {
 				if(count($data) == 0) return $this->getModificationDate();
 				$data[POST_MODIFICATION_DATE] = date("Y/m/d G:i:s", $_SERVER["REQUEST_TIME"]); // se mi dicono di fare l'update, cambio modificationDate
 				//echo "<br />" . serialize($data); //DEBUG
-				//TODO controllare tag e categorie
 				
 				$rs = $db->execute($s = Query::generateUpdateStm($table,
 															 $data,
@@ -393,6 +413,9 @@ class Post {
 				//echo "<br />" . $s; //DEBUG
 				//echo "<br />" . mysql_affected_rows(); //DEBUG
 				if($db->affected_rows() == 1) {
+					//salvo i tag che non esistono
+					TagManager::createTags(explode(",", $data["tags"]));
+					
 					//echo "<br />" . $this; //DEBUG
 					return $this->getModificationDate();
 				} else $db->display_error("Post::update()");
@@ -614,6 +637,7 @@ class Post {
 	
 	/**
 	 * TODO Da testare
+	 * @deprecated troppo lunga da implementare�
 	 */
 	function equals($post) {
 		if(is_a($post, "Post") || get_parent_class($post) == "post") {
