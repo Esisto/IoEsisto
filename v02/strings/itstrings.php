@@ -13,6 +13,7 @@ define("INVALID_DATE","inserisci una data completa di giorno, mese e anno");
 define("CURRENT_PASSWORD", "password attuale");
 define("NEW_PASSWORD","nuova password");
 define("CHECK_PASSWORD","verifica password");
+define("NO_RECAPTCHA","Il reCAPTCHA non è stato inserito correttamente. Prova di nuovo");
 
 // date
 function format_datetime($date) {

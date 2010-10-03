@@ -21,6 +21,9 @@ define("CURRENT_PASSWORD", "current password");
 define("NEW_PASSWORD","new password");
 define("CHECK_PASSWORD","check password");
 
+//reCHAPTCHA
+define("NO_RECAPTCHA","The reCAPTCHA wasn't entered correctly. Try it again");
+
 function format_datetime($date) {
 	$today = date_timestamp_get(date_create_from_format("Y-m-d G:i", date("Y-m-d", time()) . " 00:00"));
 	$tomorrow = date_timestamp_get(date_create_from_format("Y-m-d G:i", date("Y-m-d", time()+24*60*60) . " 00:00"));

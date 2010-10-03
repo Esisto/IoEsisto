@@ -42,6 +42,7 @@ class UserPage {
 		if($error==null && count($_POST) > 0){ 
 			$data=array();
 			$error=array();
+			$privatekey = "6LcAhL0SAAAAAE5Tdd4ocLXOexEc4Z2gCS5ePxM8";
 
 			if(isset($_POST["nickname"]))
 				$data["nickname"] = $_POST["nickname"];
@@ -60,6 +61,12 @@ class UserPage {
 			else
 				$error[] = "non c'è l'email";
 			
+			/* check reCHAPTCHA response */
+			require_once('recaptchalib.php');
+			$resp = recaptcha_check_answer ($privatekey, $_SERVER["REMOTE_ADDR"], $_POST["recaptcha_challenge_field"], $_POST["recaptcha_response_field"]);
+			if (!$resp->is_valid) {
+				$error[] = "Il reCAPTCHA non è stato inserito correttamente. Prova di nuovo";
+
 			if(count($error) > 0) {
 				self::showSignInForm($error);
 			}else{
@@ -69,6 +76,10 @@ class UserPage {
 			}				
 		} else { 
 			$POST_data = count($_POST) > 0; ?>
+			<script type="text/javascript">
+				//change reCAPTCHA theme 
+				var RecaptchaOptions = {theme : 'clean'};
+			</script>
 			<form name="signIn" action="" method="post">
 				<!-- show error messages -->
 				<?php if( $error != null)
@@ -85,6 +96,12 @@ class UserPage {
 				<?php
 					if(!$POST_data) echo $_POST["email"];
 				?>" /><br>
+				<!-- show reCAPTCHA -->
+				<?php
+				require_once('recaptchalib.php');
+				$publickey = "6LcAhL0SAAAAANoKUZXVByUdlzJmJgKUtL0O2uFU";
+				echo recaptcha_get_html($publickey);
+				?>
 				<input type="submit" value="Sign In">
 			</form>
 			<?php
