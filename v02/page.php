@@ -244,7 +244,7 @@ class Page {
 		$return["permalink"] = $s;
 		$return["object"] = $object;
 		if($action != "") $return["action"] = $action;
-		else $return["object"] = index;
+		else $return["object"] = "index";
 		//echo "<br />" . serialize($return); //DEBUG
 		return $return;
 	}
@@ -256,7 +256,7 @@ class Page {
 	static function make($request) {
 		//riceve la richiesta
 		//la fa elaborare
-		$response = self::elaborateRequest($request);
+		$req = self::elaborateRequest($request);
 		
 		//sceglie le parti da inserire nella pagina
 		//header, menù, ecc...
@@ -264,9 +264,10 @@ class Page {
 		//recupera la risposta
 		$r = self::getResponse($request);
 		//dà la risposta in pasto alla Page giusta
-		if($response["object"] == "Post") { //è un esempio...
+		if($req["object"] == "Post") { //è un esempio...
 			PostPage::showPost();
 		}
+		return $req;
 	}
 }
 ?>

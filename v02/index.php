@@ -20,7 +20,7 @@ require_once("search/SearchManager.php");
 require_once("page.php");
 $request = Page::make($_SERVER["REQUEST_URI"]);
 
-if($request["script"] == "Post") {
+if($request["object"] == "Post") {
 	//DEBUG
 	if(isset($request["authornickname"])) $author = UserManager::loadUserByNickname($request["authornickname"]);
 	else $author = UserManager::loadUser($request["authorid"]);
@@ -33,19 +33,25 @@ if($request["script"] == "Post") {
 		require_once("post/PostPage.php");
 		PostPage::showPost($p);
 	}
-} else if($request["script"] == "Tag") {
+} else if($request["object"] == "Tag") {
 	//echo "<p><font color='green'>REQUEST TO LOAD post which tag is " . $request["tagname"] . ".</font></p>"; //DEBUG
 	$posts = SearchManager::searchBy(array("Post"), array("tag" => $request["tagname"]), array("limit" => 4, "order" => "DESC", "by" => array("ps_creationDate")));
 	foreach($posts as $p) {
 		require_once("post/PostPage.php");
 		PostPage::showShortPost($p);
 	}
-} else if($request["script"] == "Category") {
+} else if($request["object"] == "Category") {
 	//echo "<p><font color='green'>REQUEST TO LOAD post which category is " . $request["categoryname"] . ".</font></p>"; //DEBUG
 	$posts = SearchManager::searchBy(array("Post"), array("category" => $request["categoryname"]), array("limit" => 4, "order" => "DESC", "by" => array("ps_creationDate")));
 	foreach($posts as $p) {
 		require_once("post/PostPage.php");
 		PostPage::showShortPost($p);
+	}
+} else if($request["object"] == "index") {
+	$posts = SearchManager::searchBy(array("Post"), array(), array("limit" => 4, "order" => "DESC", "by" => array("ps_creationDate")));
+	foreach($posts as $p) {
+		require_once("post/PostPage.php");
+		PostPage::showPost($p);
 	}
 }
 
