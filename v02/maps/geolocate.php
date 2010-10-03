@@ -24,7 +24,7 @@ class MapManager {
 		
 		<div id="map_canvas" style="width: <?php echo $width; ?>px; height: <?php echo $width; ?>px;"></div>
 		<div>
-			<input id="address" type="textbox" value="Milano" />
+			<input id="address" type="text" value="Milano" />
 		</div>
 		<?php
 	}

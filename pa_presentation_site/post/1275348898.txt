@@ -1,1 +1,0 @@
-O:4:"post":5:{s:5:"title";s:5:"Aaaaa";s:6:"author";s:9:"Samvise85";s:12:"creationData";i:1275348898;s:4:"text";s:17:"ciao ciao bambina";s:8:"comments";N;}

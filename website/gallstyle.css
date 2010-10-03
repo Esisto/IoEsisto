@@ -1,0 +1,36 @@
+#gallery {
+	width: 800px;
+	margin: 0 auto;
+}
+
+#previmage, #nextimage {
+	opacity: 0.0;
+}
+
+#imagediv {
+	position: relative;
+}
+
+#image, #previmage, #nextimage {
+	position: absolute;
+	top: 0px;
+}
+
+.vertical {
+	width: auto;
+	height: 800px;
+}
+.horizontal {
+	width: 800px;
+	height: auto;
+}
+
+#description {
+	text-align: center;
+}
+
+#prev, #slideonoff, #next {
+	float: left;
+	width: 266px;
+	text-align: center;
+}

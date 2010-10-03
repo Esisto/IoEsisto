@@ -36,7 +36,6 @@ class Report {
 	/**
 	 * Salva il report nel database.
 	 * 
-	 * param savingMode: uno dei valori della classe SavingMode.
 	 * se INSERT: crea una nuova tupla in Report.
 	 * se UPDATE: non fa nulla. Non si può modificare un report.
 	 */
@@ -66,7 +65,7 @@ class Report {
 		if(!$db->connect_errno()) {
 			$table = Query::getDBSchema()->getTable(TABLE_REPORT);
 			$rs = $db->execute($s = Query::generateDeleteStm($table,
-														 array(new WhereConstraint($table->getColumn(REPORT_ID),Operator::$UGUALE,$this->getID()))),
+														 array(new WhereConstraint($table->getColumn(REPORT_ID),Operator::$EQUAL,$this->getID()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			if($db->affected_rows() == 1) {
@@ -127,7 +126,6 @@ class Resource {
 	/**
 	 * Salva il report nel database.
 	 * 
-	 * param savingMode: uno dei valori della classe SavingMode.
 	 * se INSERT: crea una nuova tupla in Report.
 	 * se UPDATE: non fa nulla. Non si può modificare un report.
 	 */
@@ -157,7 +155,7 @@ class Resource {
 		if(!$db->connect_errno()) {
 			$table = Query::getDBSchema()->getTable(TABLE_RESOURCE);
 			$rs = $db->execute($s = Query::generateDeleteStm($table,
-														 array(new WhereConstraint($table->getColumn(RESOURCE_ID),Operator::$UGUALE,$this->getID()))),
+														 array(new WhereConstraint($table->getColumn(RESOURCE_ID),Operator::$EQUAL,$this->getID()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			if($db->affected_rows() == 1) {
@@ -188,9 +186,9 @@ class LogManager {
 	/**
 	 * Recupera il contenuto del Log da $from a $to.
 	 * 
-	 * param $from: data TimeStamp da cui selezionare le entry del Log. Se 0 parte dall'inizio.
-	 * param $to: data TimeStamp in cui finire la selezione delle entry del Log. Se 0 arriva fino alla fine.
-	 * return: array contenente tutte le entry.
+	 * @param $from: data TimeStamp da cui selezionare le entry del Log. Se 0 parte dall'inizio.
+	 * @param $to: data TimeStamp in cui finire la selezione delle entry del Log. Se 0 arriva fino alla fine.
+	 * @return: array contenente tutte le entry.
 	 */
 	static function getLog($from, $to) {
 		require_once("query.php");
@@ -201,12 +199,12 @@ class LogManager {
 			$s = "";
 			if(is_numeric($from) && $from != 0) {
 				$s1 = Query::generateSelectStm(array($table), array(),
-											array(new WhereConstraint($table->getColumn(LOG_TIMESTAMP),Operator::$MAGGIOREUGUALE,$from)),
+											array(new WhereConstraint($table->getColumn(LOG_TIMESTAMP),Operator::$GREATEROREQUAL,$from)),
 											array());
 			}
 			if(is_numeric($to) && $to != 0) {
 				$s2 = Query::generateSelectStm(array($table), array(),
-											array(new WhereConstraint($table->getColumn(LOG_TIMESTAMP),Operator::$MINOREUGUALE,$to)),
+											array(new WhereConstraint($table->getColumn(LOG_TIMESTAMP),Operator::$LESSEROREQUAL,$to)),
 											array("order" => 1, "by" => LOG_TIMESTAMP));
 			}
 			if(is_numeric($from) && $from != 0 && is_numeric($to) && $to != 0) {
@@ -235,11 +233,11 @@ class LogManager {
 	/**
 	 * Aggiunge una entry al Log.
 	 *
-	 * param $user: l'utente che ha fatto l'azione.
-	 * param $action: l'azione eseguita dall'utente, fa parte delle chiavi di LogManager::$actions.
-	 * param $object: l'oggetto che subisce l'azione (prima che venga eseguita).
+	 * @param $user: l'utente che ha fatto l'azione.
+	 * @param $action: l'azione eseguita dall'utente, fa parte delle chiavi di LogManager::$actions.
+	 * @param $object: l'oggetto che subisce l'azione (prima che venga eseguita).
 	 *
-	 * return: l'id della entry inserita, false se non c'è riuscito.
+	 * @return: l'id della entry inserita, false se non c'è riuscito.
 	 */
 	static function addLogEntry($user, $action, $tablename, $object) {
 		if($object == LOGMANAGER) return;
@@ -271,6 +269,49 @@ class LogManager {
 			} else $db->display_error("LogManager::addLogEntry()");
 		} else $db->display_connect_error("LogManager::addLogEntry()");
 		return false;
+	}
+
+	static function getAccessCount($type, $id) {
+		if($type == null || $type == "" || $id == null)
+			return 0;
+			
+		require_once("query.php");
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			define_tables(); defineLogColumns();
+			$table = Query::getDBSchema()->getTable("AccessLog");
+			
+			$exists = false;
+			if($type == "Post") {
+				require_once 'post/PostManager.php';
+				$exists = PostManager::postExists($id);
+			} else if ($type == "User") {
+				require_once 'post/PostManager.php';
+				$exists = PostManager::postExists($id);
+			} elseif ($type == "Partner") {
+				//TODO: implementa Partner
+//				require_once 'post/PostManager.php';
+//				$exists = PostManager::postExists($id);
+			}
+			if($exists) {
+				$wheres = array(new WhereConstraint($table->getColumn("alog_type"), Operator::$EQUAL, $type),
+								new WhereConstraint($table->getColumn("alog_id"), Operator::$EQUAL, $id));
+				$db->execute($s = Query::generateSelectStm(array($table), array(), $wheres, array()));
+				if($db->num_rows() == 1) {
+					$row = $db->fetch_result();
+					$data = array("alog_count" => ++$row["alog_count"]);
+					$db->execute($s = Query::generateUpdateStm($table, $data, $wheres), null, LOGMANAGER);
+					if($db->affected_rows() == 1)
+						return $row["alog_count"];
+				} else {
+					$data = array("alog_type" => $type, "alog_id" => $id);
+					$db->execute($s = Query::generateInsertStm($table, $data));
+					if($db->affected_rows() == 1);
+						return 1;
+				}
+			}
+			return 0;
+		}
 	}
 }
 
@@ -330,7 +371,7 @@ class Filter {
 		return $permalink;
 	}
 	
-	function clean($value) {
+	static function clean($value) {
 		// Stripslashes
 		if (get_magic_quotes_gpc()) {
 			$value = stripslashes($value);
@@ -341,6 +382,23 @@ class Filter {
 			$value = mysql_real_escape_string($value);
 		}
 		return $value;
+	}
+	
+	/**
+	 * Converte un array di stringhe in una unica stringa dove le varie stringhe sono separate da virgole.
+	 * @param array $array un array di stringhe.
+	 * @param string $separator una stringa contenente un separatore. (Default ",")
+	 * @return una stringa con tutti i dati dell'array.
+	 */
+	static function arrayToText($array, $separator = ",") {
+		$s = "";
+		$first = true;
+		foreach ($array as $value) {
+			if($first) $first = false;
+			else $s.= $separator;
+			$s.= $value;
+		}
+		return $s;
 	}
 }
 ?>

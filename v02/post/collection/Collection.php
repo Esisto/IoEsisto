@@ -153,7 +153,7 @@ class PhotoReportage extends Collection {
 	/**
 	 * Aggiunge una foto al contenuto.
 	 *
-	 * param $photo: la foto da aggiungere come oggetti di tipo Resource.
+	 * @param $photo: la foto da aggiungere come oggetti di tipo Resource.
 	 */
 	function addPhoto($photo) {
 		require_once("common.php");

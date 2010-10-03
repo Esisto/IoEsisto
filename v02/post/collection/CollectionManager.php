@@ -10,7 +10,7 @@ class CollectionManager {
 	/**
 	 * Aggiunge un post "collezione" al sistema.
 	 *
-	 * param data: array associativo contenente i dati.
+	 * @param data: array associativo contenente i dati.
 	 * Le chiavi ricercate dal sistema per questo array sono:
 	 * title: titolo della collection (string filtrata)
 	 * subtitle: sottotitolo della collection (string filtrata)
@@ -20,11 +20,11 @@ class CollectionManager {
 	 * categories: array di oggetti Category
 	 * content: array di post "semplici"
 	 * visibile: indica la visibilità dell'articolo se non visibile è da considerare come una bozza (boolean)
-	 * param type: tipo di collection, deve essere incluso in CollectionType
+	 * @param type: tipo di collection, deve essere incluso in CollectionType
 	 * 
-	 * return: la collection creata o FALSE se c'è un errose
+	 * @return: la collection creata o FALSE se c'è un errose
 	 */
-	static function addCollection($data) {
+	static function createCollection($data) {
 		require_once("common.php");
 		$data = Filter::filterArray($data);
 		
@@ -51,7 +51,7 @@ class CollectionManager {
 	/**
 	 * Modifica un post "collezione".
 	 * 
-	 * param data: array associativo contenente i dati.
+	 * @param data: array associativo contenente i dati.
 	 * Le chiavi ricercate dal sistema per questo array sono:
 	 * title: titolo della collection (string filtrata)
 	 * subtitle: sottotitolo della collection (string filtrata)
@@ -61,7 +61,7 @@ class CollectionManager {
 	 * content: array di id di Post "semplici".
 	 * visibile: indica la visibilità dell'articolo se non visibile è da considerare come una bozza (boolean)
 	 *
-	 * return: la collection modificata.
+	 * @return: la collection modificata.
 	 */
 	static function editCollection($collection, $data) {
 		require_once("common.php");
@@ -90,8 +90,8 @@ class CollectionManager {
 	/**
 	 * Elimina la collection dal sistema.
 	 *
-	 * param post: la collection da eliminare.
-	 * return: la collection eliminata.
+	 * @param post: la collection da eliminare.
+	 * @return: la collection eliminata.
 	 */
 	static function deleteCollection($collection) {
 		require_once("post/PostManager.php");
@@ -101,10 +101,10 @@ class CollectionManager {
 	/**
 	 * Aggiunge un report alla collection selezionato e lo salva nel database.
 	 *
-	 * param $author: id dell'autore del commento
-	 * param $post: variabile di tipo Collection
-	 * param $report: testo del report
-	 * return: post aggiornato.
+	 * @param $author: id dell'autore del commento
+	 * @param $post: variabile di tipo Collection
+	 * @param $report: testo del report
+	 * @return: post aggiornato.
 	 */
 	static function reportCollection($author, $collection, $report) {
 		require_once("post/PostManager.php");
@@ -114,10 +114,10 @@ class CollectionManager {
 	/**
 	 * Aggiunge un voto ad una Collection.
 	 * 
-	 * param author: l'autore del commento.
-	 * param collection: la collezione in cui aggiungere il voto.
-	 * param vote: il voto (boolean).
-	 * return: la collezione aggiornata.
+	 * @param author: l'autore del commento.
+	 * @param collection: la collezione in cui aggiungere il voto.
+	 * @param vote: il voto (boolean).
+	 * @return: la collezione aggiornata.
 	 */
 	static function voteCollection($author, $collection, $vote) {
 		require_once("post/PostManager.php");
@@ -127,8 +127,8 @@ class CollectionManager {
 	/**
 	 * Rimuove un voto dal sistema.
 	 * 
-	 * param vote: il voto da rimuovere.
-	 * return: il voto rimosso.
+	 * @param vote: il voto da rimuovere.
+	 * @return: il voto rimosso.
 	 */
 	static function removeVote($vote) {
 		$vote->delete();
@@ -139,10 +139,10 @@ class CollectionManager {
 	/**
 	 * Aggiunge un commento ad una Collection.
 	 * 
-	 * param author: l'autore del commento.
-	 * param collection: la collezione in cui aggiungere il voto.
-	 * param comment: il testo del commento.
-	 * return: la collezione aggiornata.
+	 * @param author: l'autore del commento.
+	 * @param collection: la collezione in cui aggiungere il voto.
+	 * @param comment: il testo del commento.
+	 * @return: la collezione aggiornata.
 	 */
 	static function commentCollection($author, $collection, $comment) {
 		require_once("post/PostManager.php");
@@ -152,8 +152,8 @@ class CollectionManager {
 	/**
 	 * Rimuove un commento dal sistema.
 	 * 
-	 * param comment: il commento da rimuovere.
-	 * return: il commento rimosso.
+	 * @param comment: il commento da rimuovere.
+	 * @return: il commento rimosso.
 	 */
 	static function removeComment($comment) {
 		$comment->delete();
@@ -164,9 +164,9 @@ class CollectionManager {
 	/**
 	 * Aggiunge un Post ad una Collection.
 	 * 
-	 * param post: il post da aggiungere.
-	 * param collection: la collezione in cui aggiungere il post.
-	 * return: la collezione aggiornata.
+	 * @param post: il post da aggiungere.
+	 * @param collection: la collezione in cui aggiungere il post.
+	 * @return: la collezione aggiornata.
 	 */
 	static function addPostToCollection($post, $collection) {
 		return $collection->addPost($post);

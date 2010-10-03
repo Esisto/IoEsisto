@@ -1,11 +1,11 @@
 <?php
 
 class Operator {
-	static $UGUALE = "=";
-	static $MINORE = "<";
-	static $MINOREUGUALE = "<=";
-	static $MAGGIORE = ">";
-	static $MAGGIOREUGUALE = ">=";
+	static $EQUAL = "=";
+	static $LESSER = "<";
+	static $LESSEROREQUAL = "<=";
+	static $GREATER = ">";
+	static $GREATEROREQUAL = ">=";
 	static $LIKE = "LIKE";
 }
 
@@ -46,13 +46,13 @@ class WhereConstraint {
 		$this->column = $column;
 		$this->operator = $operator;
 		if($this->operator == null || $this->operator == "")
-			$this->operator = Operator::$UGUALE;
+			$this->operator = Operator::$EQUAL;
 		$this->data = $data;
 	}
 	
 	function generateWhereStm(/*$alias*/) {
 		if($this->operator == null || $this->operator == "")
-			$this->operator = Operator::$UGUALE;
+			$this->operator = Operator::$EQUAL;
 		$s = "";
 		if(isset($alias) && !is_null($alias) && $alias != "")
 			$s.= $alias . ".";
@@ -83,15 +83,6 @@ class WhereConstraint {
 class Query {
 	private static $dbSchema = null;
 	
-	
-	var $query_type; //deprecated
-	var $num_rows; //deprecated
-	private $rsindex; //deprecated
-	var $last_inserted_id; //deprecated
-	var $affected_rows; //deprecated
-	private $rs; //deprecated
-	var $error; //deprecated
-	
 	function initDBSchema() {
 		require_once("db_schema.php");
 		self::$dbSchema = new DBSchema(null);
@@ -100,10 +91,10 @@ class Query {
 	/**
 	 * Genera uno statement Select.
 	 * 
-	 * param tables: le tabelle che deve selezionare (array di Table) genera automaticamente degli alias
-	 * param joinconst: le condizioni per ogni join come array di JoinConstraint (solo se più tabelle).
-	 * param whereconst: le condizioni sugli attributi come array di WhereConstraint (opzionale).
-	 * param options: opzioni aggiuntive, il sistema cerca:
+	 * @param tables: le tabelle che deve selezionare (array di Table) genera automaticamente degli alias
+	 * @param joinconst: le condizioni per ogni join come array di JoinConstraint (solo se più tabelle).
+	 * @param whereconst: le condizioni sugli attributi come array di WhereConstraint (opzionale).
+	 * @param options: opzioni aggiuntive, il sistema cerca:
 	 * 			count: se usare l'operatore count. (boolean)
 	 * 			avg: se usare l'operatore average. (colonna su cui calcolare la media)
 	 * 			sum: se usare l'operatore somma. (colonna su cui calcolare la somma) //TODO
@@ -131,6 +122,11 @@ class Query {
 			if(self::columnExists($options["avg"])) {
 				$set_star = true;
 				$s.= "AVG(" . $options["avg"]->getName() . ")";
+			}
+		} else if(isset($options["sum"])) {
+			if(self::columnExists($options["sum"])) {
+				$set_star = true;
+				$s.= "SUM(" . $options["sum"]->getName() . ")";
 			}
 		}
 		if(!$set_star) $s.= "*";
@@ -249,10 +245,10 @@ class Query {
 	/**
 	 * Genera uno statement Insert.
 	 *
-	 * param $table: la tabella in cui inserire una tupla.
-	 * param $data: un array associativo contenente i valori da inserire per ogni colonna. 
+	 * @param $table: la tabella in cui inserire una tupla.
+	 * @param $data: un array associativo contenente i valori da inserire per ogni colonna. 
 	 *
-	 * return: lo statement Insert. Se c'è un errore FALSE.
+	 * @return: lo statement Insert. Se c'è un errore FALSE.
 	 */
 	static function generateInsertStm($table, $data) {
 		if(!isset($table) || $table == null || $table == "" ||
@@ -288,10 +284,10 @@ class Query {
 	/**
 	 * Genera uno statement Delete.
 	 *
-	 * param $table: la tabella in cui inserire una tupla.
-	 * param $whereconst: un array di WhereConstraint. 
+	 * @param $table: la tabella in cui inserire una tupla.
+	 * @param $whereconst: un array di WhereConstraint. 
 	 *
-	 * return: lo statement Delete. Se c'è un errore FALSE.
+	 * @return: lo statement Delete. Se c'è un errore FALSE.
 	 */
 	static function generateDeleteStm($table, $whereconst) {
 		if(!isset($table) || $table == null || $table == "" ||
@@ -321,11 +317,11 @@ class Query {
 	/**
 	 * Genera uno statement Update.
 	 *
-	 * param $table: tabella da aggiornare.
-	 * param $data: array associativo di dati da aggiornare per ogni colonna.
-	 * param $whereconst: array di WhereContraint per scegliere le tuple da aggiornare.
+	 * @param $table: tabella da aggiornare.
+	 * @param $data: array associativo di dati da aggiornare per ogni colonna.
+	 * @param $whereconst: array di WhereContraint per scegliere le tuple da aggiornare.
 	 *
-	 * return: lo statement Update. Se c'è un errore FALSE.
+	 * @return: lo statement Update. Se c'è un errore FALSE.
 	 */
 	static function generateUpdateStm($table, $data, $whereconst) {
 		if(!isset($table) || $table == null || $table == "" ||
@@ -366,9 +362,9 @@ class Query {
 	/**
 	 * Controlla che una tabella esista sul database.
 	 * 
-	 * param $tablename: il nome della tabella da trovare.
+	 * @param $tablename: il nome della tabella da trovare.
 	 *
-	 * return: true o false.
+	 * @return: true o false.
 	 */
 	function tableExists($table) {
 		if(self::$dbSchema == null)
@@ -381,9 +377,9 @@ class Query {
 	/**
 	 * Controlla che una colonna esista.
 	 *
-	 * param $columnname: il nome della colonna da trovare.
+	 * @param $columnname: il nome della colonna da trovare.
 	 *
-	 * return: true o false.
+	 * @return: true o false.
 	 */
 	function columnExists($column) {
 		if(self::$dbSchema == null)

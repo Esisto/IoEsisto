@@ -4,15 +4,15 @@
  * Elabora le richieste fatte al server dall'utente per scegliere lo script da eseguire e su quali dati.
  * Non esegue lo script ma fornisce i dati per sceglierlo.
  * 
- * param $reqest: un URL relativo. Deve essere in una di queste forme:
+ * @param $reqest: un URL relativo. Deve essere in una di queste forme:
  * /%nome utente&/Posts					carica tutti i post di un utente.
- * /%nome utente/Post/%data%/%titolo	carica il post il cui permalink √® %nome utente/Post/%data%/%titolo
+ * /%nome utente/Post/%data%/%titolo	carica il post il cui permalink è %nome utente/Post/%data%/%titolo
  * /%nome utente/Resource/%id risorsa%	carica la risorsa con id %id risorsa%
  * /Contests							carica tutti i contest
  * /Contest/%id contest%				carica il contest con id %id contest%
  * /Contest/%id contest%/Posts			carica i post del contest
  *
- * ecc‚Ä¶ TODO decidere tutti i comandi‚Ä¶
+ * ecc… TODO: decidere tutti i comandi…
  */
 function elaborateRequest($request) {
 	require_once("file_manager.php");

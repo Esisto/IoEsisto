@@ -75,8 +75,8 @@ class MailDirectory {
 			$table = Query::getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
 			$db->execute($s = Query::generateUpdateStm($table,
 												   array(MAIL_IN_DIRECTORY_DIRECTORY => $to->getID()),
-												   array(new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_DIRECTORY), Operator::$UGUALE, $this->getID()),
-														 new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_MAIL), Operator::$UGUALE, $mail->getID()))),
+												   array(new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_DIRECTORY), Operator::$EQUAL, $this->getID()),
+														 new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_MAIL), Operator::$EQUAL, $mail->getID()))),
 						$table->getName(), $this);
 			
 			if($db->affected_rows() == 1) {
@@ -94,8 +94,8 @@ class MailDirectory {
 			define_tables(); defineMailInDirColumns();
 			$table = Query::getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
 			$db->execute($s = Query::generateDeleteStm($table,
-												   array(new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_DIRECTORY), Operator::$UGUALE, $this->getID()),
-														 new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_MAIL), Operator::$UGUALE, $mail->getID()))),
+												   array(new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_DIRECTORY), Operator::$EQUAL, $this->getID()),
+														 new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_MAIL), Operator::$EQUAL, $mail->getID()))),
 						$table->getName(), $this);
 			
 			//echo "<p>" . $s . " - " . $db->affected_rows() . "</p>"; //DEBUG
@@ -114,8 +114,8 @@ class MailDirectory {
 			define_tables(); defineMailInDirColumns();
 			$table = Query::getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
 			$db->execute($s = Query::generateUpdateStm($table, array(MAIL_IN_DIRECTORY_READ => ($read ? 1 : 0)),
-												   array(new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_DIRECTORY), Operator::$UGUALE, $this->getID()),
-														 new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_MAIL), Operator::$UGUALE, $mail->getID()))),
+												   array(new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_DIRECTORY), Operator::$EQUAL, $this->getID()),
+														 new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_MAIL), Operator::$EQUAL, $mail->getID()))),
 						$table->getName(), $this);
 				
 			if($db->affected_rows() == 1) {
@@ -136,8 +136,8 @@ class MailDirectory {
 			$table = Query::getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
 			$db->execute($s = Query::generateSelectStm(array($table),
 												   array(),
-												   array(new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_DIRECTORY), Operator::$UGUALE, $this->getID()),
-														 new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_MAIL), Operator::$UGUALE, $mail->getID())),
+												   array(new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_DIRECTORY), Operator::$EQUAL, $this->getID()),
+														 new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_MAIL), Operator::$EQUAL, $mail->getID())),
 												   array()),
 						$table->getName(), $this);
 				
@@ -185,7 +185,7 @@ class MailDirectory {
 				
 				$rs = $db->execute($s = Query::generateUpdateStm($table,
 														 $data,
-														 array(new WhereConstraint($table->getColumn(MAIL_DIRECTORY_ID),Operator::$UGUALE,$this->getID()))),
+														 array(new WhereConstraint($table->getColumn(MAIL_DIRECTORY_ID),Operator::$EQUAL,$this->getID()))),
 								  $table->getName(), $this);
 				if($db->affected_rows() == 1) {
 					return $this;
@@ -207,8 +207,8 @@ class MailDirectory {
 			//cerco la Mailbox dell'utente e sposto tutte le mail lì.
 			$db->execute($s = Query::generateSelectStm(array($table),
 												   array(),
-												   array(new WhereConstraint($table->getColumn(MAIL_DIRECTORY_OWNER), Operator::$UGUALE, $this->owner),
-														 new WhereConstraint($table->getColumn(MAIL_DIRECTORY_NAME), Operator::$UGUALE, MAILBOX)),
+												   array(new WhereConstraint($table->getColumn(MAIL_DIRECTORY_OWNER), Operator::$EQUAL, $this->owner),
+														 new WhereConstraint($table->getColumn(MAIL_DIRECTORY_NAME), Operator::$EQUAL, MAILBOX)),
 												   array()), $table->getName(), $this);
 			if($db->num_rows() == 1) {
 				$row = $db->fetch_result();
@@ -216,12 +216,12 @@ class MailDirectory {
 				
 				$table1 = Query::getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
 				$db->execute($s = Query::generateUpdateStm($table1, array(MAIL_IN_DIRECTORY_DIRECTORY => intval($mailboxid)),
-													   array(new WhereConstraint($table1->getColumn(MAIL_IN_DIRECTORY_DIRECTORY), Operator::$UGUALE, $this->getID()))),
+													   array(new WhereConstraint($table1->getColumn(MAIL_IN_DIRECTORY_DIRECTORY), Operator::$EQUAL, $this->getID()))),
 							$table1->getName(), $this);
 				
 				if($db->affected_rows() == count($this->getMails())) {
 					$rs = $db->execute($s = Query::generateDeleteStm($table,
-																 array(new WhereConstraint($table->getColumn(MAIL_DIRECTORY_ID),Operator::$UGUALE,$this->getID()))),
+																 array(new WhereConstraint($table->getColumn(MAIL_DIRECTORY_ID),Operator::$EQUAL,$this->getID()))),
 									  $table->getName(), $this);
 					//echo "<br />" . $db->affected_rows() . $s; //DEBUG
 					if($db->affected_rows() == 1) {
@@ -265,7 +265,7 @@ class MailDirectory {
 			$table = Query::getDBSchema()->getTable(TABLE_MAIL_DIRECTORY);
 			$wheres = array();
 			foreach($data as $comumnname => $d)
-				$wheres[] = new WhereConstraint($table->getColumn($comumnname), Operator::$UGUALE, $d);
+				$wheres[] = new WhereConstraint($table->getColumn($comumnname), Operator::$EQUAL, $d);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table), array(), $wheres, array()), $table->getName(), $data);
 			
 			//echo "<p>" . $s . "</p>"; //DEBUG
@@ -294,7 +294,7 @@ class MailDirectory {
 			//echo "<p>" . $table . "</p>"; //DEBUG
 			$rs = $db->execute($s =Query::generateSelectStm(array($table, $table1),
 														 array(new JoinConstraint($table->getColumn(MAIL_IN_DIRECTORY_MAIL), $table1->getColumn(MAIL_ID))),
-														 array(new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_DIRECTORY),Operator::$UGUALE,$this->getID())),
+														 array(new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_DIRECTORY),Operator::$EQUAL,$this->getID())),
 														 array()),
 							  $table->getName(), $this);
 			
@@ -415,7 +415,7 @@ class Mail {
 				//echo "<br />" . serialize($this->ID); //DEBUG
 				$rs = $db->execute($s = Query::generateSelectStm(array($table),
 															 array(),
-															 array(new WhereConstraint($table->getColumn(MAIL_ID),Operator::$UGUALE,$this->getID())),
+															 array(new WhereConstraint($table->getColumn(MAIL_ID),Operator::$EQUAL,$this->getID())),
 															 array()),
 								  $table->getName(), $this);
 				//echo "<br />" . $s; //DEBUG
@@ -450,7 +450,7 @@ class Mail {
 			define_tables(); defineMailColumns();
 			$table = Query::getDBSchema()->getTable(TABLE_MAIL);
 			$rs = $db->execute($s = Query::generateDeleteStm($table,
-														 array(new WhereConstraint($table->getColumn(MAIL_ID),Operator::$UGUALE,$this->getID()))),
+														 array(new WhereConstraint($table->getColumn(MAIL_ID),Operator::$EQUAL,$this->getID()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $db->affected_rows() . $s; //DEBUG
 			if($db->affected_rows() == 1) {
@@ -468,7 +468,7 @@ class Mail {
 			$table = Query::getDBSchema()->getTable(TABLE_MAIL);
 			$db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(MAIL_ID),Operator::$UGUALE,intval($id))),
+														 array(new WhereConstraint($table->getColumn(MAIL_ID),Operator::$EQUAL,intval($id))),
 														 array()),
 							  $table->getName(), null);
 			
@@ -499,7 +499,7 @@ class Mail {
 			$table = Query::getDBSchema()->getTable(TABLE_MAIL);
 			$db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(MAIL_FROM), Operator::$UGUALE, $user)),
+														 array(new WhereConstraint($table->getColumn(MAIL_FROM), Operator::$EQUAL, $user)),
 														 array()),
 							  $table->getName(), $this);
 			

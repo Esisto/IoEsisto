@@ -7,8 +7,8 @@ class Table {
 	
 	/**
 	 *
-	 * param $name: nome della tabella
-	 * param $columns: array associativo nome_colonna => Column
+	 * @param $name: nome della tabella
+	 * @param $columns: array associativo nome_colonna => Column
 	 */
 	function __construct($name, $columns) {
 		$this->name = $name;
@@ -60,9 +60,9 @@ class Column {
 	
 	/**
 	 *
-	 * param $name: nome della colonna.
-	 * param $properties: array (non associativo) di elementi di Property
-	 * param $tablename: nome della tabella, non è obbligatorio in quanto ogni tabella setta questo valore quando si aggiunge la colonna.
+	 * @param $name: nome della colonna.
+	 * @param $properties: array (non associativo) di elementi di Property
+	 * @param $tablename: nome della tabella, non è obbligatorio in quanto ogni tabella setta questo valore quando si aggiunge la colonna.
 	 */
 	function __construct($name, $properties, $tablename) {
 		$this->name = $name;
@@ -109,7 +109,7 @@ class DBSchema {
 	private $tables; 
 	
 	/**
-	 * param $tables: tabelle array associativo nome_tabella => Table
+	 * @param $tables: tabelle array associativo nome_tabella => Table
 	 */
 	function __construct($tables) {
 		if(!isset($tables) || !is_array($tables)) {
@@ -185,8 +185,8 @@ class DBSchema {
 	
 	/**
 	 * Restituisce un clone della tabella di nome $tablename.
-	 * param $tablename: nome della tabella ricercata.
-	 * return: il clone della tabella oppure false se $tablename non esiste.
+	 * @param $tablename: nome della tabella ricercata.
+	 * @return: il clone della tabella oppure false se $tablename non esiste.
 	 */
 	function getTable($tablename) {
 		if(isset($this->tables[$tablename])) {

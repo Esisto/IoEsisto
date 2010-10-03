@@ -1,6 +1,7 @@
 <?php
 
 class Post {
+	protected static $DEFAULT_CATEGORY = "News";	//TODO: trovare un valore per questo…
 	protected $ID;						// id recuperato dal database
 	protected $permalink;				// permalink generato automaticamente dal titolo ecc…
 	protected $type;					// appartenente a PostType
@@ -22,7 +23,7 @@ class Post {
 	/**
 	 * Crea un oggetto post.
 	 *
-	 * param data: array associativo contenente i dati.
+	 * @param data: array associativo contenente i dati.
 	 * Le chiavi ricercate dal sistema per questo array sono:
 	 * title: titolo del post (string filtrata)
 	 * subtitle: sottotitolo del post (string filtrata)
@@ -35,7 +36,7 @@ class Post {
 	 * type: tipo di post, deve essere incluso in PostType
 	 * place: db v0 id di un luogo in db, db v0.2 stringa (secondo le regole delle API Google)
 	 * 
-	 * return: l'articolo creato.
+	 * @return: l'articolo creato.
 	 */
 	function __construct($data) {
 		if(!is_array($data) && is_numeric($data)) {
@@ -116,25 +117,37 @@ class Post {
 	function getComments() {
 		return $this->comments;
 	}
+	/**
+	 * @deprecated il voto viene caricato attraverso getAvgVote()
+	 */
 	function getVotes() {
 		return $this->votes;
 	}
+	
+	/**
+	 * Recupera il voto come la media tra tutti i valori salvati nella tabella Vote.
+	 * Sta al livello di vista decidere come visualizare questo parametro: stelline, valore scritto, faccine...
+	 * @return: un valore float.
+	 */
+	private $avgVote = null;
 	function getAvgVote() {
+		if(!is_null($this->avgVote)) return $this->avgVote;
+		
 		require_once("query.php");
-		if(count($this->getVotes()) == 0) return 0;
 		$db = new DBManager();
 		if(!$db->connect_errno()) {
 			define_tables(); defineVoteColumns();
 			$table = Query::getDBSchema()->getTable(TABLE_VOTE);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$this->getID())),
+														 array(new WhereConstraint($table->getColumn(VOTE_POST),Operator::$EQUAL,$this->getID())),
 														 array("avg" => $table->getColumn(VOTE_VOTE))));
 			echo "<p>" . $s . "</p>"; //DEBUG;
 			if($db->num_rows() == 1) {
 				$row = $db->fetch_row();
-				echo serialize($row);
-				return floatval($row[0]);
+				//echo serialize($row);
+				$this->avgVote = floatval($row[0]);
+				return $this->avgVote;
 			} else $db->display_error("Post::getAvgVote()");
 		} else $db->display_connect_error("Post::getAvgVote()");
 		return false;
@@ -155,7 +168,7 @@ class Post {
 	/**
 	 * Restituisce il permalink dell'articolo. Può essere forzato il caricamento del pramalink dai dati.
 	 *
-	 * param $reload: true o false (deafult false). Se true ricarica il permalink dai dati ma non ne salva lo stato.
+	 * @param $reload: true o false (deafult false). Se true ricarica il permalink dai dati ma non ne salva lo stato.
 	 */
 	function getPermalink($reload = false) {
 		if($reload) {
@@ -168,10 +181,15 @@ class Post {
 				return $this->getPermalink(true);
 		}
 	}
+	
+	/**
+	 * Secondo la convenzione decisa e approvata da me� XD
+	 * il permalink �: /Post/%nome autore%/%data di creazione%/%titolo%
+	 */
 	private function getRelativePermalink() {
 		require_once("common.php");
-		$s = Filter::textToPermalink($this->getAuthorName());
-		$s.= "/Post/";
+		$s = "/Post/";
+		$s.= Filter::textToPermalink($this->getAuthorName());
 		if(isset($this->creationDate)) {
 			$s.= date("Y-m-d", $this->getCreationDate());
 			$s.= "/";
@@ -264,7 +282,7 @@ class Post {
 	 * Le dipendenze salvate sono quelle che dipendono dall'autore ovvero: tag e categorie.
 	 * Potrebbe salvare alcune tuple in Tag.
 	 *
-	 * return: ID della tupla inserita (o aggiornata), FALSE se c'è un errore.
+	 * @return: ID della tupla inserita (o aggiornata), FALSE se c'è un errore.
 	 */
 	function save() {
 		require_once("post/PostCommon.php");
@@ -282,8 +300,14 @@ class Post {
 				$data[POST_HEADLINE] = $this->getHeadline();
 			if(isset($this->tags) && !is_null($this->getTags()))
 				$data[POST_TAGS] = $this->getTags();
-			if(isset($this->categories) && !is_null($this->getCategories()))
+			if(isset($this->categories) && !is_null($this->getCategories())) {
+				// check sulle categorie, eliminazione di quelle che non esistono nel sistema, se vuoto inserimento di quella di default
+				$new_cat = CategoryManager::filterWrongCategories(explode(",", $this->getCategories()));
+				if(count($new_cat) == 0)
+					$new_cat[] = self::$DEFAULT_CATEGORY;
+				$this->setCategories(Filter::arrayToText($new_cat));
 				$data[POST_CATEGORIES] = $this->getCategories();
+			}
 			if(isset($this->content) && !is_null($this->getContent()))
 				$data[POST_CONTENT] = serialize($this->getContent());
 			if(isset($this->visible) && !is_null($this->isVisible()))
@@ -305,7 +329,7 @@ class Post {
 				//echo "<br />" . serialize($this->ID); //DEBUG
 				$rs = $db->execute($s = Query::generateSelectStm(array($table),
 															 array(),
-															 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$this->getID())),
+															 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$EQUAL,$this->getID())),
 															 array()),
 								  $table->getName(), $this);
 				//echo "<br />" . serialize($rs); //DEBUG
@@ -314,6 +338,10 @@ class Post {
 					//echo "<br />" . $row; //DEBUG
 					$this->setPermalink($row[POST_PERMALINK]);
 					$this->setModificationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[POST_CREATION_DATE])));
+					
+					//salvo i tag che non esistono
+					TagManager::createTags(explode(",", $data["tags"]));
+					
 					//echo "<br />" . serialize($row[POST_CREATION_DATE]); //DEBUG
 					//echo "<br />" . $this; //DEBUG
 					return $this->ID;
@@ -328,7 +356,7 @@ class Post {
 	 * Le dipendenze aggiornate sono quelle che dipendono dall'autore ovvero: tag e categorie
 	 * Potrebbe salvare alcune tuple in Tag.
 	 *
-	 * return: modificationDate o FALSE se c'è un errore.
+	 * @return: modificationDate o FALSE se c'è un errore.
 	 */
 	function update() {
 		require_once("query.php");
@@ -338,7 +366,7 @@ class Post {
 			$table = Query::getDBSchema()->getTable(TABLE_POST);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$this->getID())),
+														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$EQUAL,$this->getID())),
 														 array()),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
@@ -358,9 +386,14 @@ class Post {
 					$data[POST_PLACE] = $this->getPlace();
 				if($row[POST_TAGS] != $this->getTags())
 					$data[POST_TAGS] = $this->getTags();
-				//TODO salvare tag non esistenti
-				if($row[POST_CATEGORIES] != $this->getCategories())
+				if($row[POST_CATEGORIES] != $this->getCategories()) {
+					// check sulle categorie, eliminazione di quelle che non esistono nel sistema, se vuoto inserimento di quella di default
+					$new_cat = CategoryManager::filterWrongCategories(explode(",", $this->getCategories()));
+					if(count($new_cat) == 0)
+						$new_cat[] = self::$DEFAULT_CATEGORY;
+					$this->setCategories(Filter::arrayToText($new_cat));
 					$data[POST_CATEGORIES] = $this->getCategories();
+				}
 				settype($row[POST_VISIBLE], "boolean");
 				if($row[POST_VISIBLE] !== $this->isVisible())
 					$data[POST_VISIBLE] = $this->isVisible() ? 1 : 0;
@@ -372,15 +405,17 @@ class Post {
 				if(count($data) == 0) return $this->getModificationDate();
 				$data[POST_MODIFICATION_DATE] = date("Y/m/d G:i:s", $_SERVER["REQUEST_TIME"]); // se mi dicono di fare l'update, cambio modificationDate
 				//echo "<br />" . serialize($data); //DEBUG
-				//TODO controllare tag e categorie
 				
 				$rs = $db->execute($s = Query::generateUpdateStm($table,
 															 $data,
-															 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$this->getID()))),
+															 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$EQUAL,$this->getID()))),
 								  $table->getName(), $this);
 				//echo "<br />" . $s; //DEBUG
 				//echo "<br />" . mysql_affected_rows(); //DEBUG
 				if($db->affected_rows() == 1) {
+					//salvo i tag che non esistono
+					TagManager::createTags(explode(",", $data["tags"]));
+					
 					//echo "<br />" . $this; //DEBUG
 					return $this->getModificationDate();
 				} else $db->display_error("Post::update()");
@@ -394,7 +429,7 @@ class Post {
 	 * Con le Foreign Key e ON DELETE, anche le dipendenze dirette vengono cancellate.
 	 * Non vengono cancellate le dipendenze nelle Collection.
 	 *
-	 * return: l'oggetto cancellato o FALSE se c'è un errore.
+	 * @return: l'oggetto cancellato o FALSE se c'è un errore.
 	 */
 	function delete() {
 		require_once("query.php");
@@ -403,7 +438,7 @@ class Post {
 			define_tables(); definePostColumns();
 			$table = Query::getDBSchema()->getTable(TABLE_POST);
 			$rs = $db->execute($s = Query::generateDeleteStm($table,
-														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$this->getID()))),
+														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$EQUAL,$this->getID()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $db->affected_rows() . $s; //DEBUG
 			if($db->affected_rows() == 1) {
@@ -420,7 +455,7 @@ class Post {
 			define_tables(); definePostColumns();
 			$table = Query::getDBSchema()->getTable(TABLE_POST);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table), array(),
-															 array(new WhereConstraint($table->getColumn(POST_PERMALINK),Operator::$UGUALE,$permalink)),
+															 array(new WhereConstraint($table->getColumn(POST_PERMALINK),Operator::$EQUAL,$permalink)),
 															 array("count" => 2)));
 			if($db->num_rows() == 1) {
 				$row = $db->fetch_result();
@@ -472,8 +507,8 @@ class Post {
 	 * Crea un post caricando i dati dal database.
 	 * È come fare una ricerca sul database e poi fare new Post().
 	 *
-	 * param $id: l'ID del post da caricare.
-	 * return: il post caricato o FALSE se non lo trova.
+	 * @param $id: l'ID del post da caricare.
+	 * @return: il post caricato o FALSE se non lo trova.
 	 */
 	static function loadFromDatabase($id) {
 		require_once("query.php");
@@ -483,7 +518,7 @@ class Post {
 			$table = Query::getDBSchema()->getTable(TABLE_POST);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$UGUALE,$id)),
+														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$EQUAL,$id)),
 														 array()),
 							  $table->getName(), null);
 			
@@ -511,7 +546,7 @@ class Post {
 			$table = Query::getDBSchema()->getTable(TABLE_COMMENT);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(COMMENT_POST),Operator::$UGUALE,$this->getID())),
+														 array(new WhereConstraint($table->getColumn(COMMENT_POST),Operator::$EQUAL,$this->getID())),
 														 array()),
 							  $table->getName(), $this);
 			
@@ -536,6 +571,7 @@ class Post {
 	}
 	
 	/**
+	 * @deprecated il voto viene caricato attraverso getAvgVote()
 	 * Carica in this i voti recuperati dal database per questo post (deve avere un ID!).
 	 */
 	function loadVotes() {
@@ -546,7 +582,7 @@ class Post {
 			$table = Query::getDBSchema()->getTable(TABLE_VOTE);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(VOTE_POST),Operator::$UGUALE,$this->getID())),
+														 array(new WhereConstraint($table->getColumn(VOTE_POST),Operator::$EQUAL,$this->getID())),
 														 array()),
 							  $table->getName(), $this);
 			//echo "<p>" . $s . "</p>"; //DEBUG;
@@ -579,7 +615,7 @@ class Post {
 			$table = Query::getDBSchema()->getTable(TABLE_REPORT);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(REPORT_POST),Operator::$UGUALE,$this->getID())),
+														 array(new WhereConstraint($table->getColumn(REPORT_POST),Operator::$EQUAL,$this->getID())),
 														 array()),
 							  $table->getName(), $this);
 			if($rs !== false) {
@@ -601,6 +637,7 @@ class Post {
 	
 	/**
 	 * TODO Da testare
+	 * @deprecated troppo lunga da implementare�
 	 */
 	function equals($post) {
 		if(is_a($post, "Post") || get_parent_class($post) == "post") {
