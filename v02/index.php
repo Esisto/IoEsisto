@@ -18,7 +18,7 @@ require_once("user/UserManager.php");
 require_once("search/SearchManager.php");
 
 require_once("page.php");
-$request = elaborateRequest($_SERVER["REQUEST_URI"]);
+$request = Page::make($_SERVER["REQUEST_URI"]);
 
 if($request["script"] == "Post") {
 	//DEBUG

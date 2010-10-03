@@ -7,13 +7,13 @@ class Page {
 	 * 
 	 * @param $reqest: un URL relativo. Deve essere in una di queste forme:
 	 * /%nome utente&/Posts					carica tutti i post di un utente.
-	 * /%nome utente/Post/%data%/%titolo	carica il post il cui permalink � %nome utente/Post/%data%/%titolo
+	 * /%nome utente/Post/%data%/%titolo	carica il post il cui permalink è %nome utente/Post/%data%/%titolo
 	 * /%nome utente/Resource/%id risorsa%	carica la risorsa con id %id risorsa%
 	 * /Contests							carica tutti i contest
 	 * /Contest/%id contest%				carica il contest con id %id contest%
 	 * /Contest/%id contest%/Posts			carica i post del contest
 	 *
-	 * ecc... TODO: decidere tutti i comandi�
+	 * ecc... TODO: decidere tutti i comandi...
 	 */
 	private static function elaborateRequest($request) {
 		require_once("file_manager.php");
@@ -256,9 +256,17 @@ class Page {
 	static function make($request) {
 		//riceve la richiesta
 		//la fa elaborare
+		$response = self::elaborateRequest($request);
+		
 		//sceglie le parti da inserire nella pagina
+		//header, menù, ecc...
+		
 		//recupera la risposta
+		$r = self::getResponse($request);
 		//dà la risposta in pasto alla Page giusta
+		if($response["object"] == "Post") { //è un esempio...
+			PostPage::showPost();
+		}
 	}
 }
 ?>
