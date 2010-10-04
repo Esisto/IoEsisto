@@ -53,22 +53,22 @@ class UserManager{
         return $user->update();
     }
     
-    static function login($error = null) {
-        if(!isset($_POST["nickname"])) {
+    static function login($data) {
+        if(!isset($data["username"])) {
             return self::$UM_NoUserError;
         } else {
 		
         	$u = false;
             //check nick and password
-           	$u = self::loadUserByNickname($_POST["nickname"]);
+           	$u = self::loadUserByNickname($data["username"]);
            	// assumo che la password mi sia arrivata in chiaro attraverso una connessione sicura
-            if($u !== false && $u->getPassword() == sha1($_POST["password"]))
+            if($u !== false && $u->getPassword() == sha1($data["password"]))
             	$logged = true;
             if($u === false) {
 	       		//check mail and password
-	            $u = self::loadUserByMail($_POST["nickname"]);
+	            $u = self::loadUserByMail($data["username"]);
 	            // assumo che la password mi sia arrivata in chiaro attraverso una connessione sicura
-            	if($u !== false && $u->getPassword() == sha1($_POST["password"]))
+            	if($u !== false && $u->getPassword() == sha1($data["password"]))
 	            	$logged = true;
             }
             if($u !== false) {

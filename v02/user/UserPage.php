@@ -21,7 +21,7 @@ class UserPage {
 				self::showLoginForm($error);
 			} else {
 				$dataFiltered= Filter::filterArray($data);
-				UserManager::login($data["username"], $data["password"]);
+				UserManager::login($data);
 			}
 		} else { ?>
 <form name="login" action="" method="post"><!-- show error messages -->
@@ -29,12 +29,13 @@ class UserPage {
 			if($error != null) {
 				foreach ($error as $valore) {
 					echo "$valore<br>";
-				}?>
+				}
+			}?>
 Username: <input type="text" name="username" value="" />
 Password: <input type="password" name="password" value="" /> <input
 	type="submit" value="Login"></form>
 			<?php
-			}
+			
 		}
 	}
 
