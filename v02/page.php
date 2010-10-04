@@ -152,7 +152,7 @@ class Page {
 				if($action == "Edit" || $action == "Follow" ||
 				   $action == "Feedback" || $action == "Delete" ||
 				   $action == "StopFollow" || $action == "Verify" ||
-				   $action == "Posts") {	//esempio: /User/%user_nickname%/Verify
+				   $action == "Posts" || $action == "AddContact") {	//esempio: /User/%user_nickname%/Verify
 					if($count != 3) $action = "";
 				}
 				//registra nuovo utente
@@ -185,11 +185,6 @@ class Page {
 				if($action == "Edit" || $action == "Delete") {	//esempio: /Contact/%contact_id%/Edit
 					if($count != 3) $action = "";
 					else $return["contactid"] = $parts[1];
-				}
-				//crea nuovo contatto
-				if($action == "New") {	//esempio: /Contact/New
-					if($count != 2)
-						$action = "";
 				}
 				//pagina di ricerca dei contatti
 				if($count == 1) {
@@ -261,21 +256,38 @@ class Page {
 			case "Post":
 				self::doPostAction($request);
 				break;
-			case "Tag":
-				//echo "<p><font color='green'>REQUEST TO LOAD post which tag is " . $request["tagname"] . ".</font></p>"; //DEBUG
-				$posts = SearchManager::searchBy(array("Post"), array("tag" => $request["tagname"]), array("limit" => 4, "order" => "DESC", "by" => array("ps_creationDate")));
-				foreach($posts as $p) {
-					require_once("post/PostPage.php");
-					PostPage::showShortPost($p);
-				}
+			case "User":
+				self::doUserAction($request);
+				break;
+			case "Contest":
+				self::doContestAction($request);
 				break;
 			case "Category":
-				//echo "<p><font color='green'>REQUEST TO LOAD post which category is " . $request["categoryname"] . ".</font></p>"; //DEBUG
-				$posts = SearchManager::searchBy(array("Post"), array("category" => $request["categoryname"]), array("limit" => 4, "order" => "DESC", "by" => array("ps_creationDate")));
-				foreach($posts as $p) {
-					require_once("post/PostPage.php");
-					PostPage::showShortPost($p);
-				}
+				self::doCategoryAction($request);
+				break;
+			case "Comment":
+				self::doCommentAction($request);
+				break;
+			case "Feedback":
+				self::doFeedbackAction($request);
+				break;
+			case "Contact":
+				self::doContactAction($request);
+				break;
+			case "Mail":
+				self::doMailAction($request);
+				break;
+			case "Directory":
+				self::doDirectoryAction($request);
+				break;
+			case "Vote":
+				self::doVoteAction($request);
+				break;
+			case "Partner":
+				self::doPartnerAction($request);
+				break;
+			case "Tag":
+				self::doTagAction($request);
 				break;
 			case "index":
 			default:
@@ -304,6 +316,144 @@ class Page {
 			PostPage::showPost();
 		}
 		return $req;
+	}
+	
+	private static function doUserAction($request) {
+		switch ($request["action"]) {
+			case "Edit":
+				break;
+			case "Follow":
+			case "Feedback":
+			case "AddContact":
+			case "StopFollow":
+			case "Verify":
+			case "Posts":
+			case "Delete":
+			case "New":
+			case "Read":
+			case "Search":
+			default:
+				break;
+		}
+	}
+	
+	private static function doContactAction($request) {
+		switch ($request["action"]) {
+			case "Edit":
+				break;
+			case "Delete":
+			case "Search":
+			default:
+				break;
+		}
+	}
+	
+	private static function doContestAction($request) {
+		switch ($request["action"]) {
+			case "Edit":
+				break;
+			case "Posts":
+			case "Delete":
+			case "New":
+			case "Read":
+			case "Search":
+			default:
+				break;
+		}
+	}
+	
+	private static function doCategoryAction($request) {
+		switch ($request["action"]) {
+			case "Edit":
+				break;
+			case "Posts":
+				//echo "<p><font color='green'>REQUEST TO LOAD post which category is " . $request["categoryname"] . ".</font></p>"; //DEBUG
+				$posts = SearchManager::searchBy(array("Post"), array("category" => $request["categoryname"]), array("limit" => 4, "order" => "DESC", "by" => array("ps_creationDate")));
+				foreach($posts as $p) {
+					require_once("post/PostPage.php");
+					PostPage::showPost($p);
+				}
+				break;
+			case "Delete":
+			case "New":
+			case "Search":
+			default:
+				break;
+		}
+	}
+	
+	private static function doCommentAction($request) {
+		switch ($request["action"]) {
+			case "Delete":
+			case "Read":
+			default:
+				break;
+		}
+	}
+	
+	private static function doFeedbackAction($request) {
+		switch ($request["action"]) {
+			case "Delete":
+		}
+	}
+	
+	private static function doMailAction($request) {
+		switch ($request["action"]) {
+			case "Edit":
+				break;
+			case "Move":
+			case "Delete":
+			case "Spam":
+			case "Answer":
+			case "New":
+			case "EmptyTrash":
+			case "Read":
+			case "Search":
+			default:
+				break;
+		}
+	}
+	
+	private static function doDirectoryAction($request) {
+		switch ($request["action"]) {
+			case "Edit":
+				break;
+			case "Mails":
+			case "Delete":
+			case "Sent":
+			case "Unread":
+			case "New":
+			case "Search":
+			default:
+				break;
+		}
+	}
+	
+	private static function doVoteAction($request) {
+		switch ($request["action"]) {
+			case "Delete":
+			case "Edit":
+			default:
+				break;
+		}
+	}
+	
+	private static function doPartnerAction($request) {}
+	
+	private static function doTagAction($request) {
+		switch ($request["action"]) {
+			case "Posts":
+				//echo "<p><font color='green'>REQUEST TO LOAD post which tag is " . $request["tagname"] . ".</font></p>"; //DEBUG
+				$posts = SearchManager::searchBy(array("Post"), array("tag" => $request["tagname"]), array("limit" => 4, "order" => "DESC", "by" => array("ps_creationDate")));
+				foreach($posts as $p) {
+					require_once("post/PostPage.php");
+					PostPage::showPost($p);
+				}
+				break;
+			case "Search":
+			default:
+				break;
+		}
 	}
 	
 	private static function doPostAction($request) {
