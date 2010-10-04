@@ -1,72 +1,70 @@
 <?php
-//	include 'session.inc';
-	
-//	function check_auth() { return 4; }
-	
-	// DEBUG
+	require_once(USER_DIR ."/User.php");
+	/**
+	 * Classe Session 
+	 * è una classe che contiene solo metodi statici e
+	 * gestisce le sessioni php	
+	 */
 	class Session {
+		
+		/**
+		 * Metodo Session::start( $user )
+		 * riceve come argomento un oggetto di tipo user che deve
+		 * avere un id presente nel database		
+		 */
+		static function start( $u ) {
+			ini_set( 'session.use_cookies', 1 );		// Forza l'utilizzo dei cookies
+			ini_set( 'session.use_only_cookies', 1 );	
+			if( !session_start() )
+				return false;			
+			
+			if ( !isset($_SESSION["iduser"]) ) {
+				$id = $u->getID();
+				if ( isset($id) ) {
+ 	
+					$user = User::loadFromDatabase( $u->getID() );	// Mi assicura che user sia presente nel database
+										   	// prima di avviare una sessione	
+					if ( $user != false ) {
+						//$_SESSION = array(); //NON necessaria
+						$_SESSION["iduser"] = $user->getID();
+						return true;
+					}
+					else
+						return false;
+				}
+				else
+					return false;
+			}	
+		} 
+		
+		/**
+		 * Metodo Session::getUser()
+		 * restituisce un oggetto user che ha avviato la sessione		
+		 */
 		static function getUser() {
-			//$_SESSION["user"]
-			//check exists
-			//return getID()
-			return 1;
-			//se non esiste
-			header("location: http://fgdfhdf/?err=errore…");
+			if( !session_start() )
+				return false;
+
+			if ( isset($_SESSION["iduser"]) ) {
+				$user = User::loadFromDatabase($_SESSION["iduser"]);
+
+				if ( $user != false )
+					return $user;
+				else
+					return false;
+			}
+			else
+				return false;
+		}
+
+		/**
+		 * Metodo Session::destroy()
+		 * distrugge la sessione dell'user che ha avviato la sessione		
+		 */
+		static function destroy() {
+				session_unset();
+				session_destroy();
+				session_write_close();
 		}
 	}
-	// END DEBUG
 ?>
-
-<!--<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"-->
-<!--"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">-->
-<!--<html>-->
-<!--	<head>-->
-<!--		<title>Login</title>-->
-<!--	</head>-->
-<!--	<body>-->
-<!--	<?php
-	// 	if ( !isset( $_SESSION['uid'] ) )
-	//	{
-	//		if ( isset( $_POST['login'] ) && ( $_POST['login'] == 'Log in' ) && 
-	//		 ( $uid = check_auth( $_POST['email'], $_POST['password'] ) ) )
-	//		{
-	//			/* Login utente corretto: il cookie è impostato */
-	//			$_SESSION['uid'] = $uid;
-	//			header('Location: http://'. $_SERVER['SERVER_NAME'] . ':8888/ioesisto/v0/session.php');
-	//		} else {
-	?>
-	<form action="session.php" method="post">
-<!--		<fieldset>	-->
-<!--			<legend>Login</legend>-->
-<!--							-->
-<!--			<label for="email">E-mail:</label><br />-->
-<!--			<input type="text" size="30" id="email" name="email" /><br />-->
-<!--				-->
-<!--			<label for="password">Password:</label><br />-->
-<!--			<input type="password" size="30" id="password" name="password" /><br />-->
-<!--				-->
-<!--			<input type="submit" value="Log in" id="login" name="login" />-->
-<!--			<input type="reset" value="Reset" id="reset" name="reset" />-->
-<!-- 		</fieldset>-->
-<!--	</form>-->
-	<?php
-		//	}
-		//}
-		//else
-		//{
-		//	if ( $_GET['logout'] )
-		//	{
-		//		session_start();
-		//		$_SESSION = array();
-		//		session_destroy();
-		//		header('Location: http://'. $_SERVER['SERVER_NAME'] . ':8888/ioesisto/v0/session.php');
-		//	}
-		//	else
-		//	{
-		//		echo '<h1>Bevenuto utente con id=' . $_SESSION['uid'] . '</h1>'; 
-		//		echo '<a href="index.php?logout=1">Logout</a>';
-		//	}
-		//}
-	?>
-<!--	</body>-->
-<!--</html>-->
