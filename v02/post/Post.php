@@ -499,7 +499,7 @@ class Post {
 		if(!is_null($row[POST_MODIFICATION_DATE]))
 			$p->setModificationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[POST_MODIFICATION_DATE])));
 		else $p->setModificationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[POST_CREATION_DATE])));
-		$p->loadComments()->loadVotes()->loadReports();
+		$p->loadComments()->loadReports();
 		return $p;
 	}
 	
@@ -532,6 +532,31 @@ class Post {
 				return $p;
 			} else $db->display_error("Post::loadFromDatabase()");
 		} else $db->display_connect_error("Post::loadFromDatabase()");
+		return false;
+	}
+	
+	static function loadByPermalink($permalink) {
+		require_once("query.php");
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			define_tables(); definePostColumns();
+			$table = Query::getDBSchema()->getTable(TABLE_POST);
+			$rs = $db->execute($s = Query::generateSelectStm(array($table),
+														 array(),
+														 array(new WhereConstraint($table->getColumn(POST_PERMALINK),Operator::$EQUAL,$permalink)),
+														 array()),
+							  $table->getName(), null);
+			
+			//echo "<p>" . $s . "</p>"; //DEBUG
+			//echo "<p>" . $db->num_rows() . "</p>"; //DEBUG
+			if($db->num_rows() == 1) {
+				//echo serialize($db->fetch_result()); //DEBUG
+				$row = $db->fetch_result();
+				$p = self::createFromDBResult($row);
+				//echo "<p>" .$p ."</p>";
+				return $p;
+			} else $db->display_error("Post::loadByPermalink()");
+		} else $db->display_connect_error("Post::loadByPermalink()");
 		return false;
 	}
 	

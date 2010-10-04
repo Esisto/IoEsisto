@@ -218,5 +218,9 @@ class PostManager {
 	static function updatePermalinkForPost($post) {
 		return $post->setPermalink($post->getPermalink(true), true);
 	}
+	
+	static function loadPostByPermalink($permalink) {
+		return Post::loadByPermalink($permalink);
+	} 
 }
 ?>
