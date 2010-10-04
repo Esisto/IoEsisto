@@ -2,6 +2,7 @@
 require_once("common.php");
 require_once("settings.php");
 require_once(USER_DIR . "/User.php");
+require_once("session.php");
 
 class UserManager{
 	static $UM_NoUserError = "UM_NoUser";
@@ -56,6 +57,7 @@ class UserManager{
         if(!isset($_POST["nickname"])) {
             return self::$UM_NoUserError;
         } else {
+		
         	$u = false;
             //check nick and password
            	$u = self::loadUserByNickname($_POST["nickname"]);
@@ -69,15 +71,12 @@ class UserManager{
             	if($u !== false && $u->getPassword() == sha1($_POST["password"]))
 	            	$logged = true;
             }
-            if($u === false) {
+            if($u !== false) {
 	            if($logged) {
-		            //comincia la sessione
-		            if(!session_start())
-		            	return self::$UM_NoSessionError;
-		            //registra le variabili
-		            session_register("user", $u->getNickname());
-		            //TODO salva cookie
-		            return true;
+		            if ( Session::start($u) )
+		            	return true;
+			    else
+				return self::$UM_NoSessionError; 
 	            }
 	            return self::$UM_NoPasswordError;
             }
@@ -87,8 +86,7 @@ class UserManager{
     
     static function logout($session, $error = null) {
         // elimina la sessione.
-        session_unset();
-        session_write_close();
+       Session::destroy();
     }
     
     static function editUser($user, $data, $error = null) {
