@@ -6,28 +6,34 @@ class Page {
 	 * Non esegue lo script ma fornisce i dati per sceglierlo.
 	 * 
 	 * @param $reqest: un URL relativo. Deve essere in una di queste forme:
-	 * /%nome utente&/Posts					carica tutti i post di un utente.
-	 * /%nome utente/Post/%data%/%titolo	carica il post il cui permalink è %nome utente/Post/%data%/%titolo
-	 * /%nome utente/Resource/%id risorsa%	carica la risorsa con id %id risorsa%
-	 * /Contests							carica tutti i contest
-	 * /Contest/%id contest%				carica il contest con id %id contest%
-	 * /Contest/%id contest%/Posts			carica i post del contest
-	 *
-	 * ecc... TODO: decidere tutti i comandi...
+	 * %oggetto%/
+	 * %oggetto%/%identificativo oggetto%/
+	 * %oggetto%/%identificativo oggetto%/%azione%/
+	 * %oggetto%/%identificativo oggetto%/%azione%/?%nome parametro%=%valore parametro%
+	 * 
+	 * @return un array associativo contenente i seguenti parametri:
+	 * object => l'oggetto o se c'è un errore: index.
+	 * identificativo (o identificativi) dell'oggetto.
+	 * permalink oggetto => il permalink (che è anche la richiesta).
+	 * azione => l'azione da eseguire sull'oggetto.
+	 * il parametro potrà ancora essere recuperato attraverso $_GET[%nome parametro%].
 	 */
 	private static function elaborateRequest($request) {
 		require_once("file_manager.php");
 		//echo "<br />" . $request; //DEBUG
-		$s = substr($request, strlen(dirname($_SERVER["PHP_SELF"])) + 1);
+		$param_index = strpos($request,"?"); //TODO: TEST ME
+		$get = !$param_index;
+		$start = strlen(dirname($_SERVER["PHP_SELF"])) + 1;
+		$return = array();
+		$return["permalink"] = substr($request, $start, $get ? ($param_index - 1 - $start) : (strlen($request) - $start)); //TODO: TEST ME
 		//echo "<br />" . $s; //DEBUG
-		$parts = explode("/", $s);
+		$parts = explode("/", $return["permalink"]);
 		$count = count($parts);
 		//se parts è vuoto eseguo l'index
 		if($count == 0) return array("object" => "index");
 		
 		$object = $parts[0];
 		$action = $parts[$count-1];
-		$return = array();
 		
 		//selezione dell'oggetto su cui lavorare
 		switch ($object) {
@@ -90,7 +96,7 @@ class Page {
 				}
 				break;
 			case "Post":
-				//modifica, vota, commenta, elimina, subscribe il post
+				//modifica, vota, commenta, elimina, subscribe o aggiungi a una collezione il post
 				if($action == "Edit" || $action == "Vote" ||
 				   $action == "Comment" || $action == "Delete" ||
 				   $action == "Subscribe" || $action == "AddToCollection") {	//esempio: /Post/%author%/%post_date%/%post_title%/Edit
@@ -251,6 +257,36 @@ class Page {
 	
 	private static function getResponse($request) {
 		//recupera i dati dal db
+		switch ($request["object"]) {
+			case "Post":
+				self::doPostAction($request);
+				break;
+			case "Tag":
+				//echo "<p><font color='green'>REQUEST TO LOAD post which tag is " . $request["tagname"] . ".</font></p>"; //DEBUG
+				$posts = SearchManager::searchBy(array("Post"), array("tag" => $request["tagname"]), array("limit" => 4, "order" => "DESC", "by" => array("ps_creationDate")));
+				foreach($posts as $p) {
+					require_once("post/PostPage.php");
+					PostPage::showShortPost($p);
+				}
+				break;
+			case "Category":
+				//echo "<p><font color='green'>REQUEST TO LOAD post which category is " . $request["categoryname"] . ".</font></p>"; //DEBUG
+				$posts = SearchManager::searchBy(array("Post"), array("category" => $request["categoryname"]), array("limit" => 4, "order" => "DESC", "by" => array("ps_creationDate")));
+				foreach($posts as $p) {
+					require_once("post/PostPage.php");
+					PostPage::showShortPost($p);
+				}
+				break;
+			case "index":
+			default:
+				//TODO: creare pagina index
+				$posts = SearchManager::searchBy(array("Post"), array(), array("limit" => 4, "order" => "DESC", "by" => array("ps_creationDate")));
+				foreach($posts as $p) {
+					require_once("post/PostPage.php");
+					PostPage::showPost($p);
+				}
+				break;
+		}
 	}
 	
 	static function make($request) {
@@ -268,6 +304,66 @@ class Page {
 			PostPage::showPost();
 		}
 		return $req;
+	}
+	
+	private static function doPostAction($request) {
+		switch ($request["action"]) {
+			//modifica, vota, commenta, elimina, subscribe o aggiungi a una collezione il post
+			case "Read":
+				//echo "<p><font color='green'>REQUEST TO LOAD " . $request["script"] . " by: " . $author->getNickname() . ", with the title of: " . $request["posttitle"] . ", created the day: " . date("d/m/Y", $request["postday"]) . "</font></p>"; //DEBUG
+				$p = PostManager::loadPostByPermalink($request["permalink"]);
+				require_once("post/PostPage.php");
+				PostPage::showPost($p);
+				break;
+			case "Edit":
+				//echo "<p><font color='green'>REQUEST TO LOAD " . $request["script"] . " by: " . $author->getNickname() . ", with the title of: " . $request["posttitle"] . ", created the day: " . date("d/m/Y", $request["postday"]) . "</font></p>"; //DEBUG
+				$p = PostManager::loadPostByPermalink($request["permalink"]);
+				require_once("post/PostPage.php");
+				PostPage::showEditForm($p);
+				break;
+			case "Vote":
+				//echo "<p><font color='green'>REQUEST TO LOAD " . $request["script"] . " by: " . $author->getNickname() . ", with the title of: " . $request["posttitle"] . ", created the day: " . date("d/m/Y", $request["postday"]) . "</font></p>"; //DEBUG
+				$p = PostManager::loadPostByPermalink($request["permalink"]);
+				require_once("post/PostPage.php");
+				//TODO: controllo su vote.
+				PostManager::votePost(Session::getUser(), $p, $_GET["vote"]);
+				PostPage::showPost($p);
+				break;
+			case "Comment":
+				//echo "<p><font color='green'>REQUEST TO LOAD " . $request["script"] . " by: " . $author->getNickname() . ", with the title of: " . $request["posttitle"] . ", created the day: " . date("d/m/Y", $request["postday"]) . "</font></p>"; //DEBUG
+				$p = PostManager::loadPostByPermalink($request["permalink"]);
+				require_once("post/PostPage.php");
+				PostPage::showCommentForm($p);
+				break;
+			case "Delete":
+				//echo "<p><font color='green'>REQUEST TO LOAD " . $request["script"] . " by: " . $author->getNickname() . ", with the title of: " . $request["posttitle"] . ", created the day: " . date("d/m/Y", $request["postday"]) . "</font></p>"; //DEBUG
+				$p = PostManager::loadPostByPermalink($request["permalink"]);
+				require_once("post/PostPage.php");
+				PostManager::deletePost($p);
+				header("location: " . FileManager::getServerPath());
+				break;
+			case "Subscribe":
+				//echo "<p><font color='green'>REQUEST TO LOAD " . $request["script"] . " by: " . $author->getNickname() . ", with the title of: " . $request["posttitle"] . ", created the day: " . date("d/m/Y", $request["postday"]) . "</font></p>"; //DEBUG
+				$p = PostManager::loadPostByPermalink($request["permalink"]);
+				require_once("post/PostPage.php");
+				PostPage::showContestForm();
+				break;
+			case "AddToCollection":
+				//echo "<p><font color='green'>REQUEST TO LOAD " . $request["script"] . " by: " . $author->getNickname() . ", with the title of: " . $request["posttitle"] . ", created the day: " . date("d/m/Y", $request["postday"]) . "</font></p>"; //DEBUG
+				$p = PostManager::loadPostByPermalink($request["permalink"]);
+				require_once("post/PostPage.php");
+				PostPage::showCollectionForm($p);
+				break;
+			case "New":
+				require_once("post/PostPage.php");
+				PostPage::showPostForm($p);
+				break;
+			case "Search":
+			default:
+				require_once("post/SearchPage.php");
+				SearchPage::showPostSearchForm($p);
+			break;
+		}
 	}
 }
 ?>
