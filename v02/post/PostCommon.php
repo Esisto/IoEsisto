@@ -245,7 +245,7 @@ class Comment {
 				$c = new Comment($data);
 				$c->setID(intval($row[COMMENT_ID]));
 				$c->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[COMMENT_CREATION_DATE])));
-				$c->loadReports();
+				//$c->loadReports();
 				return $c;
 			} else $db->display_error("Comment::loadFromDatabase()");
 		} else $db->display_connect_error("Comment::loadFromDatabase()");

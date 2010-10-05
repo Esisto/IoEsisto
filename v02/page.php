@@ -22,10 +22,16 @@ class Page {
 		require_once("file_manager.php");
 		//echo "<br />" . $request; //DEBUG
 		$param_index = strpos($request,"?"); //TODO: TEST ME
-		$get = !$param_index;
+		$bookmark_index = strpos($request,"#"); //TODO: TEST ME
+		$get = $param_index || $bookmark_index;
+		$index = strlen($request);
+		if($get) {
+			if(!$param_index || $bookmark_index < $param_index) $index = $bookmark_index;
+			else if(!$bookmark_index || $param_index < $bookmark_index) $index = $param_index-1;
+		}
 		$start = strlen(dirname($_SERVER["PHP_SELF"])) + 1;
 		$return = array();
-		$return["permalink"] = substr($request, $start, $get ? ($param_index - 1 - $start) : (strlen($request) - $start)); //TODO: TEST ME
+		$return["permalink"] = substr($request, $start, $index - $start); //TODO: TEST ME
 		//echo "<br />" . $s; //DEBUG
 		$parts = explode("/", $return["permalink"]);
 		$count = count($parts);
@@ -59,8 +65,9 @@ class Page {
 				}
 				break;
 			case "Category":
-				//modifica o leggi tutti i post di una categoria //EDIT E DELETE SOLO ADMIN!!!
-				if($action == "Edit" || $action == "Posts" || $action == "Delete") {	//esempio: /Category/%category_name%/Posts
+				//modifica o leggi tutti i post di una categoria //EDIT, SETPARENT E DELETE SOLO ADMIN!!!
+				if($action == "Edit" || $action == "Posts" ||
+				   $action == "Delete" || $action == "SetParent") {	//esempio: /Category/%category_name%/Posts
 					if($count != 3) $action = "";
 					else $return["categoryname"] = $parts[1];
 				}
@@ -365,6 +372,8 @@ class Page {
 	private static function doCategoryAction($request) {
 		switch ($request["action"]) {
 			case "Edit":
+				require_once 'admin/common.php';
+				CategoryPage::showEditCategoryForm($request["categoryid"]);
 				break;
 			case "Posts":
 				//echo "<p><font color='green'>REQUEST TO LOAD post which category is " . $request["categoryname"] . ".</font></p>"; //DEBUG
@@ -375,9 +384,19 @@ class Page {
 				}
 				break;
 			case "Delete":
+				require_once 'admin/common.php';
+				$cat = AdminCategoryManager::deleteCategory($request["categoryid"]);
+				header("location: ");
+				break;
 			case "New":
+				require_once 'admin/common.php';
+				$cat = CategoryPage::showNewCategoryForm();
+				header("location: " . FileManager::appendToRootPath("Category/" . $cat));
+				break;
 			case "Search":
 			default:
+				require_once 'search/SearchPage.php'; //TODO
+				//SearchPage::showCategorySearchForm();
 				break;
 		}
 	}
@@ -385,8 +404,19 @@ class Page {
 	private static function doCommentAction($request) {
 		switch ($request["action"]) {
 			case "Delete":
+				require_once 'post/PostCommon.php';
+				$c = Comment::loadFromDatabase($request["commentid"]);
+				$c->delete();
+				$p = PostManager::loadPostByPermalink($c->getPost());
+				header("location: " . $p->getFullPermalink());
+				break;
 			case "Read":
 			default:
+				require_once 'post/PostCommon.php';
+				$c = Comment::loadFromDatabase($request["commentid"]);
+				require_once 'post/PostManager.php';
+				$p = PostManager::loadPostByPermalink($c->getPost());
+				header("location: " . $p->getFullPermalink() . "#" . $c->getID());
 				break;
 		}
 	}
