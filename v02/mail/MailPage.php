@@ -1,57 +1,31 @@
-<?php
-	require_once("MailManager.php");
+<?php 
+
+class MailPage {
 	
-	class MailPage
-	{
-		static function markLikeSpam() {
-			// TODO
-		}
-
-		static function showMoveToForm() {
-		?>
-			<form name="" action="" method="get"> <!-- TODO -->
-            			<input type="submit" value="">
-        		</form>
-        	<?php		
-			// TODO
-		}		
+	static function showEditDirectoryForm($directory) {
+		//TODO
 		
-		static function showSendForm() {
-		?>
-			<form name="" action="" method="get"> <!-- TODO -->
-            			<input type="submit" value="">
-        		</form>
-        	<?php	
-			// TODO
-		}
-
-		static function showReplyForm() {
-		?>
-			<form name="" action="" method="get"> <!-- TODO -->
-            			<input type="submit" value="">
-        		</form>
-        	<?php	
-			// TODO
-		}
-		
-		static function markLikeRead() {
-			// TODO
-		}
-
-		static function delete() {
-			// TODO
-		}
-
-		static function showDeleted() {
-			// TODO
-		}
-
-		static function showSended() {
-			// TODO
-		}
-
-		static function showRecived() {
-			// TODO
-		}
 	}
+	
+	static function showMail($mail) {
+		//TODO
+	}
+
+	static function showShortMail($mail) {
+		//TODO
+	}
+	
+	static function showMoveToForm($mail) {
+		//TODO
+	}
+	
+	/**
+	 * Se mail == null ne crea una nuova, se mail ha valore quella nuova risponderà a mail.
+	 * @param Mail $mail è la mail a cui rispondere.
+	 */
+	static function showNewForm($mail = null) {
+		//TODO
+	}
+}
+
 ?>
