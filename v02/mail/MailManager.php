@@ -141,6 +141,10 @@ class MailManager {
 	}
 	
 	static function searchMail() {}
+	
+	static function emptyTrash($user) {
+		//TODO
+	}
 }
 
 

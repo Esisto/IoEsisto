@@ -129,11 +129,36 @@ class PostPage {
 <?php
 	}
 
-	static function showForLikelihood() {
-		// TODO
+	/**
+	 * @deprecated
+	 */
+	static function showForLikelihood() {}
+	
+	static function showNewNewsForm() {
+		//TODO
 	}
 	
-	static function showPostForm() {
+	static function showNewPhotoReportageForm() {
+		//TODO
+	}
+
+	static function showNewCollectionForm() {
+		//TODO
+	}
+	
+	static function showNewAlbumForm() {
+		//TODO
+	}
+
+	static function showNewMagazineForm() {
+		//TODO
+	}
+	
+	static function showNewVideoReportageForm() {
+		//TODO
+	}
+	
+	static function showNewPostForm() {
 		// TODO controlla sessione
 		if(isset($_POST["title"])) {
 			$data = array();
@@ -173,6 +198,7 @@ class PostPage {
 	}
 	
 	static function showCommentForm() {
+		//TODO
 		?>
         <form name="" action="" method="get"> <!-- TODO -->
             <input type="submit" value="">
@@ -180,7 +206,11 @@ class PostPage {
         <?php
 	}
 
+	/**
+	 * @deprecated
+	 */
 	static function showVoteForm() {
+		//TODO
 		?>
         <form name="" action="" method="get"> <!-- TODO -->
             <input type="submit" value="">
@@ -188,7 +218,7 @@ class PostPage {
         <?php
 	}
 
-	static function showEditForm() {
+	static function showEditPostForm() {
 		?>
         <form name="" action="" method="get"> <!-- TODO -->
             <input type="submit" value="">
@@ -196,20 +226,32 @@ class PostPage {
         <?php
 	}
 
-	static function showCollectionForm() {
-		?>
-        <form name="" action="" method="get"> <!-- TODO -->
-            <input type="submit" value="">
-        </form>
-        <?php
+	static function showEditNewsForm() {
+		//TODO
+	}
+	
+	static function showEditPhotoReportageForm() {
+		//TODO
 	}
 
-	static function showContestForm() {
-		?>
-        <form name="" action="" method="get"> <!-- TODO -->
-            <input type="submit" value="">
-        </form>
-        <?php
+	static function showEditCollectionForm() {
+		//TODO
+	}
+	
+	static function showEditAlbumForm() {
+		//TODO
+	}
+
+	static function showEditMagazineForm() {
+		//TODO
+	}
+	
+	static function showEditVideoReportageForm() {
+		//TODO
+	}
+	
+	static function showContestDetails($contest) {
+		//TODO
 	}
 }
 
