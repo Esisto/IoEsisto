@@ -5,6 +5,9 @@
 	 * è una classe che contiene solo metodi statici e
 	 * gestisce le sessioni php	
 	 */
+
+	session_start();
+
 	class Session {
 		
 		/**
@@ -15,8 +18,8 @@
 		static function start( $u ) {
 			ini_set( 'session.use_cookies', 1 );		// Forza l'utilizzo dei cookies
 			ini_set( 'session.use_only_cookies', 1 );	
-			if( !session_start() )
-				return false;			
+			/*if( !session_start() )
+				return false;	*/		
 			
 			if ( !isset($_SESSION["iduser"]) ) {
 				$id = $u->getID();
@@ -42,8 +45,8 @@
 		 * restituisce un oggetto user che ha avviato la sessione		
 		 */
 		static function getUser() {
-			if( !session_start() )
-				return false;
+			/*if( !session_start() )
+				return false;*/
 
 			if ( isset($_SESSION["iduser"]) ) {
 				$user = User::loadFromDatabase($_SESSION["iduser"]);
