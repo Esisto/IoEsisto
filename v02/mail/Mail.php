@@ -34,6 +34,9 @@ class MailDirectory {
 	}
 	
 	function __construct($name, $owner) {
+		if( is_a($owner, "User") ) 
+			$owner = $owner->getID();
+
 		$this->name = $name;
 		$this->owner = $owner;
 	}
