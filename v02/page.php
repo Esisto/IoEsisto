@@ -259,7 +259,7 @@ class Page {
 		return $return;
 	}
 	
-	private static function getResponse($request) {
+	private static function doAction($request) {
 		//recupera i dati dal db
 		switch ($request["object"]) {
 			case "Post":
@@ -309,21 +309,20 @@ class Page {
 		}
 	}
 	
-	static function make($request) {
+	static function getResponse($request) {
 		//riceve la richiesta
 		//la fa elaborare
 		$req = self::elaborateRequest($request);
 		
-		//sceglie le parti da inserire nella pagina
-		//header, menù, ecc...
+		//TODO toss me
+		self::doAction($req);
 		
-		//recupera la risposta
-		$r = self::getResponse($request);
-		//dà la risposta in pasto alla Page giusta
-		if($req["object"] == "Post") { //è un esempio...
-			PostPage::showPost();
-		}
-		return $req;
+		//sceglie le parti da inserire nella pagina
+		$t = self::getTemplate();
+		//header, menù, ecc...
+
+		//scrive la pagina richiesta.
+		self::writeWithTemplate($t);
 	}
 	
 	private static function doUserAction($request) {
@@ -756,6 +755,31 @@ class Page {
 	
 	private static function canUserDo($object, $objectType, $action) {
 		return true; //TODO deve leggere le autorizzazioni per il tipo di utente.
+	}
+	
+	public static function getTemplate($request) {
+		require_once 'template/TemplateManager.php';
+		return TemplateManager::getTemplateForRequest($request);
+	}
+	
+	private static function writeWithTemplate($template) {
+		require_once 'web/header.inc';
+		require_once 'template/TemplateManager.php';
+		$default = TemplateManager::getDefaultTemplate();
+		if(is_null($template) || $template === false)
+			$template = $default;
+			
+		writePageHeader("IoEsisto", $template->css, $template->js);
+		
+		foreach($template->parts as $part) {
+		//scrive le pagine richieste dopo aver eseguito le azioni volute.
+			$part->write();
+			
+			self::doAction($req);
+		}
+		
+		require_once 'web/footer.inc';
+		writeFooter();
 	}
 }
 ?>
