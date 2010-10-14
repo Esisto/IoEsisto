@@ -309,22 +309,6 @@ class Page {
 		}
 	}
 	
-	static function getResponse($request) {
-		//riceve la richiesta
-		//la fa elaborare
-		$req = self::elaborateRequest($request);
-		
-		//TODO toss me
-		self::doAction($req);
-		
-		//sceglie le parti da inserire nella pagina
-		$t = self::getTemplate();
-		//header, menù, ecc...
-
-		//scrive la pagina richiesta.
-		self::writeWithTemplate($t);
-	}
-	
 	private static function doUserAction($request) {
 		$user = null;
 		if(isset($request["userid"]))
@@ -439,8 +423,8 @@ class Page {
 				break;
 			case "Search":
 			default:
-				require_once 'search/SearchPage.php'; //TODO
-				//SearchPage::showContactSearchForm();
+				require_once 'search/SearchPage.php';
+				SearchPage::showContactSearchForm();
 				break;
 		}
 	}
@@ -477,8 +461,8 @@ class Page {
 				break;
 			case "Search":
 			default:
-				require_once 'search/SearchPage.php'; //TODO
-				//SearchPage::showContactSearchForm();
+				require_once 'search/SearchPage.php';
+				SearchPage::showContactSearchForm();
 				break;
 		}
 	}
@@ -508,8 +492,8 @@ class Page {
 				break;
 			case "Search":
 			default:
-				require_once 'search/SearchPage.php'; //TODO
-				//SearchPage::showCategorySearchForm();
+				require_once 'search/SearchPage.php';
+				SearchPage::showCategorySearchForm();
 				break;
 		}
 	}
@@ -599,8 +583,8 @@ class Page {
 				break;
 			case "Search":
 			default:
-				require_once 'search/SearchPage.php'; //TODO
-				//SearchPage::showMailSearchForm();
+				require_once 'search/SearchPage.php';
+				SearchPage::showMailSearchForm();
 				break;
 		}
 	}
@@ -647,8 +631,8 @@ class Page {
 				break;
 			case "Search":
 			default:
-				require_once 'search/SearchPage.php'; //TODO
-				//SearchPage::showMailSearchForm();
+				require_once 'search/SearchPage.php';
+				SearchPage::showMailSearchForm();
 				break;
 		}
 	}
@@ -686,8 +670,8 @@ class Page {
 				break;
 			case "Search":
 			default:
-				require_once 'search/SearchPage.php'; //TODO
-				//SearchPage::showTagSearchForm();
+				require_once 'search/SearchPage.php';
+				SearchPage::showTagSearchForm();
 				break;
 		}
 	}
@@ -711,9 +695,16 @@ class Page {
 				//echo "<p><font color='green'>REQUEST TO LOAD " . $request["script"] . " by: " . $author->getNickname() . ", with the title of: " . $request["posttitle"] . ", created the day: " . date("d/m/Y", $request["postday"]) . "</font></p>"; //DEBUG
 				$p = PostManager::loadPostByPermalink($request["permalink"]);
 				require_once("post/PostPage.php");
-				//TODO: controllo su vote.
-				$me = UserManager::loadUser(Session::getUser());
-				PostManager::votePost($me, $p, $_GET["vote"]);
+				//controllo su vote.
+				if(isset($_GET["vote"])) {
+					if($_GET["vote"] == "y")
+						$vote = true;
+					if($_GET["vote"] == "n")
+						$vote = false;
+					if(!isset($vote)) header("location: " . FileManager::appendToRootPath("error.php?error=Oops, il voto da te inserito non è valido."));
+					$me = UserManager::loadUser(Session::getUser());
+					PostManager::votePost($me, $p, $_GET["vote"]);
+				}
 				PostPage::showPost($p);
 				break;
 			case "Comment":
@@ -757,22 +748,85 @@ class Page {
 		return true; //TODO deve leggere le autorizzazioni per il tipo di utente.
 	}
 	
-	public static function getTemplate($request) {
-		require_once 'template/TemplateManager.php';
-		return TemplateManager::getTemplateForRequest($request);
-	}
+	public static function titleForRequest($request) {
+		return "IoEsisto";
+	} 
 	
-	private static function writeWithTemplate($template) {
+	public static function getResponse($request) {
 		require_once 'web/header.inc';
+		require_once 'web/page.inc';
+		require_once 'web/footer.inc';
 		require_once 'template/TemplateManager.php';
+		
+		$data = self::elaborateRequest($request);
 		$default = TemplateManager::getDefaultTemplate();
+		$template = TemplateManager::getTemplateForRequest($data);
 		if(is_null($template) || $template === false)
 			$template = $default;
-			
-		writePageHeader("IoEsisto", $template->css, $template->js);
+		
+		$parser = TemplateParser::createParser($template);
+		
+		$css = "default"; $title = self::titleForRequest($request);
+		$cols_stack = array();
+		$write_h = false; $write_f = false; $ad = false;
+		while($el = $parser->nextElement()) {
+			switch ($el["tag"]) {
+				case "TEMPLATE":
+					$css = $el["attributes"]["STYLE"];
+					$c = array("default");
+					if($css != "default")
+						$c[] = $css;
+					writePageHeader($title, $c, $c);
+					break;
+				case "HEADER":
+					$write_h = true;
+					if($el["type"] == "close") {
+						writeHeader($ad);
+						$write_h = false;
+					}
+					break;
+				case "AD":
+					if($write_h || $write_f)
+						$ad = true;
+					else {
+						$style = "default";
+						if(isset($el["attributes"]["STYLE"]))
+							$style = $el["attributes"]["STYLE"];
+						writeAD($style);
+					}
+					break;
+				case "COL":
+				case "DIV":
+					if($el["type"] == "open" || $el["type"] == "complete") {
+						if(isset($el["attributes"]["COLS"]))
+							$cols_stack[] = $el["attributes"]["COLS"];
+						else
+							$cols_stack[] = 1;
+						$id = null; $class = $null;
+						if(isset($el["attributes"]["ID"]))
+							$id = $el["attributes"]["ID"];
+						if(isset($el["attributes"]["CLASS"]))
+							$class = $el["attributes"]["CLASS"];
+						opendiv($class, $id);
+					}
+					if($el["type"] == "close" || $el["type"] == "complete") {
+						if($el["type"] == "close")
+							unset($cols_stack[count($cols_stack)-1]);
+						closediv();
+					}
+					if($el["type"] == "cdata" && $el["value"] != "\n") {
+						if(method_exists(new Page(), $el["value"])) {
+							call_user_func($el["value"], $data);
+						} else {
+							writePlainText($el["value"]);
+						}
+					}
+					break;
+			}
+		}
 		
 		foreach($template->parts as $part) {
-		//scrive le pagine richieste dopo aver eseguito le azioni volute.
+			//scrive le pagine richieste dopo aver eseguito le azioni volute.
 			$part->write();
 			
 			self::doAction($req);
@@ -781,5 +835,41 @@ class Page {
 		require_once 'web/footer.inc';
 		writeFooter();
 	}
+	
+	private static function PCMain($data) {
+		self::doAction($data);
+	}
+	
+	private static function PCComments($data) {
+		
+	}
+	
+	private static function PCRelated($data) {
+		
+	}
+	
+	private static $WHO_POST = 1000;
+	private static function PCWho($data) {
+		require_once 'post/PostManager.php';
+		$p = PostManager::loadPost(self::$WHO_POST);
+		if($p !== false) {
+			require_once 'post/PostPage.php';
+			PostPage::showPost($p, array("short"));
+		}
+	}
+	
+	private static function PCSearch($data) {
+		require_once 'search/SearchPage.php';
+		SearchPage::showDefaultSearchForm();
+	}
+	
+	private static function PCCategories($data) {
+		echo "Categorie";
+	}
+	
+	private static function PCCat($data, $num) {
+		
+	}
 }
+
 ?>
