@@ -9,7 +9,7 @@ function writeHeader($title, $stylesheets = array(), $js = array()) {
 	<meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
 	<title><?php echo $title; ?></title>
 <?php 
-foreach ($stylesheets as $css) {
+foreach($stylesheets as $css) {
 ?>
 	<link rel="stylesheet" type="text/css" media="screen,print" href="<?php echo FileManager::appendToRootPath("styles/" . $css . ".css") ?>" />
 <?php 
