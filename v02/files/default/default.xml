@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<template name="ie_home" style="default">
+	<header><ad/></header>
+	<content cols="1">
+		<col cols="2">
+			<col id="main" class="large">
+				PCMain
+				<div cols="2">
+					<col>PCComments</col>
+					<col>PCRelated</col>
+				</div>
+			</col>
+			<col class="side right">
+				PCWho
+				PCSearch
+				<ad/>
+			</col>
+		</col>
+		<div class="clear" cols="1">
+			<div>PCCategories</div>
+			<col cols="2">
+				<col class="medium">
+					PCCat1
+					PCCat3
+					PCCat5
+					PCCat7
+				</col>
+				<col class="medium">
+					PCCat2
+					PCCat4
+					PCCat6
+					PCCat8
+				</col>
+			</col>
+		</div>
+	</content>
+	<footer><ad/></footer>
+</template>
