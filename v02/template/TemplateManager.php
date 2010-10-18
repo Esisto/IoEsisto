@@ -7,7 +7,7 @@ class TemplateManager {
 	
 	static function getTemplateForRequest($request) {
 		
-		
+		return "files/default/default.xml";
 		
 	}
 	
@@ -31,13 +31,17 @@ class TemplateParser {
 	static $FILE_NOT_EXISTS = 1;
 	static $PARSE_ERROR = 2;
 	
-	private $object;
-	private $parser;
+	var $parser;
 	
-	static function createParser($filename = null) {
+	/**
+	 * @deprecated
+	 */
+	static function createParser($filename) {
 		$tp = new TemplateParser();
 		$tp->parser = xml_parser_create();
-		return $this->setFile($filename);
+		$tp->setFile($filename);
+		//var_dump($tp); //DEBUG
+		return $tp;
 	}
 	
 	function setFile($filename) {
@@ -46,23 +50,28 @@ class TemplateParser {
 	}
 	
 	private $template = null;
-	private $index = 0;
+	private $index = -1;
 	
 	function nextElement() {
-		if($template == null)
-			if($err = $this->parseTemplate() != self::$NO_ERROR)
-				return $err;
-		if($index >= count($this->template)) return false;
+		if($this->template == null)
+			return false;
+		if($this->index >= count($this->template)) return false;
 		
-		return $this->template[$index];
+		$this->index++;
+		return $this->template[$this->index];
 	}
 	
-	private function parseTemplate() {
-		if(!file_exists($this->filename))
+	static function parseTemplate($template) {
+		$tp = new TemplateParser();
+		$tp->parser = xml_parser_create();
+		$tp->setFile($template);
+		if(!file_exists($tp->filename))
 			return self::$FILE_NOT_EXISTS;
 		
-		if(xml_parse_into_struct($this->parser, file_get_contents($this->filename), $this->template))
-			return self::$NO_ERROR;
+		if(xml_parse_into_struct($tp->parser, file_get_contents($tp->filename), $tp->template)) {
+			//echo serialize($tp->template); //DEBUG
+			return $tp;
+		}
 		return self::$PARSE_ERROR;
 	}
 	

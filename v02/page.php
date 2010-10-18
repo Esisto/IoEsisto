@@ -251,7 +251,6 @@ class Page {
 				$action = "";
 		}
 		
-		$return["permalink"] = $s;
 		$return["object"] = $object;
 		if($action != "") $return["action"] = $action;
 		else $return["object"] = "index";
@@ -760,28 +759,44 @@ class Page {
 		
 		$data = self::elaborateRequest($request);
 		$default = TemplateManager::getDefaultTemplate();
-		$template = TemplateManager::getTemplateForRequest($data);
-		if(is_null($template) || $template === false)
-			$template = $default;
-		
-		$parser = TemplateParser::createParser($template);
-		
+		$parser = null; $tentativi = 0;
+		while(is_numeric($parser) || is_null($parser)) {
+			$template = TemplateManager::getTemplateForRequest($data);
+			if(is_numeric($parser) || is_null($template) || $template === false)
+				$template = $default;
+			if($tentativi == 1)
+				echo "<h3>ERRORE IN " . $template . "</h3>";
+			if($tentativi == 2) {
+				echo "<h3>ERRORE NEL TEMPLATE DI DEFAULT</h3>";
+				return;
+			}
+			$tentativi++;
+			
+			$parser = TemplateParser::parseTemplate($template);
+			//echo "<p>" . serialize(is_numeric($parser)) . "</p>"; //DEBUG
+		}
+		//echo "parser creato: " . serialize($parser) . "<br />";  //DEBUG
 		$css = "default"; $title = self::titleForRequest($request);
 		$cols_stack = array();
 		$write_h = false; $write_f = false; $ad = false;
+		$i=0; //DEBUG
 		while($el = $parser->nextElement()) {
+			if($i==10) //DEBUG
+				return; //DEBUG
+			$i++; //DEBUG
 			switch ($el["tag"]) {
 				case "TEMPLATE":
+					if($el["type"] == "cdata") continue;
 					$css = $el["attributes"]["STYLE"];
-					$c = array("default");
-					if($css != "default")
+					$c = array("default/default");
+					if($css != "default/default")
 						$c[] = $css;
-					writePageHeader($title, $c, $c);
+					writeHeader($title, $c, $c);
 					break;
 				case "HEADER":
 					$write_h = true;
 					if($el["type"] == "close") {
-						writeHeader($ad);
+						writePageHeader($ad);
 						$write_h = false;
 					}
 					break;
@@ -802,7 +817,7 @@ class Page {
 							$cols_stack[] = $el["attributes"]["COLS"];
 						else
 							$cols_stack[] = 1;
-						$id = null; $class = $null;
+						$id = null; $class = null;
 						if(isset($el["attributes"]["ID"]))
 							$id = $el["attributes"]["ID"];
 						if(isset($el["attributes"]["CLASS"]))
@@ -815,14 +830,20 @@ class Page {
 						closediv();
 					}
 					if($el["type"] == "cdata" && $el["value"] != "\n") {
-						if(method_exists(new Page(), $el["value"])) {
-							call_user_func($el["value"], $data);
+						$func = $el["value"];
+						if(substr($func,0,5)=="PCCat") {
+							$data["num"] = substr($func,-2,-1);
+							$func = substr($func, 0,5);
+						}
+						if(method_exists(new Page(), $func)) {
+							call_user_method_array($func, new Page(), $data);
 						} else {
-							writePlainText($el["value"]);
+							writePlainText($func);
 						}
 					}
 					break;
 			}
+			echo "<p>element: " . serialize($el) . "</p>";  //DEBUG
 		}
 		
 		foreach($template->parts as $part) {
@@ -837,30 +858,33 @@ class Page {
 	}
 	
 	private static function PCMain($data) {
-		self::doAction($data);
+		echo "Main";
+		//self::doAction($data);
 	}
 	
 	private static function PCComments($data) {
-		
+		echo "Commenti";
 	}
 	
 	private static function PCRelated($data) {
-		
+		echo "Vedi anche";
 	}
 	
 	private static $WHO_POST = 1000;
 	private static function PCWho($data) {
-		require_once 'post/PostManager.php';
-		$p = PostManager::loadPost(self::$WHO_POST);
-		if($p !== false) {
-			require_once 'post/PostPage.php';
-			PostPage::showPost($p, array("short"));
-		}
+		echo "Chi Siamo";
+//		require_once 'post/PostManager.php';
+//		$p = PostManager::loadPost(self::$WHO_POST);
+//		if($p !== false) {
+//			require_once 'post/PostPage.php';
+//			PostPage::showPost($p, array("short"));
+//		}
 	}
 	
 	private static function PCSearch($data) {
-		require_once 'search/SearchPage.php';
-		SearchPage::showDefaultSearchForm();
+//		require_once 'search/SearchPage.php';
+//		SearchPage::showDefaultSearchForm();
+		echo "Cerca";
 	}
 	
 	private static function PCCategories($data) {
@@ -868,7 +892,7 @@ class Page {
 	}
 	
 	private static function PCCat($data, $num) {
-		
+		echo "Categoria " + $num;
 	}
 }
 
