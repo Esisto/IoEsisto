@@ -50,15 +50,14 @@ class TemplateParser {
 	}
 	
 	private $template = null;
-	private $index = -1;
+	private $index = 0;
 	
 	function nextElement() {
 		if($this->template == null)
 			return false;
 		if($this->index >= count($this->template)) return false;
 		
-		$this->index++;
-		return $this->template[$this->index];
+		return $this->template[$this->index++];
 	}
 	
 	static function parseTemplate($template) {

@@ -1,10 +1,7 @@
 <?php 
 
-function writeFooter() {
+function writeFooter($ad) {
 ?>
-<div id="footer">
-
-</div>
 </body>
 </html>
 <?php 

@@ -779,14 +779,14 @@ class Page {
 		$css = "default"; $title = self::titleForRequest($request);
 		$cols_stack = array();
 		$write_h = false; $write_f = false; $ad = false;
-		$i=0; //DEBUG
+//		$i=0; //DEBUG
 		while($el = $parser->nextElement()) {
-			if($i==10) //DEBUG
-				return; //DEBUG
-			$i++; //DEBUG
+//			if($i==10) //DEBUG
+//				return; //DEBUG
+//			$i++; //DEBUG
 			switch ($el["tag"]) {
 				case "TEMPLATE":
-					if($el["type"] == "cdata") continue;
+					if($el["type"] != "open") continue;
 					$css = $el["attributes"]["STYLE"];
 					$c = array("default/default");
 					if($css != "default/default")
@@ -798,6 +798,13 @@ class Page {
 					if($el["type"] == "close") {
 						writePageHeader($ad);
 						$write_h = false;
+					}
+					break;
+				case "FOOTER":
+					$write_f = true;
+					if($el["type"] == "close") {
+						writeFooter($ad);
+						$write_f = false;
 					}
 					break;
 				case "AD":
@@ -843,23 +850,13 @@ class Page {
 					}
 					break;
 			}
-			echo "<p>element: " . serialize($el) . "</p>";  //DEBUG
+			//echo "<p>element: " . serialize($el) . "</p>";  //DEBUG
 		}
-		
-		foreach($template->parts as $part) {
-			//scrive le pagine richieste dopo aver eseguito le azioni volute.
-			$part->write();
-			
-			self::doAction($req);
-		}
-		
-		require_once 'web/footer.inc';
-		writeFooter();
 	}
 	
 	private static function PCMain($data) {
 		echo "Main";
-		//self::doAction($data);
+		self::doAction($data);
 	}
 	
 	private static function PCComments($data) {

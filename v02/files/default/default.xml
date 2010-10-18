@@ -8,8 +8,8 @@
 			<col id="main" class="large">
 				PCMain
 				<div cols="2">
-					<col>PCComments</col>
-					<col>PCRelated</col>
+					<col class="comments">PCComments</col>
+					<col class="seeAlso">PCRelated</col>
 				</div>
 			</col>
 			<col class="side right">

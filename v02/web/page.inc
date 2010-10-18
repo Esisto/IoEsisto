@@ -40,17 +40,15 @@ function writePageHeader($ad) {
 }
 
 function opendiv($class, $id) {
-	
 ?>
 <div<?php
-if(!is_null($class)) {
-?> class=""<?php
-}
-if(!is_null($id)) {
-?> id="<?php echo $id; ?>"<?php	
-}
-?>>
-
+	if(!is_null($class)) {
+	?> class="<?php echo $class; ?>"<?php
+	}
+	if(!is_null($id)) {
+	?> id="<?php echo $id; ?>"<?php	
+	}
+	?>>
 <?php 
 }
 
@@ -66,5 +64,17 @@ function writePlainText($text) {
 
 function writeAD($class) {
 	
+}
+
+function writePageFooter($class) {
+?>
+<div id="footer">
+<?php 
+	if($ad) {
+		writeAD("footer");
+	}
+?>
+</div>
+<?php
 }
 ?>

@@ -37,7 +37,7 @@ body{
 .operationsMenuButton{
 	width: 98px;
 	height: 35px;
-	background: orange url(img/button.png);
+	background: orange url(img/button.png) -60px;
 	margin: 0 1px 0 1px;
 	float: left;
 }
@@ -51,7 +51,7 @@ body{
 /*---------------------- categoriesMenu ----------------------*/
 #categoriesMenu{	
 	width: 100%;
-	background:orange;
+	background:orange url(img/button.png) -60px;
 }
 #categories{
 	width: 900px;
@@ -61,7 +61,7 @@ body{
 	width: 98px;
 	height: 35px;
 	margin: 0 1px 0 1px;
-	background: url(img/button.png);
+	background: url(img/button.png) -60px;
 	float: left;
 }
 .categoriesMenuButton a{
@@ -181,4 +181,10 @@ body{
 	text-align: right;
 }
 
+
+.medium {
+	width: 260px;
+	margin-left: 10px;
+	float: left;
+}
 

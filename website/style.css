@@ -1,155 +1,184 @@
-body {
-	background: #E9E9E9 url(img/bg.png) repeat-x
-}
-
-#base{
-	width: 900px;
-	margin: auto;
-}
-
-#header{
-	width: 900px;
-	height: 120px;
-	margin-top: 40px;
-}
-
-#logo{
-	width: 690px;
-	height: 120px;
-	background: #3366FF;
-	float: right;
-}
-
-#login{
-	width: 200px;
-	height: 120px;
-	background: #3366FF;
-	float: right;
-	margin-right: 10px;
-}
-
-#menu{
-	width: 900px;
-	height: 40px;
-	margin-top: 10px;
-}
-
-#post{
-	width: 600px;
-	float: left;
-}
-
-#post .advertising{
-	width: 600px;
-	height: 50px;
-	margin-top: 10px;
-	float: left;	
-}
-
-#featured{
-	width: 100%;
-}
-
-#featured .news {
-	width: 100%;
-}
-
-#featured .title {
-	width: 100%;
-	background: #0033FF;
-	float: left;
-}
-
-#bottom{
-	width: 100%;
-	float: left;
-}
-
-#bottom .news{
-	width: 295px;
-	margin-right: 10px;
-	float: left;
-}
-#bottom .last {
-	margin-right: 0;
-}
-
-#bottom .title{
-	width: 100%;
-	background: #0033FF;
-	float: left;
-}
-
-#bottom .content{
-	width: 100%;
-	float: left;
-}
-
-#bottom .image{
-	width: 80px;
-	height: 80px;
-	background: #00FFFF;
-	float: right;
-}
-
-#footer{
-	width: 900px;
-	height: 40px;
-	background: #3366FF;
-	margin-top: 10px;
-}
-
-.title h1{
+body{
+	background: url(img/stripes.png) repeat;
 	margin: 0;
+	padding: 0;
 }
 
-.news {
-	margin-top: 10px;
-}
-
-.content {
-	background: #0099FF;
-	float: left;
-}
-
-.image{
-	width: 140px;
-	height: 160px;
-	background: #00FFFF;
-	float: right;
-}
-
-.button{
-	width: 122px;
-	height: 40px;
-	background: #9999FF;
-	margin-left: 5px;
-	float: left;
-}
-
-.advertising{
-	background: black;
-	color: white;
-}
-
+/*---------------------- clear ----------------------*/
 .clear {	
 	clear: both;
 }
 
-#sidebar {
+/*---------------------- header ----------------------*/
+#headerBackground{
+	width: 100%;
+	background: #000000;
+}
+#header{
+	width: 900px;
+	height: 220px;
+	margin: 0 auto;
+	background: url(img/logo.png) no-repeat;
+	position:relative;
+}
+
+
+/*---------------------- operationsMenu ----------------------*/
+#operationsMenu{	
+	width: 900px;
+	margin: 0 auto;
+	position: absolute;
+	top: 185px;
+}
+#operations{
+	width: 600px;
+	margin: auto;
+}
+.operationsMenuButton{
+	width: 98px;
+	height: 35px;
+	background: orange url(img/button.png);
+	margin: 0 1px 0 1px;
 	float: left;
-	width: 290px;
+}
+
+.operationsMenuButton a{
+	text-decoration: none;
+	text-align: center;
+	color: #000000;	
+}
+
+/*---------------------- categoriesMenu ----------------------*/
+#categoriesMenu{	
+	width: 100%;
+	background:orange;
+}
+#categories{
+	width: 900px;
+	margin: 5px auto;
+} 
+.categoriesMenuButton{
+	width: 98px;
+	height: 35px;
+	margin: 0 1px 0 1px;
+	background: url(img/button.png);
+	float: left;
+}
+.categoriesMenuButton a{
+	text-decoration: none;
+	text-align: center;
+	color: #000000;	
+}
+
+
+
+/*---------------------- page ----------------------*/
+#page{
+	width: 900px;
+	margin: 0 auto;
+}
+
+
+
+/*---------------------- home.html ----------------------
+  ---------------------- articles -----------------------*/
+#articles{
+	width: 600px;
+	float: left;
+}
+#articles .news{
+	width: 590px;
+	margin: 0 10px 0 0;
+	background: #FFFFFF;
+}
+#articles .title{
+	padding: 0 15px;
+}
+#articles .title a:link, a:visited{
+	text-decoration: none;
+	color: #000000;	
+}
+#articles .title a:hover{
+	text-decoration: underline;
+}
+#articles .text{
+	padding: 0 15px;
+	text-align: justify;
+}
+.text img{
+	padding: 0 10px 5px 0;
+	float: left;
+}
+#articles .author{
+	font-style: italic;
+	padding: 0 15px 5px 15px;
+	text-align: right;
+}
+.comments{
+	width: 310px;
+	background: #FFFFFF;
+	float: left;
+}
+.comments .avatarComments{
+	width: 55px;
+	padding: 5px 0 0 5px;
+	float: left;
+}
+.avatarComments img{
+	border: 1px solid #000000;
+	
+}
+#authorText{
+	width: 240px;
+	background: #FFFFFF;
+	float: left;
+}
+.commentsAuthor{
+	text-align: left;
+}
+.commentsText{
+	text-align: left;
+}
+.seeAlso{
+	width: 260px;
 	margin-left: 10px;
+	background: #FFFFFF;
+	float: left;
+}
+.bold{
+	margin: 0;
+	padding: 0;
+	background: #000000;
+	color: #FFFFFF;
+	
+}
+/*---------------------- shortArticles ----------------------*/
+#shortArticle{
+	width: 300px;
+	float: left;
+}
+#shortArticle .news{
+	width: 300px;
+	background: #FFFFFF;
+}
+#shortArticle .title{
+	padding: 0 15px;
+}
+#shortArticle .title a:link, a:visited{
+	text-decoration: none;
+	color: #000000;	
+}
+#shortArticle .title a:hover{
+	text-decoration: underline;
+}
+#shortArticle .text{
+	padding: 0 15px;
+	text-align: justify;
+}
+#shortArticle .author{
+	font-style: italic;
+	padding: 0 15px 5px 15px;
+	text-align: right;
 }
 
-.sideelement {
-	margin-top: 10px;
-	background: #0099FF;
-}
 
-.seealsoelement {
-	margin-top: 5px;
-}
-.seealsotitle {
-	background: #0033FF;
-}
