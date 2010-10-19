@@ -15,7 +15,7 @@ function writePageHeader($ad) {
 					<div class="operationsMenuButton"><a href="#"> OPERATION </a></div>
 					<div class="operationsMenuButton"><a href="#"> OPERATION </a></div>
 					<div class="operationsMenuButton"><a href="#"> OPERATION </a></div>
-					<div class="operationsMenuButton"><a href="#"> OPERATION </a></div>
+					<div class="operationsMenuButton lastButton"><a href="#"> OPERATION </a></div>
 					<div class="clear"></div>
 				</div>	
 			</div>
@@ -32,7 +32,7 @@ function writePageHeader($ad) {
 			<div class="categoriesMenuButton"><a href="#"> CATEGORY </a></div>
 			<div class="categoriesMenuButton"><a href="#"> CATEGORY </a></div>
 			<div class="categoriesMenuButton"><a href="#"> CATEGORY </a></div>
-			<div class="categoriesMenuButton"><a href="#"> CATEGORY </a></div>
+			<div class="categoriesMenuButton lastButton"><a href="#"> CATEGORY </a></div>
 			<div class="clear"></div>
 		</div>
 	</div>
@@ -59,7 +59,7 @@ function closediv() {
 }
 
 function writePlainText($text) {
-	echo $text;
+	echo "<p>" . $text . "</p>";
 }
 
 function writeAD($class) {

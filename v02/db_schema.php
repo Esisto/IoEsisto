@@ -193,6 +193,10 @@ class DBSchema {
 			$t = clone $this->tables[$tablename];
 			//echo "<br />" . serialize($t); //DEBUG
 			return $t;
+		} else if(isset($this->tables[strtolower($tablename)])) {
+			$t = clone $this->tables[strtolower($tablename)];
+			//echo "<br />" . serialize($t); //DEBUG
+			return $t;
 		}
 		return false;
 	}

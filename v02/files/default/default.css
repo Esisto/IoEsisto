@@ -24,7 +24,7 @@ body{
 
 
 /*---------------------- operationsMenu ----------------------*/
-#operationsMenu{	
+#operationsMenu{
 	width: 900px;
 	margin: 0 auto;
 	position: absolute;
@@ -35,10 +35,11 @@ body{
 	margin: auto;
 }
 .operationsMenuButton{
-	width: 98px;
+	text-align: center;
+	width: 99px;
 	height: 35px;
 	background: orange url(img/button.png) -60px;
-	margin: 0 1px 0 1px;
+	border-left: 1px solid 000;
 	float: left;
 }
 
@@ -58,9 +59,11 @@ body{
 	margin: 5px auto;
 } 
 .categoriesMenuButton{
-	width: 98px;
+	text-align: center;
+	width: 99px;
 	height: 35px;
-	margin: 0 1px 0 1px;
+	/*margin: 0 1px 0 1px;*/
+	border-left: 1px solid 000;
 	background: url(img/button.png) -60px;
 	float: left;
 }
@@ -70,10 +73,13 @@ body{
 	color: #000000;	
 }
 
-
+.categoriesMenuButton.lastButton, .operationsMenuButton.lastButton {
+	width: 98px;
+	border-right: 1px solid 000;
+}
 
 /*---------------------- page ----------------------*/
-#page{
+#content {
 	width: 900px;
 	margin: 0 auto;
 }
@@ -114,11 +120,7 @@ body{
 	padding: 0 15px 5px 15px;
 	text-align: right;
 }
-.comments{
-	width: 310px;
-	background: #FFFFFF;
-	float: left;
-}
+
 .comments .avatarComments{
 	width: 55px;
 	padding: 5px 0 0 5px;
@@ -138,12 +140,6 @@ body{
 }
 .commentsText{
 	text-align: left;
-}
-.seeAlso{
-	width: 260px;
-	margin-left: 10px;
-	background: #FFFFFF;
-	float: left;
 }
 .bold{
 	margin: 0;
@@ -181,10 +177,47 @@ body{
 	text-align: right;
 }
 
-
+/*-----------ALTRO-----------*/
 .medium {
-	width: 260px;
-	margin-left: 10px;
+	width: 410px;
+	padding: 10px;
+	margin: 10px 10px 0 0;
 	float: left;
 }
-
+.large {
+	width: 570px;
+	padding: 10px;
+	margin: 10px 10px 0 0;
+	float: left;
+	background: rgba(255, 255, 255, 0.6);
+}
+.largest {
+	width: 880px;
+	margin-top: 10px;
+	padding: 10px;
+	float: left;
+	background: rgba(230, 230, 230, 0.5);
+}
+.side {
+	width: 280px;
+	padding: 10px;
+	margin: 10px 10px 0 0;
+	float: left;
+	background: rgba(255, 255, 255, 0.4);
+}
+.right {
+	margin-right: 0;
+	float: right;
+}
+.comments{
+	width: 300px;
+	background: rgba(255, 255, 255, 0.4);
+	margin: 10px 10px 0 0;
+	float: left;
+}
+.seeAlso{
+	width: 260px;
+	margin-top: 10px;
+	background: #FFFFFF;
+	float: left;
+}

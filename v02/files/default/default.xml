@@ -10,15 +10,19 @@
 				<div cols="2">
 					<col class="comments">PCComments</col>
 					<col class="seeAlso">PCRelated</col>
+					<div class="clear" />
 				</div>
+				<div class="clear" />
 			</col>
 			<col class="side right">
 				PCWho
 				PCSearch
 				<ad/>
+				<div class="clear" />
 			</col>
+			<div class="clear" />
 		</col>
-		<div class="clear" cols="1">
+		<div class="clear largest" cols="1">
 			<div>PCCategories</div>
 			<col cols="2">
 				<col class="medium">
@@ -33,6 +37,7 @@
 					PCCat6
 					PCCat8
 				</col>
+				<div class="clear" />
 			</col>
 		</div>
 	</content>

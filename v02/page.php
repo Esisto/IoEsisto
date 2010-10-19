@@ -300,6 +300,7 @@ class Page {
 			case "index":
 			default:
 				//TODO: creare pagina index
+				require_once 'search/SearchManager.php';
 				$posts = SearchManager::searchBy(array("Post"), array(), array("limit" => 4, "order" => "DESC", "by" => array("ps_creationDate")));
 				require_once("post/PostPage.php");
 				foreach($posts as $p)
@@ -784,6 +785,7 @@ class Page {
 //			if($i==10) //DEBUG
 //				return; //DEBUG
 //			$i++; //DEBUG
+			$id = null; $class = null;
 			switch ($el["tag"]) {
 				case "TEMPLATE":
 					if($el["type"] != "open") continue;
@@ -802,7 +804,7 @@ class Page {
 					break;
 				case "FOOTER":
 					$write_f = true;
-					if($el["type"] == "close") {
+					if($el["type"] == "close" || $el["type"] == "complete") {
 						writeFooter($ad);
 						$write_f = false;
 					}
@@ -817,40 +819,53 @@ class Page {
 						writeAD($style);
 					}
 					break;
+				case "CONTENT":
+					$id = "content";
 				case "COL":
+					//echo "<p>element: " . serialize($el) . "</p>";  //DEBUG
 				case "DIV":
 					if($el["type"] == "open" || $el["type"] == "complete") {
 						if(isset($el["attributes"]["COLS"]))
 							$cols_stack[] = $el["attributes"]["COLS"];
 						else
 							$cols_stack[] = 1;
-						$id = null; $class = null;
 						if(isset($el["attributes"]["ID"]))
 							$id = $el["attributes"]["ID"];
 						if(isset($el["attributes"]["CLASS"]))
 							$class = $el["attributes"]["CLASS"];
 						opendiv($class, $id);
+						if(isset($el["value"]) && $el["value"] != "\n") {
+							self::evaluateText($el["value"], $data);
+						}
 					}
 					if($el["type"] == "close" || $el["type"] == "complete") {
 						if($el["type"] == "close")
 							unset($cols_stack[count($cols_stack)-1]);
 						closediv();
 					}
-					if($el["type"] == "cdata" && $el["value"] != "\n") {
-						$func = $el["value"];
-						if(substr($func,0,5)=="PCCat") {
-							$data["num"] = substr($func,-2,-1);
-							$func = substr($func, 0,5);
-						}
-						if(method_exists(new Page(), $func)) {
-							call_user_method_array($func, new Page(), $data);
-						} else {
-							writePlainText($func);
-						}
-					}
 					break;
 			}
 			//echo "<p>element: " . serialize($el) . "</p>";  //DEBUG
+		}
+	}
+	
+	private static function evaluateText($text, $data) {
+		$text = trim($text, " \t\n");
+		$funcs = explode("\n", $text);
+		//echo serialize($funcs);
+		foreach($funcs as $func) {
+			if($func == "") continue;
+			
+			$func = trim($func, " \t\n");
+			//echo "<p style='color:red;'>|" . substr($func,-1,1) . "|</p>";
+			if(substr($func,0,5)=="PCCat" && is_numeric(substr($func,-1,1))) {
+				call_user_func(array("Page", substr($func, 0,5)), $data, substr($func,-1,1));
+			} else if($a = method_exists("Page", $func)) {
+				call_user_func_array(array("Page", $func), $data);
+			} else {
+				writePlainText($func);
+			}
+			//echo serialize($a);
 		}
 	}
 	
@@ -889,7 +904,7 @@ class Page {
 	}
 	
 	private static function PCCat($data, $num) {
-		echo "Categoria " + $num;
+		echo "<p>Categoria " . $num . "</p>";
 	}
 }
 
