@@ -19,7 +19,7 @@ class Post {
 	protected $visible;					// boolean
 	protected $place;					// 
 	protected $reports = array();		// array di oggetti Report
-	
+	protected $accessCount = 1;			// numero di accessi
 	/**
 	 * Crea un oggetto post.
 	 *
@@ -123,6 +123,9 @@ class Post {
 	function getVotes() {
 		return $this->votes;
 	}
+	function getAccessCount() {
+		return $this->accessCount;
+	}
 	
 	/**
 	 * Recupera il voto come la media tra tutti i valori salvati nella tabella Vote.
@@ -188,8 +191,9 @@ class Post {
 	 */
 	private function getRelativePermalink() {
 		require_once("common.php");
-		$s = "/Post/";
+		$s = "Post/";
 		$s.= Filter::textToPermalink($this->getAuthorName());
+		$s.= "/";
 		if(isset($this->creationDate)) {
 			$s.= date("Y-m-d", $this->getCreationDate());
 			$s.= "/";
@@ -274,6 +278,10 @@ class Post {
 	function setPermalink($permalink, $update = false) {
 		$this->permalink = $permalink;
 		if($update) $this->update();
+		return $this;
+	}
+	function setAccessCount($ac) {
+		$this->accessCount = $ac;
 		return $this;
 	}
 	
@@ -500,6 +508,10 @@ class Post {
 			$p->setModificationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[POST_MODIFICATION_DATE])));
 		else $p->setModificationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[POST_CREATION_DATE])));
 		$p->loadComments()->loadReports();
+		
+		require_once("common.php");
+		$p->setAccessCount(LogManager::getAccessCount("Post", $p->getID()));
+		
 		return $p;
 	}
 	

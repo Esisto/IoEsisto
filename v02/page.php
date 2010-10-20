@@ -23,16 +23,24 @@ class Page {
 		require_once("file_manager.php");
 		//echo "<br />" . $request; //DEBUG
 		$param_index = strpos($request,"?"); //TODO: TEST ME
+		//echo "<br />" . $param_index; //DEBUG
 		$bookmark_index = strpos($request,"#"); //TODO: TEST ME
 		$get = $param_index || $bookmark_index;
 		$index = strlen($request);
 		if($get) {
-			if(!$param_index || $bookmark_index < $param_index) $index = $bookmark_index;
-			else if(!$bookmark_index || $param_index < $bookmark_index) $index = $param_index-1;
+			if(!$param_index || ($bookmark_index && $bookmark_index < $param_index)) {
+				//echo "<br />" . $param_index; //DEBUG
+				$index = $bookmark_index;
+			} else if(!$bookmark_index || ($param_index && $param_index < $bookmark_index)) {
+				$index = $param_index;
+				//echo "<br />" . $bookmark_index; //DEBUG
+			}
 		}
-		$start = strlen(dirname($_SERVER["PHP_SELF"])) + 1;
+		$start = strlen(dirname($_SERVER["PHP_SELF"])) + 1; //il +1 è per lo /
 		$return = array();
+		//echo "<br />" . $start . " " . $index; //DEBUG
 		$return["permalink"] = substr($request, $start, $index - $start); //TODO: TEST ME
+		//echo "<br />" . $return["permalink"]; //DEBUG
 		//echo "<br />" . $s; //DEBUG
 		$parts = explode("/", $return["permalink"]);
 		$count = count($parts);
@@ -759,6 +767,7 @@ class Page {
 		require_once 'template/TemplateManager.php';
 		
 		$data = self::elaborateRequest($request);
+		//return; //DEBUG
 		$default = TemplateManager::getDefaultTemplate();
 		$parser = null; $tentativi = 0;
 		while(is_numeric($parser) || is_null($parser)) {

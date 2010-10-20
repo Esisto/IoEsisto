@@ -7,7 +7,7 @@ class TemplateManager {
 	
 	static function getTemplateForRequest($request) {
 		
-		return "files/default/default.xml";
+		return "files/default/index.xml";
 		
 	}
 	

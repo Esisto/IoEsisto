@@ -16,6 +16,7 @@ class CategoryManager {
 		require_once("query.php");
 		$db = new DBManager();
 		if(!$db->connect_errno()) {
+			require_once("strings/strings.php");
 			define_tables(); defineCategoryColumns();
 			$table = Query::getDBSchema()->getTable(TABLE_CATEGORY);
 			
@@ -46,6 +47,60 @@ class CategoryManager {
 				$new_categories[] = $cat;
 		}
 		return $new_categories;
+	}
+	
+	static function createCategoriesFromArray($array, $parent = null) {
+		if(!is_array($array)) {
+			if(self::categoryExists($array)) return;
+			if(self::createCategoryWithParent($array, $parent))
+				$created++;
+		} else {
+			foreach($array as $index => $value) {
+				if(!is_numeric($index)) {
+					self::createCategoriesFromArray($index, $parent);
+					self::createCategoriesFromArray($value, $index);
+				} else {
+					self::createCategoriesFromArray($value);
+				}
+			}
+		};
+	}
+	
+	static function createCategory($name) {
+		require_once("query.php");
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			define_tables(); defineCategoryColumns();
+			$table = Query::getDBSchema()->getTable(TABLE_CATEGORY);
+			
+			$db->execute($s = Query::generateInsertStm($table, array(CATEGORY_NAME => $name)));
+			if($db->num_rows() == 1)
+				return true;
+			else
+				return false;
+		} else $db->display_connect_error("CategoryManager::createCategory()");
+		return false;
+	}
+	
+	static function createCategoryWithParent($category, $parent) {
+		$ret = self::createCategory($category);
+		
+		if(!is_null($parent)) {
+			require_once("query.php");
+			$db = new DBManager();
+			if(!$db->connect_errno()) {
+				define_tables(); defineSubCategoryColumns();
+				$table = Query::getDBSchema()->getTable(TABLE_SUB_CATEGORY);
+				
+				$db->execute($s = Query::generateInsertStm($table, array(SUB_CATEGORY_PARENT => $parent, SUB_CATEGORY_CATEGORY => $category)));
+				if($db->num_rows() == 1)
+					return true;
+				else
+					return $ret || false;
+			} else $db->display_connect_error("CategoryManager::createCategoryWithParent()");
+			return $ret || false;
+		}
+		return $ret;
 	}
 }
 

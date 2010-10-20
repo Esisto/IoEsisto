@@ -286,8 +286,8 @@ class LogManager {
 				require_once 'post/PostManager.php';
 				$exists = PostManager::postExists($id);
 			} else if ($type == "User") {
-				require_once 'post/PostManager.php';
-				$exists = PostManager::postExists($id);
+				require_once 'post/UserManager.php';
+				$exists = UserManager::userExists($id);
 			} elseif ($type == "Partner") {
 				//TODO: implementa Partner
 //				require_once 'post/PostManager.php';

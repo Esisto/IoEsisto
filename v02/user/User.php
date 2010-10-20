@@ -279,6 +279,7 @@ class User{
 	protected $creationDate;	//
 	protected $visible;			//**
 	protected $verified;		// *
+	protected $accessCount;		// *
 	
 	protected $contacts = array();		//
 	protected $feedback;				//valore totale feedback
@@ -370,6 +371,10 @@ class User{
 		$this->followers = $followers;
 		return $this;
 	}
+	function setAccessCount($ac) {
+		$this->accessCount = $ac;
+		return $this;
+	}
 	
 	function getID() {
 		return $this->ID;
@@ -436,6 +441,9 @@ class User{
 	}
 	function getFollowers() {
 		return $this->followers;
+	}
+	function getAccessCount() {
+		return $this->accessCount;
 	}
 
 	/**
@@ -739,6 +747,10 @@ class User{
 		$user->setID(intval($row[USER_ID]))->
 			   setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[USER_CREATION_DATE])))->
 			   setVerified($row[USER_VERIFIED]);
+		
+		require_once("common.php");
+		$user->setAccessCount(LogManager::getAccessCount("User", $user->getID()));
+		
 		return $user;
 	}
 	
