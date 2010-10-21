@@ -136,9 +136,14 @@ class PostManager {
 	 */
 	static function votePost($author, $post, $vote) {
 		require_once("post/PostCommon.php");
+		$v = self::loadVote($author, $post->getID());
+		if($v !== false)
+			self::removeVote($v);
+		else
+			echo $author . "-" . $post->getID();
+			
 		$v = new Vote($author, $post->getID(), $vote);
 		$v->save();
-		
 		$post->addVote($v);
 		return $post;
 	}

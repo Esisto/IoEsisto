@@ -9,6 +9,7 @@ class SearchManager {
 	 * @param $options: array di opzioni: limit, order, group.
 	 */
 	static function searchBy($what, $keys, $options) {
+		if(!is_array($what)) $what = array($what);
 		foreach($what as $class) {
 			//echo "<p><b>WILL SEARCH " . $class . "</b> WITH KEYS: " . serialize($keys) . " AND OPTIONS: " . serialize($options) . "</p>"; //DEBUG
 			if($class == "Post") return self::searchPostsBy($keys, $options);

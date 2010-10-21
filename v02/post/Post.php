@@ -11,14 +11,14 @@ class Post {
 	protected $author;					// id di oggetto User
 	protected $creationDate;			// UNIX like TimeStamp
 	protected $modificationDate;		// UNIX like TimeStamp
-	protected $tags = array();			// stringa di tag separati da virgole
+	protected $tags;					// stringa di tag separati da virgole
 	protected $categories;				// stringa di categorie separate da virgole
-	protected $comments = array();		// array di oggetti COMMENTO
-	protected $votes = array();			// array di oggetto VOTO
+	protected $comments;				// array di oggetti COMMENTO
+	protected $votes;					// array di oggetto VOTO
 	protected $content;					// testo del contenuto o indirizzo del video o foto o array di essi
 	protected $visible;					// boolean
 	protected $place;					// 
-	protected $reports = array();		// array di oggetti Report
+	protected $reports;					// array di oggetti Report
 	protected $accessCount = 1;			// numero di accessi
 	/**
 	 * Crea un oggetto post.
@@ -115,6 +115,8 @@ class Post {
 		return $this->type;
 	}
 	function getComments() {
+		if(!isset($this->comments) || !is_array($this->comments))
+			return array();
 		return $this->comments;
 	}
 	/**
@@ -145,7 +147,7 @@ class Post {
 														 array(),
 														 array(new WhereConstraint($table->getColumn(VOTE_POST),Operator::$EQUAL,$this->getID())),
 														 array("avg" => $table->getColumn(VOTE_VOTE))));
-			echo "<p>" . $s . "</p>"; //DEBUG;
+			//echo "<p>" . $s . "</p>"; //DEBUG;
 			if($db->num_rows() == 1) {
 				$row = $db->fetch_row();
 				//echo serialize($row);
@@ -348,7 +350,8 @@ class Post {
 					$this->setModificationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[POST_CREATION_DATE])));
 					
 					//salvo i tag che non esistono
-					TagManager::createTags(explode(",", $data["tags"]));
+					if(isset($data["tags"]))
+						TagManager::createTags(explode(",", $data["tags"]));
 					
 					//echo "<br />" . serialize($row[POST_CREATION_DATE]); //DEBUG
 					//echo "<br />" . $this; //DEBUG

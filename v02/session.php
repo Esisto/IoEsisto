@@ -47,17 +47,19 @@
 		static function getUser() {
 			/*if( !session_start() )
 				return false;*/
-
-			if ( isset($_SESSION["iduser"]) ) {
-				$user = User::loadFromDatabase($_SESSION["iduser"]);
-
-				if ( $user != false )
-					return $user;
-				else
-					return false;
-			}
-			else
-				return false;
+			require_once 'user/UserManager.php';
+			return UserManager::loadUser(1);
+			
+//			if ( isset($_SESSION["iduser"]) ) {
+//				$user = User::loadFromDatabase($_SESSION["iduser"]);
+//
+//				if ( $user != false )
+//					return $user;
+//				else
+//					return false;
+//			}
+//			else
+//				return false;
 		}
 
 		/**

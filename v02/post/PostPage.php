@@ -1,8 +1,10 @@
 <?php
-require_once("post/PostManager.php");
 require_once("settings.php");
 require_once("strings/" . LANG . "strings.php");
 require_once("file_manager.php");
+require_once("post/Post.php");
+require_once("post/PostManager.php");
+
 
 class PostPage {
 	static function showShortPost($post, $options = null) {
@@ -43,7 +45,7 @@ class PostPage {
 				}
 			} else
 				echo Filter::decodeFilteredText($post->getContent());
-			?><div class="post_authorname"><a href="<?php echo FileManager::appendToRootPath($post->getAuthorName()); ?>"><?php echo $post->getAuthorName(); ?></a></div>	
+			?><div class="post_authorname"><a href="<?php echo FileManager::appendToRootPath("User/" . $post->getAuthorName()); ?>"><?php echo $post->getAuthorName(); ?></a></div>	
 		</div>
 		<div class="post_footer clear">
 			<div class="post_vote">Voto: <?php echo $post->getAvgVote(); ?></div>
@@ -105,10 +107,15 @@ class PostPage {
 				}
 			} else
 				echo Filter::decodeFilteredText($post->getContent());
-			?><div class="post_authorname"><a href="<?php echo FileManager::appendToRootPath($post->getAuthorName()); ?>"><?php echo $post->getAuthorName(); ?></a></div>	
+			?><div class="post_authorname"><a href="<?php echo FileManager::appendToRootPath("User/" . $post->getAuthorName()); ?>"><?php echo $post->getAuthorName(); ?></a></div>	
 		</div>
 		<div class="post_footer clear">
-			<div class="post_vote">Voto: <?php echo $post->getAvgVote(); ?></div>
+			<div class="post_vote">
+				<div class="vote_image"><a href="<?php echo $post->getFullPermalink() . "/Vote?vote=yes"; ?>">sì</a></div>
+				<div class="vote_image"><a href="<?php echo $post->getFullPermalink() . "/Vote?vote=no"; ?>">no</a></div>
+				Voto: <?php echo $post->getAvgVote(); ?>
+			</div>
+			<?php if(!is_null($post->getTags()) && trim($post->getTags()) != "") {?>
 			<div class="post_tags">Tag: <?php
 				$first = true;
 				$tags = explode(",", $post->getTags());
@@ -118,6 +125,7 @@ class PostPage {
 					echo '<a href="' . FileManager::appendToRootPath('Tag/' . trim(Filter::decodeFilteredText($tag))) . '">' . trim(Filter::decodeFilteredText($tag)) . '</a>';
 				}
 			?></div>
+			<?php }?>
 			<div class="post_modificationDate">Ultima modifica: <?php echo format_datetime($post->getModificationDate()); ?></div>
 			<!--<div class="post_visible"><?php echo ($post->isVisible() ? "visible" : "not visible"); ?></div>-->
 		</div>
@@ -134,67 +142,78 @@ class PostPage {
 	 */
 	static function showForLikelihood() {}
 	
-	static function showNewNewsForm() {
-		//TODO
+	private static function showNewNewsForm($data = null, $error = null) {
+		self::showEditNewsForm($data, $error, true);
 	}
 	
-	static function showNewPhotoReportageForm() {
-		//TODO
+	private static function showNewPhotoReportageForm($data = null, $error = null) {
+		self::showEditPhotoReportageForm($data, $error, true);
 	}
 
-	static function showNewCollectionForm() {
-		//TODO
+	private static function showNewCollectionForm($data = null, $error = null) {
+		self::showEditCollectionForm($data, $error, true);
 	}
 	
-	static function showNewAlbumForm() {
-		//TODO
+	private static function showNewAlbumForm($data = null, $error = null) {
+		self::showEditAlbumForm($data, $error, true);
 	}
 
-	static function showNewMagazineForm() {
-		//TODO
+	private static function showNewMagazineForm($data = null, $error = null) {
+		self::showEditMagazineForm($data, $error, true);
 	}
 	
-	static function showNewVideoReportageForm() {
-		//TODO
+	private static function showNewVideoReportageForm($data = null, $error = null) {
+		self::showEditVideoReportageForm($data, $error, true);
 	}
 	
-	static function showNewPostForm() {
-		// TODO controlla sessione
-		if(isset($_POST["title"])) {
+	static function showNewPostForm($data = null, $error = null) {
+		//TODO controlla sessione
+		if(is_null($error) && count($_POST) > 0) {
 			$data = array();
-			if(isset($a))
-				$data[fgd] = $a;
-				
+			if(isset($_POST["title"]) && trim($_POST["title"]) != "")
+				$data["title"] = $_POST["title"];
+			else
+				$error = array("Inserire un titolo.");
+			if(isset($_POST["type"]))
+				$data["type"] = $_POST["type"];
+			else
+				$error[] = "Scegliere il tipo di post da pubblicare.";
+			if(isset($_POST["content"]) && trim($_POST["content"]) != "")
+				$data["content"] = $_POST["content"];
+			else
+				$error[] = "Inserire un contenuto.";
 			
-			$post = PostManager::addPost($data);
-			?>
-			<a href="<? echo $post->getFullPermalink(); ?>">Visualizza</a>
-			<?
-		} else {
-			
-		?>
-        <form name="" action="" method="post"> <!-- TODO -->
-			<p>Titolo:<br /><input name="titolo" /></p>
-			<?
-			if(isset($_GET["type"])) {
-				if($_GET["type"] == "news") {
-					?>
-					<input type="hidden" value="news" name="type" />
-					<?
+			if(is_null($error) || (is_array($error) && count($error) == 0)) {
+				$data["author"] = 1; //FIXME TOGLIMI
+				//$data["author"] = Session::getUser();
+				$post = PostManager::createPost($data);
+				if($post !== false) {
+					echo '
+			<div class="message">
+				<a href="' . $post->getFullPermalink() . '">Visualizza</a>
+			</div>';
 				}
 			} else {
-				?>
-			<p><select name="type">
-				<option value="news">News</option>
-				</select></p>
-				
-				<?
+				self::showNewPostForm($data, $error);
+				return;
 			}
-			?>
-            <input type="submit" value="" />
-        </form>
-        <?php
 		}
+		//echo serialize(isset($_GET["type"])) . "<br/>"; //DEBUG
+		if(isset($_GET["type"])) {
+			switch($_GET["type"]) {
+				case "Collection":
+				case "PhotoReportage":
+				case "VideoReportage":
+				case "Album":
+				case "Magazine":
+				case "Playlist":
+					call_user_func(array("PostPage","showNew" . $_GET["type"] . "Form"), $data, $error);
+					break;
+				case "News":
+				default:
+					self::showNewNewsForm($data, $error);
+			}
+		} else self::showNewNewsForm($data, $error);
 	}
 	
 	static function showCommentForm() {
@@ -226,27 +245,107 @@ class PostPage {
         <?php
 	}
 
-	static function showEditNewsForm() {
+	private static function showEditNewsForm($post, $error, $new = false) {
 		//TODO
+		$name = "Edit";
+		$caption = "Modifica";
+		if($new) {
+			$post = new Post($post);
+			$name = "New";
+			$caption = "Nuova";
+		}
+		?>
+		<div class="title"><?php echo $caption; ?> Notizia</div>
+		<?php
+		if(is_array($error)) {
+		?>
+		<div class="error"><?php
+			foreach($error as $err) {?>
+			<p><?php echo $err; ?></p>
+			<?php 
+			}
+		?></div>
+		<?php
+		}
+		?>
+		<form name="<?php echo $name; ?>Post" action="?type=News" method="post"> <!-- TODO -->
+			<p>Titolo:<br /><input name="title" value="<?php echo $post->getTitle(); ?>"/></p>
+			<p>Contenuto:<br/>
+				<textarea name="content"><?php echo $post->getContent(); ?></textarea>
+			</p>
+            <p><input type="submit" value="Salva" /></p>
+            <input name="type" type="hidden" value="news" />
+        </form>
+        <?php
 	}
 	
-	static function showEditPhotoReportageForm() {
+	private static function showEditPhotoReportageForm($post, $error, $new = false) {
+		$name = "Edit";
+		$caption = "Modifica";
+		if($new) {
+			$post = new Post($post);
+			$name = "New";
+			$caption = "Nuovo";
+		}
+		?>
+		<div class="title"><?php echo $caption; ?> Fotoreportage</div>
+		<?php
 		//TODO
 	}
 
-	static function showEditCollectionForm() {
+	private static function showEditCollectionForm($post, $error, $new = false) {
+		$name = "Edit";
+		$caption = "Modifica";
+		if($new) {
+			$post = new Post($post);
+			$name = "New";
+			$caption = "Nuova";
+		}
+		?>
+		<div class="title"><?php echo $caption; ?> Collezione</div>
+		<?php
 		//TODO
 	}
 	
-	static function showEditAlbumForm() {
+	private static function showEditAlbumForm($post, $error, $new = false) {
+		$name = "Edit";
+		$caption = "Modifica";
+		if($new) {
+			$post = new Post($post);
+			$name = "New";
+			$caption = "Nuovo";
+		}
+		?>
+		<div class="title"><?php echo $caption; ?> Album</div>
+		<?php
 		//TODO
 	}
 
-	static function showEditMagazineForm() {
+	private static function showEditMagazineForm($post, $error, $new = false) {
+		$name = "Edit";
+		$caption = "Modifica";
+		if($new) {
+			$post = new Post($post);
+			$name = "New";
+			$caption = "Nuova";
+		}
+		?>
+		<div class="title"><?php echo $caption; ?> Rivista</div>
+		<?php
 		//TODO
 	}
 	
-	static function showEditVideoReportageForm() {
+	private static function showEditVideoReportageForm($post, $error, $new = false) {
+		$name = "Edit";
+		$caption = "Modifica";
+		if($new) {
+			$post = new Post($post);
+			$name = "New";
+			$caption = "Nuovo";
+		}
+		?>
+		<div class="title"><?php echo $caption; ?> Videoreportage</div>
+		<?php
 		//TODO
 	}
 	

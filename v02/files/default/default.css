@@ -221,3 +221,101 @@ body{
 	background: #FFFFFF;
 	float: left;
 }
+
+/*----------------POST----------------*/
+.post {
+	font-family: Georgia, "Times New Roman", Times, serif;
+	padding-bottom: 10px;
+	margin-bottom: 20px;
+	border-bottom: 1px solid #000;
+}
+.news {
+	/*background-color: rgba(0, 255, 94, 0.4);*/
+}
+.magazine {
+	/*background-color: rgba(38, 130, 0, 0.4);*/
+}
+.videoreportage {
+	/*background-color: rgba(255, 93, 96, 0.4);*/
+}
+.playlist {
+	/*background-color: rgba(255, 0, 0, 0.4);*/
+}
+.photoreportage {
+	/*background-color: rgba(60, 206, 255, 0.4);*/
+}
+.album {
+	/*background-color: rgba(0, 128, 255, 0.4);*/
+}
+.collection {
+	/*background-color: rgba(204, 204, 204, 0.4);*/
+}
+.pb_header {
+	margin-bottom: 10px;
+	padding: 0;
+}
+.post_creationDate {
+	float: right;
+	font-size: 14px;
+}
+.post_categories{
+	float: left;
+	font-size: 14px;
+}
+.post_header {
+	margin-bottom: 10px;
+	padding: 0;
+}
+.post_headline {
+	font-size: 14px;
+}
+.post_title {
+	font-size: 28px;
+	font-weight: bold;
+}
+.post_subtitle {
+	font-style: italic;
+	font-size: 18px;
+}
+.post_content {
+	font-size: 14px;
+	text-align: justify;
+	margin-bottom: 10px;
+	padding: 0;
+}
+.post_authorname {
+	font-size: 14px;
+	float: right;
+	font-weight: bold;
+	text-decoration: none;
+}
+.post_footer {
+	/*background-color: rgba(255,255,88,0.5);*/
+	margin-bottom: 10px;
+	padding: 5px 0;
+}
+.post_modificationDate {
+	font-size: 12px;
+}
+.post_tags {
+	font-size: 12px;
+}
+.post_place {
+	text-transform: uppercase;
+}
+.post_comments {
+	/*background-color: rgba(179,179,179,0.5);*/
+	padding: 10px 0;
+}
+.comment {
+	font-size: 14px;
+	text-align: justify;
+}
+.post_vote {
+	font-size: 14px;
+	float: right;
+}
+.vote_image {
+	float: left;
+	margin-right: 10px;
+}

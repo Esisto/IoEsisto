@@ -422,7 +422,7 @@ class DBManager {
 		$this->errno = mysql_errno($this->dblink);
 		$this->error = mysql_error($this->dblink);
 		if($this->errno())
-			$this->display_error("DBManager::execute()");
+			$this->display_error("DBManager::execute() - query " . $query);
 		if($object == LOGMANAGER) return;
 		
 		$this->query_type = substr($query, 0, 6);
@@ -489,7 +489,6 @@ class DBManager {
 		require_once("strings/" . LANG . "strings.php");
 		
 		$this->dblink = mysql_connect(DB_HOSTNAME . ":" . DB_PORT, DB_USERNAME, DB_PASSWORD);
-		
 		if(!mysql_errno() && mysql_select_db(DB_NAME, $this->dblink)) {
 			//$GLOBALS[DB_STATUS] = DB_CONNECTED . DB_HOSTNAME . "/" . DB_NAME;
 		} else {

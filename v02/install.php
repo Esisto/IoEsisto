@@ -72,7 +72,7 @@
 				"Spettacoli" => array("Musica", "Cinema", "TV", "Teatro"),
 				"Cultura e tendenza" => array("Libri", "Moda", "Arte", "Fotografia", "Religione", "Gossip"),
 				"Motori" => array("Auto", "Moto", "Altro"),
-				"Tempo libero" => array("Viaggi", "Cucina", "Casa", "Animali"),
+				"Tempo libero" => array("Viaggi", "Cucina", "Casa", "Animali")
 	);
 	
 	require_once 'post/PostCommon.php';

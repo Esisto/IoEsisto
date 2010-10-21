@@ -10,8 +10,10 @@ function writePageHeader($ad) {
 ?>
 			<div id="operationsMenu">
 				<div id="operations">
-					<div class="operationsMenuButton"><a href="#"> OPERATION </a></div>
-					<div class="operationsMenuButton"><a href="#"> OPERATION </a></div>
+					<div class="operationsMenuButton">
+						<a href="<?php echo FileManager::appendToRootPath("Post/New");?>">Nuova notizia</a></div>
+					<div class="operationsMenuButton">
+						<a href="<?php echo FileManager::appendToRootPath("Post/New?type=VideoReportage");?>">Nuovo Video</a></div>
 					<div class="operationsMenuButton"><a href="#"> OPERATION </a></div>
 					<div class="operationsMenuButton"><a href="#"> OPERATION </a></div>
 					<div class="operationsMenuButton"><a href="#"> OPERATION </a></div>

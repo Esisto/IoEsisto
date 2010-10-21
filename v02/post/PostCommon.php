@@ -372,7 +372,7 @@ class Vote {
 		if(!$db->connect_errno()) {
 			define_tables(); defineVoteColumns();
 			$table = Query::getDBSchema()->getTable(TABLE_VOTE);
-			$data = array(VOTE_VOTE => $this->getVote(),
+			$data = array(VOTE_VOTE => $this->getVote() ? 1 : 0,
 						  VOTE_POST => $this->getPost(),
 						  VOTE_AUTHOR => $this->getAuthor());
 			$db->execute($s = Query::generateInsertStm($table,$data),
@@ -465,6 +465,8 @@ class Vote {
 		require_once("query.php");
 		$db = new DBManager();
 		if(!$db->connect_errno()) {
+			require_once 'strings/strings.php';
+			define_tables(); defineVoteColumns();
 			$table = Query::getDBSchema()->getTable(TABLE_VOTE);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),

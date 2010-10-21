@@ -22,9 +22,9 @@ class Page {
 	private static function elaborateRequest($request) {
 		require_once("file_manager.php");
 		//echo "<br />" . $request; //DEBUG
-		$param_index = strpos($request,"?"); //TODO: TEST ME
+		$param_index = strpos($request,"?");
 		//echo "<br />" . $param_index; //DEBUG
-		$bookmark_index = strpos($request,"#"); //TODO: TEST ME
+		$bookmark_index = strpos($request,"#");
 		$get = $param_index || $bookmark_index;
 		$index = strlen($request);
 		if($get) {
@@ -39,11 +39,12 @@ class Page {
 		$start = strlen(dirname($_SERVER["PHP_SELF"])) + 1; //il +1 è per lo /
 		$return = array();
 		//echo "<br />" . $start . " " . $index; //DEBUG
-		$return["permalink"] = substr($request, $start, $index - $start); //TODO: TEST ME
+		$return["permalink"] = substr($request, $start, $index - $start);
 		//echo "<br />" . $return["permalink"]; //DEBUG
 		//echo "<br />" . $s; //DEBUG
 		$parts = explode("/", $return["permalink"]);
 		$count = count($parts);
+		//echo "<p style='color:red'>" . $count . "</p>"; //DEBUG
 		//se parts è vuoto eseguo l'index
 		if($count == 0) return array("object" => "index");
 		
@@ -126,6 +127,7 @@ class Page {
 				if($action == "New") {	//esempio: /Post/New
 					if($count != 2)
 						$action = "";
+					break; //non deve fare altro
 				}
 				//pagina di ricerca dei post
 				if($count == 1) {
@@ -141,6 +143,8 @@ class Page {
 					if(is_numeric($rand)) $return["posttitle"] = substr($parts[3],0,-(2 + strlen($rand)));
 					else $return["posttitle"] = $parts[3];
 					
+					$return["permalink"] = $parts[0] . "/" . $parts[1] . "/" . $parts[2] . "/" . $parts[3];				
+					//echo $return["permalink"];
 					$return["postday"] = date_timestamp_get(date_create_from_format("Y-m-d", $parts[2]));
 				}
 				break;
@@ -171,6 +175,10 @@ class Page {
 				   $action == "Posts" || $action == "AddContact" ||
 				   $action == "Mails" ) {	//esempio: /User/%user_nickname%/Verify
 					if($count != 3) $action = "";
+					if(is_numeric($parts[1]))
+						$return["userid"] = $parts[1];
+					else
+						$return["usernickname"] = $parts[1];
 				}
 				//registra nuovo utente
 				if($action == "New") {	//esempio: /User/New
@@ -318,6 +326,7 @@ class Page {
 	}
 	
 	private static function doUserAction($request) {
+		//echo "<p>" . serialize($request) . "</p>"; //DEBUG
 		$user = null;
 		if(isset($request["userid"]))
 			$user = UserManager::loadUser($request["userid"]);
@@ -327,14 +336,14 @@ class Page {
 		switch ($request["action"]) {
 			case "Edit":
 				if(is_null($user) || $user === false)
-					header("location: " . FileManager::appendToRootPath("/error.php?e=Oops la pagina non è stata trovata."));
+					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non è stata trovata."));
 				
 				require_once 'user/UserPage.php';
 				UserPage::showEditProfileForm($user);
 				break;
 			case "Follow":
 				if(is_null($user) || $user === false)
-					header("location: " . FileManager::appendToRootPath("/error.php?e=Oops la pagina non è stata trovata."));
+					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non è stata trovata."));
 				
 				$me = UserManager::loadUser(Session::getUser());
 				UserManager::followUser($me, $user);
@@ -342,21 +351,21 @@ class Page {
 				break;
 			case "Feedback":
 				if(is_null($user) || $user === false)
-					header("location: " . FileManager::appendToRootPath("/error.php?e=Oops la pagina non è stata trovata."));
+					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non è stata trovata."));
 				
 				require_once 'user/UserPage.php';
 				UserPage::showFeedbackForm($user);
 				break;
 			case "AddContact":
 				if(is_null($user) || $user === false)
-					header("location: " . FileManager::appendToRootPath("/error.php?e=Oops la pagina non è stata trovata."));
+					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non è stata trovata."));
 				
 				require_once 'user/UserPage.php';
 				UserPage::showNewContactForm($user);
 				break;
 			case "StopFollow":
 				if(is_null($user) || $user === false)
-					header("location: " . FileManager::appendToRootPath("/error.php?e=Oops la pagina non è stata trovata."));
+					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non è stata trovata."));
 				
 				$me = UserManager::loadUser(Session::getUser());
 				UserManager::stopFollowingUser($me, $user);
@@ -364,20 +373,20 @@ class Page {
 				break;
 			case "Verify":
 				if(is_null($user) || $user === false)
-					header("location: " . FileManager::appendToRootPath("/error.php?e=Oops la pagina non è stata trovata."));
+					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non è stata trovata."));
 				
 				UserManager::verifyUser($user, $_GET["code"]);
 				header("location:" . FileManager::appendToRootPath("User/" . $user->getID()));
 				break;
 			case "Posts":
 				if(is_null($user) || $user === false)
-					header("location: " . FileManager::appendToRootPath("/error.php?e=Oops la pagina non è stata trovata."));
+					header("location: " . FileManager::appendToRootPath("error?e=Oops la pagina non è stata trovata."));
 				
 				require_once 'search/SearchManager.php';
-				$posts = SearchManager::searchBy("Post", array("ps_author" => $user->getID(), array()));
+				$posts = SearchManager::searchBy("Post", array("ps_author" => $user->getID()), array("order" => -1, "by" => "ps_creationDate"));
 				require_once 'post/PostPage.php';
 				foreach($posts as $p)
-					PostPage::showShortPost($p);
+					PostPage::showPost($p);
 				break;
 			case "Mails":
 				require_once 'mail/MailManager.php';
@@ -389,7 +398,7 @@ class Page {
 				break;
 			case "Delete":
 				if(is_null($user) || $user === false)
-					header("location: " . FileManager::appendToRootPath("/error.php?e=Oops la pagina non è stata trovata."));
+					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non è stata trovata."));
 				
 				UserManager::deleteUser($user);
 				header("location: " . FileManager::appendToRootPath(""));
@@ -400,7 +409,7 @@ class Page {
 				break;
 			case "Read":
 				if(is_null($user) || $user === false)
-					header("location: " . FileManager::appendToRootPath("/error.php?e=Oops la pagina non è stata trovata."));
+					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non è stata trovata."));
 				
 				require_once 'user/UserPage.php';
 				UserPage::showProfile($user);
@@ -685,10 +694,12 @@ class Page {
 	}
 	
 	private static function doPostAction($request) {
-		switch ($request["action"]) {
+		require_once 'post/PostManager.php';
+		//echo "<p>" . $request["action"] . "</p>"; //DEBUG
+		switch($request["action"]) {
 			//modifica, vota, commenta, elimina, subscribe o aggiungi a una collezione il post
 			case "Read":
-				//echo "<p><font color='green'>REQUEST TO LOAD " . $request["script"] . " by: " . $author->getNickname() . ", with the title of: " . $request["posttitle"] . ", created the day: " . date("d/m/Y", $request["postday"]) . "</font></p>"; //DEBUG
+				//echo "<p><font color='green'>" . $request["permalink"] . "</font></p>"; //DEBUG
 				$p = PostManager::loadPostByPermalink($request["permalink"]);
 				require_once("post/PostPage.php");
 				PostPage::showPost($p);
@@ -705,13 +716,12 @@ class Page {
 				require_once("post/PostPage.php");
 				//controllo su vote.
 				if(isset($_GET["vote"])) {
-					if($_GET["vote"] == "y")
+					if($_GET["vote"] == "y" || $_GET["vote"] == "yes")
 						$vote = true;
-					if($_GET["vote"] == "n")
+					if($_GET["vote"] == "n" || $_GET["vote"] == "no")
 						$vote = false;
-					if(!isset($vote)) header("location: " . FileManager::appendToRootPath("error.php?error=Oops, il voto da te inserito non è valido."));
-					$me = UserManager::loadUser(Session::getUser());
-					PostManager::votePost($me, $p, $_GET["vote"]);
+					if(!isset($_GET["vote"])) header("location: " . FileManager::appendToRootPath("error.php?error=Oops, il voto da te inserito non è valido."));
+					PostManager::votePost(Session::getUser()->getID(), $p, $vote);
 				}
 				PostPage::showPost($p);
 				break;
@@ -870,7 +880,7 @@ class Page {
 			if(substr($func,0,5)=="PCCat" && is_numeric(substr($func,-1,1))) {
 				call_user_func(array("Page", substr($func, 0,5)), $data, substr($func,-1,1));
 			} else if($a = method_exists("Page", $func)) {
-				call_user_func_array(array("Page", $func), $data);
+				call_user_func(array("Page", $func), $data);
 			} else {
 				writePlainText($func);
 			}
@@ -879,7 +889,8 @@ class Page {
 	}
 	
 	private static function PCMain($data) {
-		echo "Main";
+		if($data["object"] == "index")
+			echo "Main";
 		self::doAction($data);
 	}
 	

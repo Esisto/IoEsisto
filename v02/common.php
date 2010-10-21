@@ -284,10 +284,12 @@ class LogManager {
 			$exists = false;
 			if($type == "Post") {
 				require_once 'post/PostManager.php';
-				$exists = PostManager::postExists($id);
+				return 0;
+				$exists = PostManager::postExists($id); //TODO
 			} else if ($type == "User") {
-				require_once 'post/UserManager.php';
-				$exists = UserManager::userExists($id);
+				require_once 'user/UserManager.php';
+				return 0;
+				$exists = UserManager::userExists($id); //TODO
 			} elseif ($type == "Partner") {
 				//TODO: implementa Partner
 //				require_once 'post/PostManager.php';
@@ -379,7 +381,9 @@ class Filter {
 		
 		// Quote if not a number or a numeric string
 		if (!is_numeric($value) && !empty($value)) {
-			$value = mysql_real_escape_string($value);
+			require_once 'query.php';
+			$db = new DBManager();
+			$value = mysql_real_escape_string($value, $db->dblink);
 		}
 		return $value;
 	}
