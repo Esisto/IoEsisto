@@ -14,7 +14,7 @@ foreach($stylesheets as $css) {
 	<link rel="stylesheet" type="text/css" media="screen,print" href="<?php echo FileManager::appendToRootPath("files/" . $css . ".css") ?>" />
 <?php 
 }
-if(count($stylesheets) > 0) {
+if(count($stylesheets) == 0) {
 ?>
 	<link rel="stylesheet" type="text/css" media="screen,print" href="<?php echo FileManager::appendToRootPath("files/default/default.css") ?>" />
 <?php 

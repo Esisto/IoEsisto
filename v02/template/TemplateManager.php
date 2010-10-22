@@ -1,14 +1,37 @@
 <?php 
 class TemplateManager {
-	
 	static function getDefaultTemplate() {
-		//TODO
+		return "files/default/index.xml";
 	}
 	
 	static function getTemplateForRequest($request) {
-		
-		return "files/default/index.xml";
-		
+		switch($request["object"]) {
+			case "Post":
+				if($request["action"]=="New" || $request["action"]=="Edit")
+					return "files/default/post.xml"; //FIXME "files/default/post_edit.xml";
+			case "Comment":
+			case "Vote":
+				return "files/default/post.xml";
+			case "User":
+				if($request["action"]=="Register")
+					return "files/default/register.xml";
+			case "Feedback":
+				return "files/default/profile.xml";
+			case "Mail":
+			case "Directory":
+				//FIXME return "files/default/mail.xml";
+			case "Contest":
+				//FIXME return "files/default/contest.xml";
+			case "Partner":
+				//FIXME return "files/default/partner.xml";
+			case "Contest":
+				//FIXME return "files/default/contest.xml";
+			case "Resource":
+				//FIXME return "files/default/resource.xml";
+			case "Preferences":
+				//FIXME return "files/default/preferences.xml";
+		}
+		return self::getDefaultTemplate();
 	}
 	
 	/**

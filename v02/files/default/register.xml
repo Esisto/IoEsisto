@@ -28,23 +28,17 @@
 				<col class="medium">
 					PCCat1
 					PCCat3
-					<ad/>
 					PCCat5
 					PCCat7
 				</col>
 				<col class="medium">
 					PCCat2
 					PCCat4
-					<ad/>
 					PCCat6
 					PCCat8
 				</col>
 				<div class="clear" />
 			</col>
-		</div>
-		<div class="clear largest" cols="1">
-			<ad/>
-			PCRandomPosts
 		</div>
 	</content>
 	<footer><ad/></footer>

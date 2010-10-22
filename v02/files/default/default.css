@@ -3,6 +3,10 @@ body{
 	margin: 0;
 	padding: 0;
 }
+a {
+	text-decoration: none;
+	color: #000;
+}
 
 /*---------------------- clear ----------------------*/
 .clear {	
@@ -20,8 +24,19 @@ body{
 	margin: 0 auto;
 	background: url(img/logo.png) no-repeat;
 	position:relative;
+	color: #ff8833;
 }
-
+#login_place {
+	margin-left: 500px;
+	width: 250px;
+	padding-top: 50px;
+}
+#header p {
+	margin: 0;
+}
+#login_place a {
+	color: #ff8833;
+}
 
 /*---------------------- operationsMenu ----------------------*/
 #operationsMenu{
@@ -29,6 +44,7 @@ body{
 	margin: 0 auto;
 	position: absolute;
 	top: 185px;
+	color: black;
 }
 #operations{
 	width: 600px;
