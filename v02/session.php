@@ -22,8 +22,9 @@
 				return false;	*/		
 			
 			if ( !isset($_SESSION["iduser"]) ) {
-				$id = $u->getID();
-				if ( isset($id) ) {
+				if(is_a($u, "User"))
+					$_SESSION["iduser"] = $u->getID();
+				else {
  	
 					$user = User::loadFromDatabase( $u->getID() );	// Mi assicura che user sia presente nel database
 										   	// prima di avviare una sessione	
@@ -35,8 +36,7 @@
 					else
 						return false;
 				}
-				else
-					return false;
+				return true;
 			}	
 		} 
 		
@@ -47,19 +47,19 @@
 		static function getUser() {
 			/*if( !session_start() )
 				return false;*/
-			require_once 'user/UserManager.php';
-			return UserManager::loadUser(1);
+			//require_once 'user/UserManager.php';
+			//return UserManager::loadUser(1);
 			
-//			if ( isset($_SESSION["iduser"]) ) {
-//				$user = User::loadFromDatabase($_SESSION["iduser"]);
-//
-//				if ( $user != false )
-//					return $user;
-//				else
-//					return false;
-//			}
-//			else
-//				return false;
+			if ( isset($_SESSION["iduser"]) ) {
+				$user = User::loadFromDatabase($_SESSION["iduser"]);
+				
+				if ( $user != false )
+					return $user;
+				else
+					return false;
+			}
+			else
+				return false;
 		}
 
 		/**

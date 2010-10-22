@@ -4,6 +4,21 @@ function writePageHeader($ad) {
 ?>
 	<div id="headerBackground">
 		<div id="header">
+			<div id="login_place">
+	<?php 
+	if(Session::getUser() === false) {
+		require_once 'user/UserPage.php';
+		UserPage::showLoginForm();
+	} else {
+	?>
+				<p>Benvenut<?php echo (Session::getUser()->getGender() == "f" ? "a" : "o"); ?> 
+					<?php echo Session::getUser()->getNickname(); ?>
+				</p>
+				<p><a href="<?php echo FileManager::appendToRootPath("Logout"); ?>">Logout</a></p>
+	<?php
+	}
+	?>
+			</div>
 <?php 
 	if($ad)
 		writeAD("header");

@@ -51,7 +51,7 @@
 //	}
 //	
 //	// DEBUG
-//	$db->execute("INSERT INTO `User` VALUES(1, 'ioesisto', 'no-reply@ioesisto.com', 'ciccia', 'Io', 'Esisto', 'm', NULL, NULL, NULL, NULL, NULL, NULL, 'admin', '2010-08-27 11:49:28', 1, 1)", "User", null);
+//	$db->execute("INSERT INTO `User` VALUES(1, 'ioesisto', 'no-reply@ioesisto.com', sha1('ciccia'), 'Io', 'Esisto', 'm', NULL, NULL, NULL, NULL, NULL, NULL, 'admin', '2010-08-27 11:49:28', 1, 1)", "User", null);
 //	if($db->affected_rows() == 1) echo "<p>INSERTED FAKE USER</p>";
 //	
 //	$db->execute("INSERT INTO `MailDirectory` VALUES(1, '" . TRASH . "', 1)", "MailDirectory", null);

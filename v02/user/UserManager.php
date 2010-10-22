@@ -4,10 +4,10 @@ require_once("settings.php");
 require_once(USER_DIR . "/User.php");
 require_once("session.php");
 
-class UserManager{
-	static $UM_NoUserError = "UM_NoUser";
-	static $UM_NoPasswordError = "UM_NoPassword";
-	static $UM_NoSessionError = "UM_NoSession";
+class UserManager {
+	const UM_NoUserError = "UM_NoUser";
+	const UM_NoPasswordError = "UM_NoPassword";
+	const UM_NoSessionError = "UM_NoSession";
 	
     static function createUser($data, $error = null) {
         $data = Filter::filterArray($data);
@@ -55,32 +55,34 @@ class UserManager{
     
     static function login($data) {
         if(!isset($data["username"])) {
-            return self::$UM_NoUserError;
+            return self::UM_NoUserError;
         } else {
 		
-        	$u = false;
+        	$u = false; $logged = false;
             //check nick and password
            	$u = self::loadUserByNickname($data["username"]);
            	// assumo che la password mi sia arrivata in chiaro attraverso una connessione sicura
-            if($u !== false && $u->getPassword() == sha1($data["password"]))
+            //echo "<p>" . serialize($u !== false) . " " . serialize($u->getPassword()) . " " . serialize(sha1($data["password"])) . "</p>"; //DEBUG
+	        if($u !== false && trim($u->getPassword()) == sha1($data["password"]))
             	$logged = true;
             if($u === false) {
 	       		//check mail and password
 	            $u = self::loadUserByMail($data["username"]);
 	            // assumo che la password mi sia arrivata in chiaro attraverso una connessione sicura
             	if($u !== false && $u->getPassword() == sha1($data["password"]))
-	            	$logged = true;
+	            	header("location: " . FileManager::appendToRootPath());
             }
             if($u !== false) {
 	            if($logged) {
-		            if ( Session::start($u) )
+		            if(Session::start($u))
 		            	return true;
-			    else
-				return self::$UM_NoSessionError; 
+			    	else
+						return self::UM_NoSessionError; 
 	            }
-	            return self::$UM_NoPasswordError;
+	            //echo "<p>password: " . $u->getPassword() . " tu hai inserito: " . sha1($data["password"]) . "</p>"; //DEBUG
+	            return self::UM_NoPasswordError;
             }
-            return self::$UM_NoUserError;
+            return self::UM_NoUserError;
         }
     }
     

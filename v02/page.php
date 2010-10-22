@@ -53,6 +53,11 @@ class Page {
 		
 		//selezione dell'oggetto su cui lavorare
 		switch ($object) {
+			case "Login":
+			case "Logout":
+			case "Signin":
+				if($action != $object) $action = $object;
+				break;
 			case "Contest":
 				//modifica o leggi tutti i post di un contest //EDIT E DELETE SOLO ADMIN!!!
 				if($action == "Edit" || $action == "Posts" || $action == "Delete") {	//esempio: /Contest/%contest_id%/Edit
@@ -277,6 +282,15 @@ class Page {
 	private static function doAction($request) {
 		//recupera i dati dal db
 		switch ($request["object"]) {
+			case "Login":
+				break;
+			case "Logout":
+				Session::destroy();
+				header("location: " . FileManager::appendToRootPath());
+			case "Signin":
+				require_once 'user/UserPage.php';
+				UserPage::showSignInForm();
+				break;
 			case "Post":
 				self::doPostAction($request);
 				break;
@@ -843,6 +857,7 @@ class Page {
 				case "COL":
 					//echo "<p>element: " . serialize($el) . "</p>";  //DEBUG
 				case "DIV":
+					//echo "<p>element: " . serialize($el) . "</p>";  //DEBUG
 					if($el["type"] == "open" || $el["type"] == "complete") {
 						if(isset($el["attributes"]["COLS"]))
 							$cols_stack[] = $el["attributes"]["COLS"];
@@ -853,9 +868,9 @@ class Page {
 						if(isset($el["attributes"]["CLASS"]))
 							$class = $el["attributes"]["CLASS"];
 						opendiv($class, $id);
-						if(isset($el["value"]) && $el["value"] != "\n") {
-							self::evaluateText($el["value"], $data);
-						}
+					}
+					if(isset($el["value"]) && $el["value"] != "\n") {
+						self::evaluateText($el["value"], $data);
 					}
 					if($el["type"] == "close" || $el["type"] == "complete") {
 						if($el["type"] == "close")
@@ -876,7 +891,7 @@ class Page {
 			if($func == "") continue;
 			
 			$func = trim($func, " \t\n");
-			//echo "<p style='color:red;'>|" . substr($func,-1,1) . "|</p>";
+			//echo "<p style='color:red;'>|" . $func . "|</p>";
 			if(substr($func,0,5)=="PCCat" && is_numeric(substr($func,-1,1))) {
 				call_user_func(array("Page", substr($func, 0,5)), $data, substr($func,-1,1));
 			} else if($a = method_exists("Page", $func)) {
@@ -926,6 +941,33 @@ class Page {
 	private static function PCCat($data, $num) {
 		echo "<p>Categoria " . $num . "</p>";
 	}
+	
+	private static function PCRandomPosts($data) {
+		echo "<p>Random Post</p>";
+	}
+	
+	private static function PCFollows($data) {
+		echo "<p>Chi segui</p>";
+	}
+	
+	private static function PCFollow($data) {
+		echo "<p>Follow</p>";
+	}
+	
+	private static function PCFollowers($data) {
+		echo "<p>Chi ti segue</p>";
+	}
+	
+	private static function PCFollower($data) {
+		echo "<p>Follower</p>";
+	}
+	
+	private static function PCAuthor($data) {
+		echo "<p>L'autore</p>";
+	}
+	
+	private static function PCSameAuthor($data) {
+		echo "<p>Dello stesso autore</p>";
+	}
 }
-
 ?>

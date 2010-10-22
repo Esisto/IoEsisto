@@ -20,23 +20,27 @@ class UserPage {
 			if(count($error) > 0) {
 				self::showLoginForm($error);
 			} else {
-				$dataFiltered= Filter::filterArray($data);
-				UserManager::login($data);
+				$dataFiltered = Filter::filterArray($data);
+				if(($logged = UserManager::login($data)) === true)
+					header("location: " . FileManager::appendToRootPath());
+				else {
+					require_once 'errors/errors.php';
+					$error[] = $errors[$logged];
+				} 
+				echo $logged;
 			}
-		} else { ?>
-<form name="login" action="" method="post"><!-- show error messages -->
-		<?php
-			if($error != null) {
-				foreach ($error as $valore) {
-					echo "$valore<br>";
-				}
-			}?>
-Username: <input type="text" name="username" value="" />
-Password: <input type="password" name="password" value="" /> <input
-	type="submit" value="Login"></form>
+		} ?>
+<form name="login" action="<?php echo FileManager::appendToRootPath("Login"); ?>" method="post">
+		<?php //<!-- show error messages -->
+		if($error != null) {
+			foreach ($error as $valore) {
+				echo $valore . "<br/>";
+			}
+		}?>
+<p>Username: <input type="text" name="username" value="" /></p>
+<p>Password: <input type="password" name="password" value="" /></p>
+<p><input type="submit" value="Login"></p></form>
 			<?php
-			
-		}
 	}
 
 	static function showSignInForm($error = null) {
