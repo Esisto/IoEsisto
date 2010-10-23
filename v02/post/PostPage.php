@@ -221,13 +221,36 @@ class PostPage {
 		} else self::showNewNewsForm($data, $error);
 	}
 	
-	static function showCommentForm() {
-		//TODO
-		?>
-        <form name="" action="" method="get"> <!-- TODO -->
-            <input type="submit" value="">
-        </form>
-        <?php
+	static function showCommentForm($user, $post, $error = null) {
+		if ($user == Session::getUser($user) && is_a($user, "user") ){ //controllo se l'untente è loggato
+			if($error==null && count($_POST) > 0){  
+				if(isset($_POST["comment"]))
+					$comment = $_POST["comment"];
+				else
+					$error = "devi inserire un commento!";
+				
+				if(isset($error)) {
+					self::showCommentForm($error);
+				}else{
+					PostManager::commentPost($post, $user->getID(), $comment);
+				}
+			}else {			
+				$POST_data = count($_POST) > 0;
+				if( $error != null)
+					foreach ($error as $valore) {
+						echo "$valore<br>";
+					}?>
+				<form name="addComment" action="" method="post">
+					<textarea name="comment">
+					<?php if($POST_data) echo $_POST["comment"]; ?>
+					</textarea>
+					<input type="submit" value="comment">
+				</form>
+				<?php
+			}
+		} else { /*user not loggedIn show error*/
+			?> <a href="">login</a> o <a href="">registrati</a> per commentare  <!-- TODO: link alla form di login e di registrazione --> <?php
+		}
 	}
 
 	/**
