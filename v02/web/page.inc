@@ -22,6 +22,7 @@ function writePageHeader($ad) {
 <?php 
 	if($ad)
 		writeAD("header");
+	if(Session::getUser() !== false) {
 ?>
 			<div id="operationsMenu">
 				<div id="operations">
@@ -36,6 +37,7 @@ function writePageHeader($ad) {
 					<div class="clear"></div>
 				</div>	
 			</div>
+<?php } ?>
 		</div>	
 	</div>
 	

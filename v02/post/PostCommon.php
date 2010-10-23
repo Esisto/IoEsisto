@@ -479,7 +479,7 @@ class Vote {
 				$v = new Vote(intval($row[VOTE_AUTHOR]), intval($row[VOTE_POST]), $row[VOTE_VOTE] > 0);
 				$v->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[VOTE_CREATION_DATE])));
 				return $v;
-			} else $db->display_error("Vote::loadFromDatabase()");
+			} //else $db->display_error("Vote::loadFromDatabase()");
 		} else $db->display_connect_error("Vote::LoadFromDatabase()");
 		return false;
 	}

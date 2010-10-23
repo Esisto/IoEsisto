@@ -21,9 +21,17 @@ class UserPage {
 				self::showLoginForm($error);
 			} else {
 				$dataFiltered = Filter::filterArray($data);
-				if(($logged = UserManager::login($data)) === true)
-					header("location: " . FileManager::appendToRootPath());
-				else {
+				if(($logged = UserManager::login($data)) === true) {
+					if(!headers_sent())
+						header("location: " . FileManager::appendToRootPath(""));
+					else {
+						?>
+						<script type="text/javascript">
+							location.href = "<?php echo FileManager::appendToRootPath(""); ?>";
+						</script>
+						<?php
+					}
+				} else {
 					require_once 'errors/errors.php';
 					$error[] = $errors[$logged];
 				} 

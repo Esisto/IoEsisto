@@ -1,7 +1,7 @@
 <?php
 
 class Post {
-	protected static $DEFAULT_CATEGORY = "News";	//TODO: trovare un valore per questo…
+	const DEFAULT_CATEGORY = "News";	//TODO: trovare un valore per questo…
 	protected $ID;						// id recuperato dal database
 	protected $permalink;				// permalink generato automaticamente dal titolo ecc…
 	protected $type;					// appartenente a PostType
@@ -165,6 +165,8 @@ class Post {
 	}
 	function getAuthorName() {
 		require_once("user/UserManager.php");
+		if(is_null($this->getAuthor()))
+			return "Anonimous";
 		$u = UserManager::loadUser($this->getAuthor());
 		if(!is_null($u->getNickname()))
 			return $u->getNickname();
@@ -313,8 +315,8 @@ class Post {
 			if(isset($this->categories) && !is_null($this->getCategories())) {
 				// check sulle categorie, eliminazione di quelle che non esistono nel sistema, se vuoto inserimento di quella di default
 				$new_cat = CategoryManager::filterWrongCategories(explode(",", $this->getCategories()));
-				if(count($new_cat) == 0)
-					$new_cat[] = self::$DEFAULT_CATEGORY;
+				if(!isset($this->categories) || is_null($this->getCategories()) || count($new_cat) == 0)
+					$new_cat[] = self::DEFAULT_CATEGORY;
 				$this->setCategories(Filter::arrayToText($new_cat));
 				$data[POST_CATEGORIES] = $this->getCategories();
 			}
@@ -401,7 +403,7 @@ class Post {
 					// check sulle categorie, eliminazione di quelle che non esistono nel sistema, se vuoto inserimento di quella di default
 					$new_cat = CategoryManager::filterWrongCategories(explode(",", $this->getCategories()));
 					if(count($new_cat) == 0)
-						$new_cat[] = self::$DEFAULT_CATEGORY;
+						$new_cat[] = self::DEFAULT_CATEGORY;
 					$this->setCategories(Filter::arrayToText($new_cat));
 					$data[POST_CATEGORIES] = $this->getCategories();
 				}
@@ -510,7 +512,7 @@ class Post {
 		if(!is_null($row[POST_MODIFICATION_DATE]))
 			$p->setModificationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[POST_MODIFICATION_DATE])));
 		else $p->setModificationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[POST_CREATION_DATE])));
-		$p->loadComments()->loadReports();
+		$p->loadComments()->loadReports()->setPermalink($row[POST_PERMALINK]);
 		
 		require_once("common.php");
 		$p->setAccessCount(LogManager::getAccessCount("Post", $p->getID()));

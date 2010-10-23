@@ -139,8 +139,8 @@ class PostManager {
 		$v = self::loadVote($author, $post->getID());
 		if($v !== false)
 			self::removeVote($v);
-		else
-			echo $author . "-" . $post->getID();
+		//else
+		//	echo $author . "-" . $post->getID();
 			
 		$v = new Vote($author, $post->getID(), $vote);
 		$v->save();

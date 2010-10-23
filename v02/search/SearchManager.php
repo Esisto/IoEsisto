@@ -48,13 +48,13 @@ class SearchManager {
 				$wheres[] = new WhereConstraint($table->getColumn(POST_CREATION_DATE), Operator::$LESSER, $dayend);
 			}
 			if($key == "category")
-				$wheres[] = new WhereConstraint($table->getColumn(POST_CATEGORY), Operator::$LIKE, "%" . Filter::filterText($value) . "%");
+				$wheres[] = new WhereConstraint($table->getColumn("ps_category"), Operator::$LIKE, "%" . Filter::filterText($value) . "%");
 			if($key == "title")
 				$wheres[] = new WhereConstraint($table->getColumn(POST_TITLE), Operator::$LIKE, "%" . Filter::filterText($value) . "%");
 			if($key == "content")
 				$wheres[] = new WhereConstraint($table->getColumn(POST_CONTENT), Operator::$LIKE, "%" . Filter::filterText($value) . "%");
 			if($key == "author")
-				$wheres[] = new WhereConstraint($table->getColumn(POST_AUTHOR), Operator::$EQUAL, intval($value));			
+				$wheres[] = new WhereConstraint($table->getColumn(POST_AUTHOR), Operator::$EQUAL, intval($value));
 		}
 		$newopt = array();
 		foreach($options as $key => $value) {

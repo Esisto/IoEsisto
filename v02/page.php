@@ -275,18 +275,13 @@ class Page {
 		$return["object"] = $object;
 		if($action != "") $return["action"] = $action;
 		else $return["object"] = "index";
-		//echo "<br />" . serialize($return); //DEBUG
+		//echo "<br />" . serialize($return["object"]); //DEBUG
 		return $return;
 	}
 	
 	private static function doAction($request) {
 		//recupera i dati dal db
 		switch ($request["object"]) {
-			case "Login":
-				break;
-			case "Logout":
-				Session::destroy();
-				header("location: " . FileManager::appendToRootPath());
 			case "Signin":
 				require_once 'user/UserPage.php';
 				UserPage::showSignInForm();
@@ -334,7 +329,7 @@ class Page {
 				$posts = SearchManager::searchBy(array("Post"), array(), array("limit" => 4, "order" => "DESC", "by" => array("ps_creationDate")));
 				require_once("post/PostPage.php");
 				foreach($posts as $p)
-					PostPage::showPost($p);
+					PostPage::showPost($p, self::$post_options);
 				break;
 		}
 	}
@@ -400,7 +395,7 @@ class Page {
 				$posts = SearchManager::searchBy("Post", array("ps_author" => $user->getID()), array("order" => -1, "by" => "ps_creationDate"));
 				require_once 'post/PostPage.php';
 				foreach($posts as $p)
-					PostPage::showPost($p);
+					PostPage::showPost($p, self::$post_options);
 				break;
 			case "Mails":
 				require_once 'mail/MailManager.php';
@@ -472,7 +467,7 @@ class Page {
 				$contest = ContestManager::loadFormDatabase($request["contestid"]);
 				require_once("post/PostPage.php");
 				foreach($contest->getSubscribers() as $p)
-					PostPage::showPost($p);
+					PostPage::showPost($p, self::$post_options);
 				break;
 			case "Delete":
 				require_once 'admin/common.php';
@@ -510,7 +505,7 @@ class Page {
 				$posts = SearchManager::searchBy(array("Post"), array("category" => $request["categoryname"]), array("limit" => 4, "order" => "DESC", "by" => array("ps_creationDate")));
 				require_once("post/PostPage.php");
 				foreach($posts as $p)
-					PostPage::showPost($p);
+					PostPage::showPost($p, self::$post_options);
 				break;
 			case "Delete":
 				require_once 'admin/common.php';
@@ -697,7 +692,7 @@ class Page {
 				$posts = SearchManager::searchBy(array("Post"), array("tag" => $request["tagname"]), array("limit" => 4, "order" => "DESC", "by" => array("ps_creationDate")));
 				require_once("post/PostPage.php");
 				foreach($posts as $p)
-					PostPage::showPost($p);
+					PostPage::showPost($p, self::$post_options);
 				break;
 			case "Search":
 			default:
@@ -716,7 +711,7 @@ class Page {
 				//echo "<p><font color='green'>" . $request["permalink"] . "</font></p>"; //DEBUG
 				$p = PostManager::loadPostByPermalink($request["permalink"]);
 				require_once("post/PostPage.php");
-				PostPage::showPost($p);
+				PostPage::showPost($p, self::$post_options);
 				break;
 			case "Edit":
 				//echo "<p><font color='green'>REQUEST TO LOAD " . $request["script"] . " by: " . $author->getNickname() . ", with the title of: " . $request["posttitle"] . ", created the day: " . date("d/m/Y", $request["postday"]) . "</font></p>"; //DEBUG
@@ -737,7 +732,7 @@ class Page {
 					if(!isset($_GET["vote"])) header("location: " . FileManager::appendToRootPath("error.php?error=Oops, il voto da te inserito non è valido."));
 					PostManager::votePost(Session::getUser()->getID(), $p, $vote);
 				}
-				PostPage::showPost($p);
+				PostPage::showPost($p, self::$post_options);
 				break;
 			case "Comment":
 				//echo "<p><font color='green'>REQUEST TO LOAD " . $request["script"] . " by: " . $author->getNickname() . ", with the title of: " . $request["posttitle"] . ", created the day: " . date("d/m/Y", $request["postday"]) . "</font></p>"; //DEBUG
@@ -791,6 +786,12 @@ class Page {
 		require_once 'template/TemplateManager.php';
 		
 		$data = self::elaborateRequest($request);
+		if($data["object"] == "Login")
+			self::redirect("");
+		else if($data["object"] == "Logout") {
+			Session::destroy();
+			self::redirect("");
+		}
 		//return; //DEBUG
 		$default = TemplateManager::getDefaultTemplate();
 		$parser = null; $tentativi = 0;
@@ -879,7 +880,7 @@ class Page {
 					}
 					break;
 			}
-			//echo "<p>element: " . serialize($el) . "</p>";  //DEBUG
+			//echo "<p style='color:red;'>element: " . $el["tag"] . "</p>";  //DEBUG
 		}
 	}
 	
@@ -903,9 +904,10 @@ class Page {
 		}
 	}
 	
+	private static $post_options = array();
 	private static function PCMain($data) {
 		if($data["object"] == "index")
-			echo "Main";
+			self::$post_options["no_date"] = true;
 		self::doAction($data);
 	}
 	
@@ -917,15 +919,16 @@ class Page {
 		echo "Vedi anche";
 	}
 	
-	private static $WHO_POST = 1000;
+	private static $WHO_POST = 1;
 	private static function PCWho($data) {
-		echo "Chi Siamo";
-//		require_once 'post/PostManager.php';
-//		$p = PostManager::loadPost(self::$WHO_POST);
-//		if($p !== false) {
-//			require_once 'post/PostPage.php';
-//			PostPage::showPost($p, array("short"));
-//		}
+//		echo "Chi Siamo";
+		require_once 'post/PostManager.php';
+		$p = PostManager::loadPost(self::$WHO_POST);
+		if($p !== false) {
+			require_once 'post/PostPage.php';
+			self::$post_options["shrot"] = true;
+			PostPage::showPost($p, self::$post_options);
+		}
 	}
 	
 	private static function PCSearch($data) {
@@ -968,6 +971,23 @@ class Page {
 	
 	private static function PCSameAuthor($data) {
 		echo "<p>Dello stesso autore</p>";
+	}
+	
+	private static  function redirect($where) {
+		if(!headers_sent()) {
+			header("location: " . self::createLinkPath($where));
+		} else {
+			?>
+			<script type="text/javascript">
+				location.href = "<?php echo self::createLinkPath($where); ?>";
+			</script>
+			<?php
+		}
+	}
+	
+	private static function createLinkPath($where) {
+		require_once 'file_manager.php';
+		return FileManager::appendToRootPath($where);
 	}
 }
 ?>

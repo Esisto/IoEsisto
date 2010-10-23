@@ -72,8 +72,12 @@ class PostPage {
 	static function showPost($post, $options = null) {
 ?>
 	<div class="post <?php echo $post->getType(); ?>" id="post<?php echo $post->getID(); ?>">
-		<div class="pb_header">
-			<div class="post_creationDate"><?php echo format_datetime($post->getCreationDate()); ?></div>
+		<div class="pb_header"><?php 
+			if(!isset($options["no_date"]) || !$options["no_date"]) {
+			?>
+			<div class="post_creationDate"><?php echo format_datetime($post->getCreationDate()); ?></div><?php
+			}
+			?>
 			<div class="post_categories"><?php
 				$first = true;
 				$cats = explode(",", $post->getCategories());
@@ -107,7 +111,8 @@ class PostPage {
 				}
 			} else
 				echo Filter::decodeFilteredText($post->getContent());
-			?><div class="post_authorname"><a href="<?php echo FileManager::appendToRootPath("User/" . $post->getAuthorName()); ?>"><?php echo $post->getAuthorName(); ?></a></div>	
+			?><?php echo $post->getAuthorName(); ?>
+		<div class="post_authorname"><a href="<?php echo FileManager::appendToRootPath("User/" . $post->getAuthorName()); ?>"><?php echo $post->getAuthorName(); ?></a></div>	
 		</div>
 		<div class="post_footer clear">
 			<div class="post_vote">

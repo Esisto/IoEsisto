@@ -22,23 +22,23 @@
 //		echo "<p>DATABASE ALREADY EXISTED</p>";
 //	
 //	$mysqli->close();
-//	$db = new DBManager();
-//	require_once("db.php");
-//	$queries = explode("\n\n", $s);
-//	
-//	for($i=0; $i<count($queries); $i++) {
-//		$db->execute($queries[$i], null, LOGMANAGER);
-//		if($db->result) {
-//			$ss = explode("`", $queries[$i]);
-//			echo "<p>TABLE " . $ss[1] . " INSTALLED</p>";
-//		} else {
-//			//DEBUG
-//			$s = str_replace(",", ",<br />", $queries[$i]);
-//			$s = str_replace(") ENGINE", ")<br />ENGINE", $s);
-//			echo $s; //DEBUG
-//			echo $db->display_error("Install.php");
-//		}
-//	}
+	$db = new DBManager();
+	require_once("db.php");
+	$queries = explode("\n\n", $s);
+	
+	for($i=0; $i<count($queries); $i++) {
+		$db->execute($queries[$i], null, LOGMANAGER);
+		if($db->result) {
+			$ss = explode("`", $queries[$i]);
+			echo "<p>TABLE " . $ss[1] . " INSTALLED</p>";
+		} else {
+			//DEBUG
+			$s = str_replace(",", ",<br />", $queries[$i]);
+			$s = str_replace(") ENGINE", ")<br />ENGINE", $s);
+			echo $s; //DEBUG
+			echo $db->display_error("Install.php");
+		}
+	}
 //	
 //	$db->execute("INSERT INTO `Role` VALUES('admin')", "Role", null);
 //	$ra = $db->affected_rows();
@@ -64,13 +64,14 @@
 //	// END DEBUG
 	
 	$cat = array( //non metto le regioni e le provincie perché verranno inserite in automatico.
+				"Novità" => array(),
 				"Cronaca" => array(),
 				"Politica" => array(),
 				"Finanza" => array("Economia", "Borsa e finanza"),
 				"Scienza" => array("Tecnologia", "Medicina"),
 				"Sport" => array("Calcio" => array("Serie A", "Serie B", "Mercato"), "Basket", "Pallavolo", "Nuoto", "Tennis", "Golf", "Rugby", "Football americano", "Motociclismo", "Automobilismo", "Atletica", "Altri sport"),
 				"Spettacoli" => array("Musica", "Cinema", "TV", "Teatro"),
-				"Cultura e tendenza" => array("Libri", "Moda", "Arte", "Fotografia", "Religione", "Gossip"),
+				"Cultura e tendenza" => array("Libri", "Moda", "Arte", "Fotografia", "Religione", "Gossip", "Web"),
 				"Motori" => array("Auto", "Moto", "Altro"),
 				"Tempo libero" => array("Viaggi", "Cucina", "Casa", "Animali")
 	);
