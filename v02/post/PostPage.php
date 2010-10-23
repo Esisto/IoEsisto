@@ -302,7 +302,7 @@ class PostPage {
 				<textarea name="content"><?php echo $post->getContent(); ?></textarea>
 				<!-- sostituisco textarea standard con ckeditor -->
 				<script type="text/javascript">
-					CKEDITOR.replace( 'contnent' );
+					CKEDITOR.replace('content');
 				</script>
 			</p>
 			<p>Sottotilolo:<br /><input name="title" value="<?php echo $post->getSubtitle(); ?>"/></p>
@@ -311,9 +311,12 @@ class PostPage {
 			<p>Categorie: <br/>
 				<div style="width:200px;height:100px;overflow-y: scroll; border:1px solid black;">
 				<?php
-				$cat = PostCommon::getCategories();
+				require_once 'post/PostCommon.php';
+				$cat = CategoryManager::getCategories();
+				echo $cat[0];
+				$i = 0;
 				foreach($cat as $valore)
-					echo '<input type="checkbox" name="' . $valore . '" value="' . $valore .'" /> <br>';
+					echo '<input type="checkbox" name="cat[' . ++$i . ']" value="' . $valore .'" /> ' . $valore . '<br>';
 				?>
 				</div>
 			</p>

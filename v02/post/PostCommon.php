@@ -102,6 +102,25 @@ class CategoryManager {
 		}
 		return $ret;
 	}
+	
+	static function getCategories() {
+		require_once("query.php");
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			require_once("strings/strings.php");
+			define_tables(); defineCategoryColumns();
+			$table = Query::getDBSchema()->getTable(TABLE_CATEGORY);
+			
+			$db->execute($s = Query::generateSelectStm(array($table), array(), array(), array()));
+			$cat = array();
+			if($db->num_rows() > 0) {
+				while($row = $db->fetch_result())
+					$cat[] = $row[CATEGORY_NAME];
+				return $cat;
+			}
+		} else $db->display_connect_error("CategoryManager::getCategories()");
+		return false;
+	}
 }
 
 class TagManager {
