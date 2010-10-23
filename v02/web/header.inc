@@ -19,6 +19,17 @@ if(count($stylesheets) == 0) {
 	<link rel="stylesheet" type="text/css" media="screen,print" href="<?php echo FileManager::appendToRootPath("files/default/default.css") ?>" />
 <?php 
 }
+
+if(count($js) <= 1) {
+?>
+    <script src="http://www.google.com/jsapi?key=ABQIAAAAjg_c7D-9UshGFUSLngI0kRTb-vLQlFZmc2N8bgWI8YDPp5FEVBRY2O1KZH9g1Dq5uxwllWjXB-Lu5Q" type="text/javascript"></script>
+<?php 
+}
+foreach($js as $src) {
+?>
+    <script src="<?php echo FileManager::appendToRootPath("files/" . $src . ".js"); ?>" type="text/javascript"></script>
+<?php
+}
 ?>
 </head>
 

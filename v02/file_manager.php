@@ -25,7 +25,7 @@ class FileManager {
 		return $s;
 	}
 	
-	static function appendToRootPath($subdirs) {
+	static function appendToRootPath($subdirs = "") {
 		return self::getServerPath() . dirname($_SERVER["PHP_SELF"]) . "/" . $subdirs;
 	}
 }

@@ -932,8 +932,8 @@ class Page {
 	}
 	
 	private static function PCSearch($data) {
-//		require_once 'search/SearchPage.php';
-//		SearchPage::showDefaultSearchForm();
+		require_once 'search/SearchPage.php';
+		SearchPage::showDefaultSearchForm();
 		echo "Cerca";
 	}
 	
@@ -973,7 +973,7 @@ class Page {
 		echo "<p>Dello stesso autore</p>";
 	}
 	
-	private static  function redirect($where) {
+	private static  function redirect($where = "") {
 		if(!headers_sent()) {
 			header("location: " . self::createLinkPath($where));
 		} else {
@@ -985,7 +985,7 @@ class Page {
 		}
 	}
 	
-	private static function createLinkPath($where) {
+	private static function createLinkPath($where = "") {
 		require_once 'file_manager.php';
 		return FileManager::appendToRootPath($where);
 	}
