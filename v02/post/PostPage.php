@@ -296,10 +296,26 @@ class PostPage {
 		<?php
 		}
 		?>
-		<form name="<?php echo $name; ?>Post" action="?type=News" method="post"> <!-- TODO -->
+		<form name="<?php echo $name; ?>Post" action="?type=News" method="post">
 			<p>Titolo:<br /><input name="title" value="<?php echo $post->getTitle(); ?>"/></p>
 			<p>Contenuto:<br/>
 				<textarea name="content"><?php echo $post->getContent(); ?></textarea>
+				<!-- sostituisco textarea standard con ckeditor -->
+				<script type="text/javascript">
+					CKEDITOR.replace( 'contnent' );
+				</script>
+			</p>
+			<p>Sottotilolo:<br /><input name="title" value="<?php echo $post->getSubtitle(); ?>"/></p>
+			<p>Headline:<br /><input name="title" value="<?php echo $post->getHeadline(); ?>"/></p>
+			<p>Tags:<br /><input name="title" value="<?php echo $post->getTags(); ?>"/></p>
+			<p>Categorie: <br/>
+				<div style="width:200px;height:100px;overflow-y: scroll; border:1px solid black;">
+				<?php
+				$cat = PostCommon::getCategories();
+				foreach($cat as $valore)
+					echo '<input type="checkbox" name="' . $valore . '" value="' . $valore .'" /> <br>';
+				?>
+				</div>
 			</p>
             <p><input type="submit" value="Salva" /></p>
             <input name="type" type="hidden" value="news" />
