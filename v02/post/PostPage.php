@@ -7,11 +7,19 @@ require_once("post/PostManager.php");
 
 
 class PostPage {
+	const NO_DATE = "no_date";
+	const SHORT = "short";
+	const SHORTEST = "shortest";
+	const NO_COMMENTS = "no_comments";
+	const NO_TAGS = "no_tags";
+	const SMALL_TITLE = "small_title";
+	const NO_MODIF_DATE = "no_modif_date";
+	const NO_CATEGORIES = "no_categories";
+	
 	static function showShortPost($post, $options = null) {
 ?>
 	<div class="shortpost <?php echo $post->getType(); ?>" id="post<?php echo $post->getID(); ?>">
 		<div class="pb_header">
-			<div class="post_creationDate"><?php echo format_datetime($post->getCreationDate()); ?></div>
 			<div class="post_categories"><?php
 				$first = true;
 				$cats = explode(",", $post->getCategories());
@@ -24,9 +32,7 @@ class PostPage {
 			<div class="clear"></div>
 		</div>
 		<div class="post_header">
-			<!--<div class="post_headline clear"><?php echo Filter::decodeFilteredText($post->getHeadline()); ?></div>-->
-			<div class="post_title"><a href="<?php echo FileManager::appendToRootPath($post->getPermalink()); ?>"><?php echo Filter::decodeFilteredText($post->getTitle()); ?></a></div>
-			<div class="post_subtitle"><?php echo Filter::decodeFilteredText($post->getSubtitle()); ?></div>
+			<div class="post_title small_title"><a href="<?php echo FileManager::appendToRootPath($post->getPermalink()); ?>"><?php echo Filter::decodeFilteredText($post->getTitle()); ?></a></div>
 		</div>
 		<div class="post_content clear">
 			<?php
@@ -44,39 +50,26 @@ class PostPage {
 					echo Filter::decodeFilteredText($cont);
 				}
 			} else
-				echo Filter::decodeFilteredText($post->getContent());
+				echo substr(Filter::decodeFilteredText($post->getContent()), 0, 200) . "...";
 			?><div class="post_authorname"><a href="<?php echo FileManager::appendToRootPath("User/" . $post->getAuthorName()); ?>"><?php echo $post->getAuthorName(); ?></a></div>	
 		</div>
-		<div class="post_footer clear">
-			<div class="post_vote">Voto: <?php echo $post->getAvgVote(); ?></div>
-			<div class="post_tags">Tag: <?php
-				$first = true;
-				$tags = explode(",", $post->getTags());
-				foreach($tags as $tag) {
-					if($first) $first = false;
-					else echo ", ";
-					echo '<a href="' . FileManager::appendToRootPath('Tag/' . trim(Filter::decodeFilteredText($tag))) . '">' . trim(Filter::decodeFilteredText($tag)) . '</a>';
-				}
-			?></div>
-			<!--<div class="post_modificationDate">Ultima modifica: <?php echo format_datetime($post->getModificationDate()); ?></div>-->
-			<!--<div class="post_visible"><?php echo ($post->isVisible() ? "visible" : "not visible"); ?></div>-->
-		</div>
-		<!--<div class="post_comments clear">Commenti:<?php
-			foreach($post->getComments() as $comm)
-				echo "<p class='comment'>" . $comm . "</p>";
-		?></div>-->
 	</div>
 <?php
 	}
 	
 	static function showPost($post, $options = null) {
+		if(isset($options[self::SHORTEST]) && $options[self::SHORTEST]) {
+			self::showShortPost($post);
+			return;
+		}
 ?>
 	<div class="post <?php echo $post->getType(); ?>" id="post<?php echo $post->getID(); ?>">
 		<div class="pb_header"><?php 
-			if(!isset($options["no_date"]) || !$options["no_date"]) {
+			if(!isset($options[self::NO_DATE]) || !$options[self::NO_DATE]) {
 			?>
 			<div class="post_creationDate"><?php echo format_datetime($post->getCreationDate()); ?></div><?php
 			}
+			if(!isset($options[self::NO_CATEGORIES]) || !$options[self::NO_CATEGORIES]) {
 			?>
 			<div class="post_categories"><?php
 				$first = true;
@@ -86,12 +79,16 @@ class PostPage {
 					else echo ", ";
 					echo '<a href="' . FileManager::appendToRootPath('Category/' . trim(Filter::decodeFilteredText($cat))) . '">' . trim(Filter::decodeFilteredText($cat)) . '</a>';
 				}
-			?></div>
+			?></div><?php
+			} ?>
 			<div class="clear"></div>
 		</div>
 		<div class="post_header">
-			<div class="post_headline clear"><?php echo Filter::decodeFilteredText($post->getHeadline()); ?></div>
-			<div class="post_title"><a href="<?php echo FileManager::appendToRootPath($post->getPermalink()); ?>"><?php echo Filter::decodeFilteredText($post->getTitle()); ?></a></div>
+			<div class="post_headline clear"><?php echo Filter::decodeFilteredText($post->getHeadline()); ?></div><?php
+			$title_class = "post_title";
+			if(isset($options[self::SMALL_TITLE]) && $options[self::SMALL_TITLE])
+				$title_class.= " small_title"; ?>
+			<div class="<?php echo $title_class; ?>"><a href="<?php echo FileManager::appendToRootPath($post->getPermalink()); ?>"><?php echo Filter::decodeFilteredText($post->getTitle()); ?></a></div>
 			<div class="post_subtitle"><?php echo Filter::decodeFilteredText($post->getSubtitle()); ?></div>
 		</div>
 		<div class="post_content clear">
@@ -111,7 +108,7 @@ class PostPage {
 				}
 			} else
 				echo Filter::decodeFilteredText($post->getContent());
-			?><?php echo $post->getAuthorName(); ?>
+			?>
 		<div class="post_authorname"><a href="<?php echo FileManager::appendToRootPath("User/" . $post->getAuthorName()); ?>"><?php echo $post->getAuthorName(); ?></a></div>	
 		</div>
 		<div class="post_footer clear">
@@ -120,24 +117,32 @@ class PostPage {
 				<div class="vote_image"><a href="<?php echo $post->getFullPermalink() . "/Vote?vote=no"; ?>">no</a></div>
 				Voto: <?php echo $post->getAvgVote(); ?>
 			</div>
-			<?php if(!is_null($post->getTags()) && trim($post->getTags()) != "") {?>
+			<?php 
+			if(!isset($options[self::NO_TAGS]) || !$options[self::NO_TAGS]) {
+				if(!is_null($post->getTags()) && trim($post->getTags()) != "") {?>
 			<div class="post_tags">Tag: <?php
-				$first = true;
-				$tags = explode(",", $post->getTags());
-				foreach($tags as $tag) {
-					if($first) $first = false;
-					else echo ", ";
-					echo '<a href="' . FileManager::appendToRootPath('Tag/' . trim(Filter::decodeFilteredText($tag))) . '">' . trim(Filter::decodeFilteredText($tag)) . '</a>';
+					$first = true;
+					$tags = explode(",", $post->getTags());
+					foreach($tags as $tag) {
+						if($first) $first = false;
+						else echo ", ";
+						echo '<a href="' . FileManager::appendToRootPath('Tag/' . trim(Filter::decodeFilteredText($tag))) . '">' . trim(Filter::decodeFilteredText($tag)) . '</a>';
+					}
+			?></div><?php
 				}
-			?></div>
-			<?php }?>
-			<div class="post_modificationDate">Ultima modifica: <?php echo format_datetime($post->getModificationDate()); ?></div>
-			<!--<div class="post_visible"><?php echo ($post->isVisible() ? "visible" : "not visible"); ?></div>-->
-		</div>
+			}
+			if(!isset($options[self::NO_MODIF_DATE]) || !$options[self::NO_MODIF_DATE]) {
+			?>
+			<div class="post_modificationDate">Ultima modifica: <?php echo format_datetime($post->getModificationDate()); ?></div><?php
+			} ?>
+		</div><?php 
+		if(!isset($options[self::NO_COMMENTS]) || !$options[self::NO_COMMENTS]) {
+		?>
 		<div class="post_comments clear">Commenti:<?php
 			foreach($post->getComments() as $comm)
 				echo "<p class='comment'>" . $comm . "</p>";
-		?></div>
+		?></div><?php
+		} ?>
 	</div>
 <?php
 	}

@@ -4,16 +4,16 @@ class TemplateManager {
 		return "files/default/index.xml";
 	}
 	
-	static function getTemplateForRequest($request) {
-		switch($request["object"]) {
+	static function getTemplateForRequest($object, $id, $action) {
+		switch($object) {
 			case "Post":
-				if($request["action"]=="New" || $request["action"]=="Edit")
+				if($action == "New" || $action == "Edit")
 					return "files/default/post.xml"; //FIXME "files/default/post_edit.xml";
 			case "Comment":
 			case "Vote":
 				return "files/default/post.xml";
 			case "User":
-				if($request["action"]=="Register")
+				if($action == "Register")
 					return "files/default/register.xml";
 			case "Feedback":
 				return "files/default/profile.xml";

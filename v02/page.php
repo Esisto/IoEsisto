@@ -2,6 +2,13 @@
 require_once("user/UserManager.php");
 
 class Page {
+	
+	private static $currentObject;
+	private static $currentAction;
+	private static $currentPermalink;
+	private static $currentID;
+	
+	
 	/**
 	 * Elabora le richieste fatte al server dall'utente per scegliere lo script da eseguire e su quali dati.
 	 * Non esegue lo script ma fornisce i dati per sceglierlo.
@@ -39,249 +46,231 @@ class Page {
 		$start = strlen(dirname($_SERVER["PHP_SELF"])) + 1; //il +1 è per lo /
 		$return = array();
 		//echo "<br />" . $start . " " . $index; //DEBUG
-		$return["permalink"] = substr($request, $start, $index - $start);
+		self::$currentPermalink = substr($request, $start, $index - $start);
 		//echo "<br />" . $return["permalink"]; //DEBUG
 		//echo "<br />" . $s; //DEBUG
-		$parts = explode("/", $return["permalink"]);
+		$parts = explode("/", self::$currentPermalink);
 		$count = count($parts);
 		//echo "<p style='color:red'>" . $count . "</p>"; //DEBUG
 		//se parts è vuoto eseguo l'index
 		if($count == 0) return array("object" => "index");
 		
-		$object = $parts[0];
-		$action = $parts[$count-1];
+		self::$currentObject = $parts[0];
+		self::$currentAction = $parts[$count-1];
 		
 		//selezione dell'oggetto su cui lavorare
-		switch ($object) {
+		switch (self::$currentObject) {
 			case "Login":
 			case "Logout":
 			case "Signin":
-				if($action != $object) $action = $object;
+				if(self::$currentAction != self::$currentObject)
+					self::$currentAction = self::$currentObject;
 				break;
 			case "Contest":
 				//modifica o leggi tutti i post di un contest //EDIT E DELETE SOLO ADMIN!!!
-				if($action == "Edit" || $action == "Posts" || $action == "Delete") {	//esempio: /Contest/%contest_id%/Edit
-					if($count != 3) $action = "";
-					else $return["contestid"] = $parts[1];
+				if(self::$currentAction == "Edit" || self::$currentAction == "Posts" || self::$currentAction == "Delete") {	//esempio: /Contest/%contest_id%/Edit
+					if($count != 3) self::$currentAction = "";
+					else self::$currentID = $parts[1];
 				}
 				//crea nuovo contest //SOLO ADMIN!!!
 				if($action == "New") {	//esempio: /Contest/New
 					if($count != 2)
-						$action = "";
+						self::$currentAction = "";
 				}
 				//leggi la scheda del contest
 				if($count == 2) {	//esempio: /Contest/%contest_id%
-					$action = "Read";
-					$return["contestid"] = $parts[1];
+					self::$currentAction = "Read";
+					self::$currentID = $parts[1];
 				}
 				//pagina di ricerca dei contest
 				if($count == 1) {
-					$action == "Search";
+					self::$currentAction == "Search";
 				}
 				break;
 			case "Category":
 				//modifica o leggi tutti i post di una categoria //EDIT, SETPARENT E DELETE SOLO ADMIN!!!
-				if($action == "Edit" || $action == "Posts" ||
-				   $action == "Delete" || $action == "SetParent") {	//esempio: /Category/%category_name%/Posts
-					if($count != 3) $action = "";
-					else $return["categoryname"] = $parts[1];
+				if(self::$currentAction == "Edit" || self::$currentAction == "Posts" ||
+				   self::$currentAction == "Delete" || self::$currentAction == "SetParent") {	//esempio: /Category/%category_name%/Posts
+					if($count != 3) self::$currentAction = "";
+					else self::$currentID = $parts[1];
 				}
 				//crea nuova categoria //SOLO ADMIN!!!
-				if($action == "New") {	//esempio: /Category/New
+				if(self::$currentAction == "New") {	//esempio: /Category/New
 					if($count != 2)
-						$action = "";
+						self::$currentAction = "";
 				}
 				//leggi tutti i post di una categoria //E' UNA COPIA DI QUELLA SOPRA...
 				if($count == 2) {	//esempio: /Category/%category_name%
-					$action = "Posts";
-					$return["categoryname"] = $parts[1];
+					self::$currentAction = "Posts";
+					self::$currentID = $parts[1];
 				}
 				//pagina di ricerca delle categorie
 				if($count == 1) {
-					$action == "Search";
+					self::$currentAction == "Search";
 				}
 				break;
 			case "Tag":
 				//leggi tutti i post di un tag
-				if($action == "Posts") {	//esempio: /Tag/%tag_name%/Posts
+				if(self::$currentAction == "Posts") {	//esempio: /Tag/%tag_name%/Posts
 					if($count != 3) $action = "";
-					else $return["tagname"] = $parts[1];
+					else self::$currentID = $parts[1];
 				}
 				//leggi tutti i post di un tag //E' UNA COPIA DI QUELLA SOPRA...
 				if($count == 2) {	//esempio: /Tag/%tag_name%
-					$action = "Posts";
-					$return["tagname"] = $parts[1];
+					self::$currentAction = "Posts";
+					self::$currentID = $parts[1];
 				}
 				//pagina di ricerca dei tag
 				if($count == 1) {
-					$action == "Search";
+					self::$currentAction == "Search";
 				}
 				break;
 			case "Post":
 				//modifica, vota, commenta, elimina, subscribe o aggiungi a una collezione il post
-				if($action == "Edit" || $action == "Vote" ||
-				   $action == "Comment" || $action == "Delete" ||
-				   $action == "Subscribe" || $action == "AddToCollection") {	//esempio: /Post/%author%/%post_date%/%post_title%/Edit
-					if($count != 5) $action = "";
+				if(self::$currentAction == "Edit" || self::$currentAction == "Vote" ||
+				   self::$currentAction == "Comment" || self::$currentAction == "Delete" ||
+				   self::$currentAction == "Subscribe" || self::$currentAction == "AddToCollection") {	//esempio: /Post/%author%/%post_date%/%post_title%/Edit
+					if($count != 5) self::$currentAction = "";
 				}
 				//leggi il post
 				if($count == 4) {	//esempio: /Post/%author%/%post_date%/%post_title%/
-					$action = "Read";
+					self::$currentAction = "Read";
 				}
 				//crea nuovo post
-				if($action == "New") {	//esempio: /Post/New
+				if(self::$currentAction == "New") {	//esempio: /Post/New
 					if($count != 2)
-						$action = "";
+						self::$currentAction = "";
 					break; //non deve fare altro
 				}
 				//pagina di ricerca dei post
 				if($count == 1) {
-					$action == "Search";
-				} else if($action != "") { //recupera altre informazioni sul post
-					if(is_numeric($parts[1]))
-						$return["authorid"] = $parts[1];
-					else
-						$return["authornickname"] = $parts[1];
-					//recupera il titolo (escaped) dalla richiesta fatta al server
-					$title = explode("(", $parts[3]);
-					$rand = substr($title[count($title)-1], 0, -1);
-					if(is_numeric($rand)) $return["posttitle"] = substr($parts[3],0,-(2 + strlen($rand)));
-					else $return["posttitle"] = $parts[3];
-					
-					$return["permalink"] = $parts[0] . "/" . $parts[1] . "/" . $parts[2] . "/" . $parts[3];				
-					//echo $return["permalink"];
-					$return["postday"] = date_timestamp_get(date_create_from_format("Y-m-d", $parts[2]));
+					self::$currentAction == "Search";
+				} else if(self::$currentAction != "") { //recupera altre informazioni sul post
+					self::$currentID = $parts[0] . "/" . $parts[1] . "/" . $parts[2] . "/" . $parts[3];
 				}
 				break;
 			case "Comment":
 				//rimuovi un commento
-				if($action == "Delete") {	//esempio: /Comment/%comment_id%/Remove
-					if($count != 3) $action = "";
-					else $return["commentid"] = $parts[1];
+				if(self::$currentAction == "Delete") {	//esempio: /Comment/%comment_id%/Remove
+					if($count != 3) self::$currentAction = "";
+					else self::$currentID = $parts[1];
 				}
 				//leggi un commento e relativo post
 				if($count == 2) {	//esempio: /Comment/%comment_id%
-					$action = "Read";
-					$return["commentid"] = $parts[1];
-				} else if($count != 3) $action = "";
+					self::$currentAction = "Read";
+					self::$currentID = $parts[1];
+				} else if($count != 3) self::$currentAction = "";
 				break;
 			case "Vote":
 				//rimuovi, modifica un voto
-				if($action == "Delete" || $action == "Edit") {	//esempio: /Vote/%post_id%/Remove
-					if($count != 3) $action = "";
-					else $return["postid"] = $parts[1];
+				if(self::$currentAction == "Delete" || self::$currentAction == "Edit") {	//esempio: /Vote/%post_id%/Remove
+					if($count != 3) self::$currentAction = "";
+					else self::$currentID = $parts[1];
 				}
 				break;
 			case "User":
 				//modifica, segui, non seguire, commenta, elimina, verifica, leggi tutti i post di un utente
-				if($action == "Edit" || $action == "Follow" ||
-				   $action == "Feedback" || $action == "Delete" ||
-				   $action == "StopFollow" || $action == "Verify" ||
-				   $action == "Posts" || $action == "AddContact" ||
-				   $action == "Mails" ) {	//esempio: /User/%user_nickname%/Verify
-					if($count != 3) $action = "";
-					if(is_numeric($parts[1]))
-						$return["userid"] = $parts[1];
-					else
-						$return["usernickname"] = $parts[1];
+				if(self::$currentAction == "Edit" || self::$currentAction == "Follow" ||
+				   self::$currentAction == "Feedback" || self::$currentAction == "Delete" ||
+				   self::$currentAction == "StopFollow" || self::$currentAction == "Verify" ||
+				   self::$currentAction == "Posts" || self::$currentAction == "AddContact" ||
+				   self::$currentAction == "Mails" ) {	//esempio: /User/%user_nickname%/Verify
+					if($count != 3) self::$currentAction = "";
+					self::$currentID = $parts[1];
 				}
 				//registra nuovo utente
-				if($action == "New") {	//esempio: /User/New
+				if(self::$currentAction == "New") {	//esempio: /User/New
 					if($count != 2)
-						$action = "";
+						self::$currentAction = "";
 				}
 				//leggi il profilo
 				if($count == 2) {	//esempio: /User/%user_nickname%
-					$action = "Read";
-					if(is_numeric($parts[1]))
-						$return["userid"] = $parts[1];
-					else
-						$return["usernickname"] = $parts[1];
+					self::$currentAction = "Read";
+					self::$currentID = $parts[1];
 				}
 				//pagina di ricerca degli utenti
 				if($count == 1) {
-					$action == "Search";
+					self::$currentAction == "Search";
 				}
 				break;
 			case "Feedback":
 				//rimuovi, modifica un voto
-				if($action == "Delete") {	//esempio: /Feedback/%subject_id%/Remove
-					if($count != 3) $action = "";
-					else $return["subjectid"] = $parts[1];
+				if(self::$currentAction == "Delete") {	//esempio: /Feedback/%subject_id%/Remove
+					if($count != 3) self::$currentAction = "";
+					else self::$currentID = $parts[1];
 				}
 				break;
 			case "Contact":
 				//modifica o elimina un contatto
-				if($action == "Edit" || $action == "Delete") {	//esempio: /Contact/%contact_id%/Edit
-					if($count != 3) $action = "";
-					else $return["contactid"] = $parts[1];
+				if(self::$currentAction == "Edit" || self::$currentAction == "Delete") {	//esempio: /Contact/%contact_id%/Edit
+					if($count != 3) self::$currentAction = "";
+					else self::$currentID = $parts[1];
 				}
 				//pagina di ricerca dei contatti
 				if($count == 1) {
-					$action == "Search";
+					self::$currentAction == "Search";
 				}
 				break;
 			case "Mail":
 				//modifica, rispondi, sposta nel cestino o in un'altra cartella o segnala come spam una mail
-				if($action == "Edit" || $action == "Delete" ||
-				   $action == "Move" || $action == "Spam" ||
-				   $action == "Answer") {	//esempio: /Mail/%mail_id%/Edit
-					if($count != 3) $action = "";
-					else $return["mailid"] = $parts[1];
+				if(self::$currentAction == "Edit" || self::$currentAction == "Delete" ||
+				   self::$currentAction == "Move" || self::$currentAction == "Spam" ||
+				   self::$currentAction == "Answer") {	//esempio: /Mail/%mail_id%/Edit
+					if($count != 3) self::$currentAction = "";
+					else self::$currentID = $parts[1];
 				}
 				//crea nuova mail o svuota il cestino
-				if($action == "New" || $action == "EmptyTrash") {	//esempio: /Mail/EmptyTrash
+				if(self::$currentAction == "New" || self::$currentAction == "EmptyTrash") {	//esempio: /Mail/EmptyTrash
 					if($count != 2)
-						$action = "";
+						self::$currentAction = "";
 				}
 				//leggi la mail
 				if($count == 2) {	//esempio: /Mail/%mail_id%
-					$action = "Read";
-					$return["mailid"] = $parts[1];
+					self::$currentAction = "Read";
+					self::$currentID = $parts[1];
 				}
 				//pagina di ricerca delle mail
 				if($count == 1) {
-					$action == "Search";
+					self::$currentAction == "Search";
 				}
 				break;
 			case "Directory":
 				//modifica o elimina o leggi le mail di una directory
-				if($action == "Edit" || $action == "Delete" || $action == "Mails") {	//esempio: /Directory/%dir_id%/Edit
-					if($count != 3) $action = "";
-					else $return["directoryid"] = $parts[1];
+				if(self::$currentAction == "Edit" || self::$currentAction == "Delete" || self::$currentAction == "Mails") {	//esempio: /Directory/%dir_id%/Edit
+					if($count != 3) self::$currentAction = "";
+					else self::$currentID = $parts[1];
 				}
 				//crea nuova dir o leggi inviate o non lette
-				if($action == "New" || $action == "Sent" || $action == "Unread") {	//esempio: /Directory/Sent
+				if(self::$currentAction == "New" || self::$currentAction == "Sent" || self::$currentAction == "Unread") {	//esempio: /Directory/Sent
 					if($count != 2)
-						$action = "";
+						self::$currentAction = "";
 				}
 				//guarda il contenuto 
 				if($count == 2) {	//esempio: /Directory/%dir_id%
-					$action = "Mails";
-					$return["directoryid"] = $parts[1];
+					self::$currentAction = "Mails";
+					self::$currentID = $parts[1];
 				}
 				//pagina di ricerca delle mail nella cartella
 				if($count == 1) {
-					$action == "Search";
+					self::$currentAction == "Search";
 				}
 				break;
 			case "Partner":
 				//TODO
 				break;
 			default:
-				$action = "";
+				self::$currentAction = "";
 		}
 		
-		$return["object"] = $object;
-		if($action != "") $return["action"] = $action;
-		else $return["object"] = "index";
+		if(self::$currentAction == "")
+			self::$currentObject = "index";
 		//echo "<br />" . serialize($return["object"]); //DEBUG
 		return $return;
 	}
 	
 	private static function doAction($request) {
 		//recupera i dati dal db
-		switch ($request["object"]) {
+		switch (self::$currentObject) {
 			case "Signin":
 				require_once 'user/UserPage.php';
 				UserPage::showSignInForm();
@@ -326,10 +315,10 @@ class Page {
 			default:
 				//TODO: creare pagina index
 				require_once 'search/SearchManager.php';
-				$posts = SearchManager::searchBy(array("Post"), array(), array("limit" => 4, "order" => "DESC", "by" => array("ps_creationDate")));
+				$posts = SearchManager::searchBy(array("Post"), array(), array("limit" => 1, "order" => "DESC", "by" => array("ps_creationDate")));
 				require_once("post/PostPage.php");
-				foreach($posts as $p)
-					PostPage::showPost($p, self::$post_options);
+				PostPage::showPost($p = $posts[0], self::$post_options);
+				self::$currentID = $p->getID();
 				break;
 		}
 	}
@@ -337,12 +326,12 @@ class Page {
 	private static function doUserAction($request) {
 		//echo "<p>" . serialize($request) . "</p>"; //DEBUG
 		$user = null;
-		if(isset($request["userid"]))
-			$user = UserManager::loadUser($request["userid"]);
+		if(is_numeric(self::$currentID))
+			$user = UserManager::loadUser(self::$currentID);
 		else if(isset($request["usernickname"]))
-			$user = UserManager::loadUserByNickname($request["usernickname"]);
+			$user = UserManager::loadUserByNickname(self::$currentID);
 		
-		switch ($request["action"]) {
+		switch (self::$currentAction) {
 			case "Edit":
 				if(is_null($user) || $user === false)
 					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non è stata trovata."));
@@ -432,16 +421,16 @@ class Page {
 	}
 	
 	private static function doContactAction($request) {
-		switch ($request["action"]) {
+		switch (self::$currentAction) {
 			case "Edit":
 				require_once 'user/User.php';
-				$contact = Contact::loadFromDatabase($request["contactid"]);
+				$contact = Contact::loadFromDatabase(self::$currentID);
 				require_once 'user/UserPage.php';
 				UserPage::showEditContactForm($contact);
 				break;
 			case "Delete":
 				require_once 'user/User.php';
-				$contact = Contact::loadFromDatabase($request["contactid"]);
+				$contact = Contact::loadFromDatabase(self::$currentID);
 				$user = UserManager::loadUser($contact->getUser());
 				UserManager::deleteContact($contact, $user);
 				require_once 'user/UserPage.php';
@@ -456,22 +445,22 @@ class Page {
 	}
 	
 	private static function doContestAction($request) {
-		switch ($request["action"]) {
+		switch (self::$currentAction) {
 			case "Edit":
 				require_once 'admin/common.php';
-				$contest = AdminContestManager::loadFormDatabase($request["contestid"]);
+				$contest = AdminContestManager::loadFormDatabase(self::$currentID);
 				ContestPage::showEditContestForm($contest);
 				break;
 			case "Posts":
 				require_once 'post/contest/ContestManager.php';
-				$contest = ContestManager::loadFormDatabase($request["contestid"]);
+				$contest = ContestManager::loadFormDatabase(self::$currentID);
 				require_once("post/PostPage.php");
 				foreach($contest->getSubscribers() as $p)
 					PostPage::showPost($p, self::$post_options);
 				break;
 			case "Delete":
 				require_once 'admin/common.php';
-				$contest = AdminContestManager::loadFormDatabase($request["contestid"]);
+				$contest = AdminContestManager::loadFormDatabase(self::$currentID);
 				AdminContestManager::deleteContest($contest);
 				header("location: ");
 				break;
@@ -481,7 +470,7 @@ class Page {
 				break;
 			case "Read":
 				require_once 'post/contest/ContestManager.php';
-				$contest = ContestManager::loadFormDatabase($request["contestid"]);
+				$contest = ContestManager::loadFormDatabase(self::$currentID);
 				require_once 'post/PostPage.php';
 				PostPage::showContestDetails($contest);
 				break;
@@ -494,22 +483,22 @@ class Page {
 	}
 	
 	private static function doCategoryAction($request) {
-		switch ($request["action"]) {
+		switch (self::$currentAction) {
 			case "Edit":
 				require_once 'admin/common.php';
-				CategoryPage::showEditCategoryForm($request["categoryid"]);
+				CategoryPage::showEditCategoryForm(self::$currentID);
 				break;
 			case "Posts":
 				//echo "<p><font color='green'>REQUEST TO LOAD post which category is " . $request["categoryname"] . ".</font></p>"; //DEBUG
 				require_once 'search/SearchManager.php';
-				$posts = SearchManager::searchBy(array("Post"), array("category" => $request["categoryname"]), array("limit" => 4, "order" => "DESC", "by" => array("ps_creationDate")));
+				$posts = SearchManager::searchBy(array("Post"), array("category" => self::$currentID), array("limit" => 4, "order" => "DESC", "by" => array("ps_creationDate")));
 				require_once("post/PostPage.php");
 				foreach($posts as $p)
 					PostPage::showPost($p, self::$post_options);
 				break;
 			case "Delete":
 				require_once 'admin/common.php';
-				$cat = AdminCategoryManager::deleteCategory($request["categoryid"]);
+				$cat = AdminCategoryManager::deleteCategory(self::$currentID);
 				header("location: ");
 				break;
 			case "New":
@@ -525,10 +514,10 @@ class Page {
 	}
 	
 	private static function doCommentAction($request) {
-		switch ($request["action"]) {
+		switch (self::$currentAction) {
 			case "Delete":
 				require_once 'post/PostCommon.php';
-				$c = Comment::loadFromDatabase($request["commentid"]);
+				$c = Comment::loadFromDatabase(self::$currentID);
 				$c->delete();
 				require_once 'post/PostManager.php';
 				$p = PostManager::loadPostByPermalink($c->getPost());
@@ -537,7 +526,7 @@ class Page {
 			case "Read":
 			default:
 				require_once 'post/PostCommon.php';
-				$c = Comment::loadFromDatabase($request["commentid"]);
+				$c = Comment::loadFromDatabase(self::$currentID);
 				require_once 'post/PostManager.php';
 				$p = PostManager::loadPostByPermalink($c->getPost());
 				header("location: " . $p->getFullPermalink() . "#" . $c->getID());
@@ -546,50 +535,47 @@ class Page {
 	}
 	
 	private static function doFeedbackAction($request) {
-		switch ($request["action"]) {
+		switch (self::$currentAction) {
 			case "Delete":
-				if(isset($request["userid"]))
-					$user = UserManager::loadUser($request["subjectid"]);
-				else if(isset($request["usernickname"]))
-					$user = UserManager::loadUserByNickname($request["subjectnickname"]);
+				if(is_numeric(self::$currentID))
+					$subject = UserManager::loadUser(self::$currentID);
+				else
+					$subject = UserManager::loadUserByNickname(self::$currentID);
 				if(is_null($user) || $user === false)
 					header("location: " . FileManager::appendToRootPath("/error.php?e=Oops la pagina non è stata trovata."));
-				$me = UserManager::loadUser(Session::getUser());
-				UserManager::deleteFeedbackFromUser($me, $subject);
+				UserManager::deleteFeedbackFromUser(Session::getUser(), $subject);
 			default:
 				header("location: " . FileManager::appendToRootPath("User/" . $user->getID()));
 		}
 	}
 	
 	private static function doMailAction($request) {
-		switch ($request["action"]) {
+		switch (self::$currentAction) {
 			case "Edit": //una mail non si può modificare...
 				break;
 			case "Move":
 				require_once 'mail/MailManager.php';
-				$mail = MailManager::loadMail($request["mailid"]);
+				$mail = MailManager::loadMail(self::$currentID);
 				require_once 'mail/MailPage.php';
 				MailPage::showMoveToForm($mail);
 				break;
 			case "Delete":
 				require_once 'mail/MailManager.php';
-				$mail = MailManager::loadMail($request["mailid"]);
-				$me = UserManager::loadUser(Session::getUser());
-				$dir = MailManager::directoryForMail($mail, $me);
+				$mail = MailManager::loadMail(self::$currentID);
+				$dir = MailManager::directoryForMail($mail, Session::getUser());
 				MailManager::moveToTrash($mail, $dir);
 				header("location: " . FileManager::appendToRootPath("Directory/" . $dir->getID()));
 				break;
 			case "Spam":
 				require_once 'mail/MailManager.php';
-				$mail = MailManager::loadMail($request["mailid"]);
-				$me = UserManager::loadUser(Session::getUser());
-				$dir = MailManager::directoryForMail($mail, $me);
+				$mail = MailManager::loadMail(self::$currentID);
+				$dir = MailManager::directoryForMail($mail, Session::getUser());
 				MailManager::moveToSpam($mail, $dir);
 				header("location: " . FileManager::appendToRootPath("Directory/" . $dir->getID()));
 				break;
 			case "Answer":
 				require_once 'mail/MailManager.php';
-				$mail = MailManager::loadMail($request["mailid"]);
+				$mail = MailManager::loadMail(self::$currentID);
 			case "New":
 				if(!isset($mail)) $mail = null;
 				require_once 'mail/MailPage.php';
@@ -597,13 +583,12 @@ class Page {
 				break;
 			case "EmptyTrash":
 				require_once 'mail/MailManager.php';
-				$me = UserManager::loadUser(Session::getUser());
 				MailManager::emptyTrash($me);
-				header("location: " . FileManager::appendToRootPath("User/" . $me->getID() . "/Mails"));
+				header("location: " . FileManager::appendToRootPath("User/" . Session::getUser()->getID() . "/Mails"));
 				break;
 			case "Read":
 				require_once 'mail/MailManager.php';
-				MailManager::loadMail($request["mailid"]);
+				MailManager::loadMail(self::$currentID);
 				require_once 'mail/MailPage.php';
 				MailPage::showMail($mail);
 				break;
@@ -616,39 +601,37 @@ class Page {
 	}
 	
 	private static function doDirectoryAction($request) {
-		switch ($request["action"]) {
+		switch (self::$currentAction) {
 			case "Edit":
 				require_once 'mail/MailManager.php';
-				$directory = MailManager::loadDirectory($request["directoryid"]);
+				$directory = MailManager::loadDirectory(self::$currentID);
 				require_once 'mail/MailPage.php';
 				MailPage::showEditDirectoryForm($directory);
 				break;
 			case "Mails":
 				require_once 'mail/MailManager.php';
-				$directory = MailManager::loadDirectory($request["directoryid"]);
+				$directory = MailManager::loadDirectory(self::$currentID);
 				require_once 'mail/MailPage.php';
 				foreach($directory->getMails() as $mail)
 					MailPage::showShortMail($mail);
 				break;
 			case "Delete":
 				require_once 'mail/MailManager.php';
-				$directory = MailManager::loadDirectory($request["directoryid"]);
+				$directory = MailManager::loadDirectory(self::$currentID);
 				MailManager::deleteDirectory($directory);
 				$inbox = MailManager::loadDirectoryFromName(MAILBOX, $directory->getUser());
 				header("location: " . FileManager::appendToRootPath("Directory/" . $inbox->getID()));
 				break;
 			case "Sent":
 				require_once 'mail/MailManager.php';
-				$me = UserManager::loadUser(Session::getUser());
-				$mails = MailManager::getMailSent($me);
+				$mails = MailManager::getMailSent(Session::getUser());
 				foreach($directory->getMails() as $mail)
 					MailPage::showShortMail($mail);
 				break;
 			case "Unread":
 				//@deprecated non ce n'è bisogno...
 				require_once 'mail/MailManager.php';
-				$me = UserManager::loadUser(Session::getUser());
-				$inbox = MailManager::loadDirectoryFromName(MAILBOX, $me);
+				$inbox = MailManager::loadDirectoryFromName(MAILBOX, Session::getUser());
 				header("location: " . FileManager::appendToRootPath("Directory/" . $inbox->getID()));
 				break;
 			case "New":
@@ -664,17 +647,16 @@ class Page {
 	}
 	
 	private static function doVoteAction($request) {
-		switch ($request["action"]) {
+		switch (self::$currentAction) {
 			case "Delete":
 				require_once 'post/PostManager.php';
-				$me = UserManager::loadUser(Session::getUser());
-				$vote = PostManager::loadVote($me, $require["postid"]);
+				$vote = PostManager::loadVote(Session::getUser(), self::$currentID);
 				PostManager::removeVote($vote);
-				header("location: " . FileManager::appendToRootPath("Post/" . $require["postid"]));
+				header("location: " . FileManager::appendToRootPath("Post/" . self::$currentID));
 				break;
 			case "Edit": //fare /Post/postid/Vote invece...
 			default:
-				header("location: " . FileManager::appendToRootPath("Post/" . $require["postid"]));
+				header("location: " . FileManager::appendToRootPath("Post/" . self::$currentID));
 				break;
 		}
 	}
@@ -686,10 +668,10 @@ class Page {
 	private static function doPreferencesAction($request) {} //TODO da implementare
 	
 	private static function doTagAction($request) {
-		switch ($request["action"]) {
+		switch (self::$currentAction) {
 			case "Posts":
 				//echo "<p><font color='green'>REQUEST TO LOAD post which tag is " . $request["tagname"] . ".</font></p>"; //DEBUG
-				$posts = SearchManager::searchBy(array("Post"), array("tag" => $request["tagname"]), array("limit" => 4, "order" => "DESC", "by" => array("ps_creationDate")));
+				$posts = SearchManager::searchBy(array("Post"), array("tag" => self::$currentID), array("limit" => 4, "order" => "DESC", "by" => array("ps_creationDate")));
 				require_once("post/PostPage.php");
 				foreach($posts as $p)
 					PostPage::showPost($p, self::$post_options);
@@ -705,23 +687,23 @@ class Page {
 	private static function doPostAction($request) {
 		require_once 'post/PostManager.php';
 		//echo "<p>" . $request["action"] . "</p>"; //DEBUG
-		switch($request["action"]) {
+		switch(self::$currentAction) {
 			//modifica, vota, commenta, elimina, subscribe o aggiungi a una collezione il post
 			case "Read":
 				//echo "<p><font color='green'>" . $request["permalink"] . "</font></p>"; //DEBUG
-				$p = PostManager::loadPostByPermalink($request["permalink"]);
+				$p = PostManager::loadPostByPermalink(self::$currentID);
 				require_once("post/PostPage.php");
 				PostPage::showPost($p, self::$post_options);
 				break;
 			case "Edit":
 				//echo "<p><font color='green'>REQUEST TO LOAD " . $request["script"] . " by: " . $author->getNickname() . ", with the title of: " . $request["posttitle"] . ", created the day: " . date("d/m/Y", $request["postday"]) . "</font></p>"; //DEBUG
-				$p = PostManager::loadPostByPermalink($request["permalink"]);
+				$p = PostManager::loadPostByPermalink(self::$currentID);
 				require_once("post/PostPage.php");
 				PostPage::showEditPostForm($p);
 				break;
 			case "Vote":
 				//echo "<p><font color='green'>REQUEST TO LOAD " . $request["script"] . " by: " . $author->getNickname() . ", with the title of: " . $request["posttitle"] . ", created the day: " . date("d/m/Y", $request["postday"]) . "</font></p>"; //DEBUG
-				$p = PostManager::loadPostByPermalink($request["permalink"]);
+				$p = PostManager::loadPostByPermalink(self::$currentID);
 				require_once("post/PostPage.php");
 				//controllo su vote.
 				if(isset($_GET["vote"])) {
@@ -736,26 +718,26 @@ class Page {
 				break;
 			case "Comment":
 				//echo "<p><font color='green'>REQUEST TO LOAD " . $request["script"] . " by: " . $author->getNickname() . ", with the title of: " . $request["posttitle"] . ", created the day: " . date("d/m/Y", $request["postday"]) . "</font></p>"; //DEBUG
-				$p = PostManager::loadPostByPermalink($request["permalink"]);
+				$p = PostManager::loadPostByPermalink(self::$currentID);
 				require_once("post/PostPage.php");
 				PostPage::showCommentForm($p);
 				break;
 			case "Delete":
 				//echo "<p><font color='green'>REQUEST TO LOAD " . $request["script"] . " by: " . $author->getNickname() . ", with the title of: " . $request["posttitle"] . ", created the day: " . date("d/m/Y", $request["postday"]) . "</font></p>"; //DEBUG
-				$p = PostManager::loadPostByPermalink($request["permalink"]);
+				$p = PostManager::loadPostByPermalink(self::$currentID);
 				require_once("post/PostPage.php");
 				PostManager::deletePost($p);
 				header("location: " . FileManager::getServerPath());
 				break;
 			case "Subscribe":
 				//echo "<p><font color='green'>REQUEST TO LOAD " . $request["script"] . " by: " . $author->getNickname() . ", with the title of: " . $request["posttitle"] . ", created the day: " . date("d/m/Y", $request["postday"]) . "</font></p>"; //DEBUG
-				$p = PostManager::loadPostByPermalink($request["permalink"]);
+				$p = PostManager::loadPostByPermalink(self::$currentID);
 				require_once("post/PostPage.php");
 				PostPage::showContestForm();
 				break;
 			case "AddToCollection":
 				//echo "<p><font color='green'>REQUEST TO LOAD " . $request["script"] . " by: " . $author->getNickname() . ", with the title of: " . $request["posttitle"] . ", created the day: " . date("d/m/Y", $request["postday"]) . "</font></p>"; //DEBUG
-				$p = PostManager::loadPostByPermalink($request["permalink"]);
+				$p = PostManager::loadPostByPermalink(self::$currentID);
 				require_once("post/PostPage.php");
 				PostPage::showCollectionForm($p);
 				break;
@@ -786,9 +768,9 @@ class Page {
 		require_once 'template/TemplateManager.php';
 		
 		$data = self::elaborateRequest($request);
-		if($data["object"] == "Login")
+		if(self::$currentObject == "Login")
 			self::redirect("");
-		else if($data["object"] == "Logout") {
+		else if(self::$currentObject == "Logout") {
 			Session::destroy();
 			self::redirect("");
 		}
@@ -796,7 +778,7 @@ class Page {
 		$default = TemplateManager::getDefaultTemplate();
 		$parser = null; $tentativi = 0;
 		while(is_numeric($parser) || is_null($parser)) {
-			$template = TemplateManager::getTemplateForRequest($data);
+			$template = TemplateManager::getTemplateForRequest(self::$currentObject, self::$currentID, self::$currentAction);
 			if(is_numeric($parser) || is_null($template) || $template === false)
 				$template = $default;
 			if($tentativi == 1)
@@ -906,9 +888,16 @@ class Page {
 	
 	private static $post_options = array();
 	private static function PCMain($data) {
-		if($data["object"] == "index")
-			self::$post_options["no_date"] = true;
+		require_once 'post/PostPage.php';
+		if(self::$currentObject == "index") {
+			self::$post_options[PostPage::NO_DATE] = true;
+			self::$post_options[PostPage::NO_COMMENTS] = true;
+		}
+		
 		self::doAction($data);
+		
+		self::$post_options[PostPage::NO_DATE] = false;
+		self::$post_options[PostPage::NO_COMMENTS] = false;
 	}
 	
 	private static function PCComments($data) {
@@ -917,6 +906,27 @@ class Page {
 	
 	private static function PCRelated($data) {
 		echo "Vedi anche";
+		
+		$p = PostManager::loadPost(self::$currentID);
+		
+		require_once 'search/SearchManager.php';
+		$posts = SearchManager::searchBy(array("Post"),
+										array("author" => $p->getAuthor()),
+										array("limit" => 3, "order" => "DESC", "by" => array("ps_creationDate")));
+		$posts2 = SearchManager::searchBy(array("Post"),
+										array("tag" => $p->getTags(), "category" => $p->getCategories()),
+										array("limit" => 3, "order" => "DESC", "by" => array("ps_creationDate")));
+		if(is_array($posts2))
+			array_merge($posts, $posts2); 
+		foreach($posts as $post) {
+			if($post->getID() != $p->getID()) {
+				require_once 'post/PostPage.php';
+				self::$post_options[PostPage::SHORTEST] = true;
+				PostPage::showPost($post, self::$post_options);
+				self::$post_options[PostPage::SHORTEST] = false;
+			}
+		}
+		
 	}
 	
 	private static $WHO_POST = 1;
@@ -926,15 +936,23 @@ class Page {
 		$p = PostManager::loadPost(self::$WHO_POST);
 		if($p !== false) {
 			require_once 'post/PostPage.php';
-			self::$post_options["shrot"] = true;
+			self::$post_options[PostPage::SHORT] = true;
+			self::$post_options[PostPage::NO_COMMENTS] = true;
+			self::$post_options[PostPage::NO_CATEGORIES] = true;
+			self::$post_options[PostPage::NO_TAGS] = true;
+			self::$post_options[PostPage::NO_MODIF_DATE] = true;
 			PostPage::showPost($p, self::$post_options);
+			self::$post_options[PostPage::SHORT] = false;
+			self::$post_options[PostPage::NO_COMMENTS] = false;
+			self::$post_options[PostPage::NO_TAGS] = false;
+			self::$post_options[PostPage::NO_MODIF_DATE] = false;
 		}
 	}
 	
 	private static function PCSearch($data) {
 		require_once 'search/SearchPage.php';
 		SearchPage::showDefaultSearchForm();
-		echo "Cerca";
+		//echo "Cerca";
 	}
 	
 	private static function PCCategories($data) {
