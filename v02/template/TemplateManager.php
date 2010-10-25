@@ -8,7 +8,7 @@ class TemplateManager {
 		switch($object) {
 			case "Post":
 				if($action == "New" || $action == "Edit")
-					return "files/default/post.xml"; //FIXME "files/default/post_edit.xml";
+					return "files/default/post_edit.xml";
 			case "Comment":
 			case "Vote":
 				return "files/default/post.xml";

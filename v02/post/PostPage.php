@@ -50,7 +50,7 @@ class PostPage {
 					echo Filter::decodeFilteredText($cont);
 				}
 			} else
-				echo substr(Filter::decodeFilteredText($post->getContent()), 0, 200) . "...";
+				echo substr(Filter::decodeFilteredText($post->getContent()), 0, 200) . (strlen(Filter::decodeFilteredText($post->getContent())) < 200 ? "" : "...");
 			?><div class="post_authorname"><a href="<?php echo FileManager::appendToRootPath("User/" . $post->getAuthorName()); ?>"><?php echo $post->getAuthorName(); ?></a></div>	
 		</div>
 	</div>
@@ -137,11 +137,7 @@ class PostPage {
 			} ?>
 		</div><?php 
 		if(!isset($options[self::NO_COMMENTS]) || !$options[self::NO_COMMENTS]) {
-		?>
-		<div class="post_comments clear">Commenti:<?php
-			foreach($post->getComments() as $comm)
-				echo "<p class='comment'>" . $comm . "</p>";
-		?></div><?php
+			self::showComments($post);
 		} ?>
 	</div>
 <?php
@@ -194,13 +190,13 @@ class PostPage {
 				$error[] = "Inserire un contenuto.";
 			
 			if(is_null($error) || (is_array($error) && count($error) == 0)) {
-				$data["author"] = 1; //FIXME TOGLIMI
-				//$data["author"] = Session::getUser();
+				//$data["author"] = 1; //FIXME TOGLIMI
+				$data["author"] = Session::getUser()->getID();
 				$post = PostManager::createPost($data);
 				if($post !== false) {
 					echo '
 			<div class="message">
-				<a href="' . $post->getFullPermalink() . '">Visualizza</a>
+				Notizia salvata: <a href="' . $post->getFullPermalink() . '">Visualizza</a>
 			</div>';
 				}
 			} else {
@@ -304,15 +300,15 @@ class PostPage {
 		<form name="<?php echo $name; ?>Post" action="?type=News" method="post">
 			<p>Titolo:<br /><input name="title" value="<?php echo $post->getTitle(); ?>"/></p>
 			<p>Contenuto:<br/>
-				<textarea name="content"><?php echo $post->getContent(); ?></textarea>
+				<textarea name="content" id="post_content"><?php echo $post->getContent(); ?></textarea>
 				<!-- sostituisco textarea standard con ckeditor -->
 				<script type="text/javascript">
-					CKEDITOR.replace('content');
+					CKEDITOR.replace('post_content');
 				</script>
 			</p>
-			<p>Sottotilolo:<br /><input name="title" value="<?php echo $post->getSubtitle(); ?>"/></p>
-			<p>Headline:<br /><input name="title" value="<?php echo $post->getHeadline(); ?>"/></p>
-			<p>Tags:<br /><input name="title" value="<?php echo $post->getTags(); ?>"/></p>
+			<p>Sottotilolo:<br /><input name="subtitle" value="<?php echo $post->getSubtitle(); ?>"/></p>
+			<p>Headline:<br /><input name="headline" value="<?php echo $post->getHeadline(); ?>"/></p>
+			<p>Tags:<br /><input name="tags" value="<?php echo $post->getTags(); ?>"/></p>
 			<p>Categorie: <br/>
 				<div style="width:200px;height:100px;overflow-y: scroll; border:1px solid black;">
 				<?php
@@ -403,6 +399,17 @@ class PostPage {
 	
 	static function showContestDetails($contest) {
 		//TODO
+	}
+	
+	static function showComments($post, $limit = 0, $js = false) {
+		?><div class="post_comments clear">Commenti:<?php
+		$num = 0;
+		foreach($post->getComments() as $comm) {
+			if($num++ >= $limit) break;
+			echo "<p class='comment'>" . $comm . "</p>";
+		}
+		?></div>
+		<?php
 	}
 }
 

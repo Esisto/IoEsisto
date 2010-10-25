@@ -1,18 +1,19 @@
 <?php
 
 class Operator {
-	static $EQUAL = "=";
-	static $LESSER = "<";
-	static $LESSEROREQUAL = "<=";
-	static $GREATER = ">";
-	static $GREATEROREQUAL = ">=";
-	static $LIKE = "LIKE";
+	const EQUAL = "=";
+	const LESSER = "<";
+	const LESSEROREQUAL = "<=";
+	const GREATER = ">";
+	const GREATEROREQUAL = ">=";
+	const LIKE = "LIKE";
+	const NOTEQUAL = "<>";
 }
 
 class SelectOperator {
-	static $UNION = "UNION";
-	static $INTERSECT = "INTERSECT";
-	static $EXCEPT = "EXCEPT";
+	const UNION = "UNION";
+	const INTERSECT = "INTERSECT";
+	const EXCEPT = "EXCEPT";
 }
 
 class JoinConstraint {
@@ -46,13 +47,13 @@ class WhereConstraint {
 		$this->column = $column;
 		$this->operator = $operator;
 		if($this->operator == null || $this->operator == "")
-			$this->operator = Operator::$EQUAL;
+			$this->operator = Operator::EQUAL;
 		$this->data = $data;
 	}
 	
 	function generateWhereStm(/*$alias*/) {
 		if($this->operator == null || $this->operator == "")
-			$this->operator = Operator::$EQUAL;
+			$this->operator = Operator::EQUAL;
 		$s = "";
 		if(isset($alias) && !is_null($alias) && $alias != "")
 			$s.= $alias . ".";

@@ -145,7 +145,7 @@ class Post {
 			$table = Query::getDBSchema()->getTable(TABLE_VOTE);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(VOTE_POST),Operator::$EQUAL,$this->getID())),
+														 array(new WhereConstraint($table->getColumn(VOTE_POST),Operator::EQUAL,$this->getID())),
 														 array("avg" => $table->getColumn(VOTE_VOTE))));
 			//echo "<p>" . $s . "</p>"; //DEBUG;
 			if($db->num_rows() == 1) {
@@ -320,8 +320,12 @@ class Post {
 				$this->setCategories(Filter::arrayToText($new_cat));
 				$data[POST_CATEGORIES] = $this->getCategories();
 			}
-			if(isset($this->content) && !is_null($this->getContent()))
-				$data[POST_CONTENT] = serialize($this->getContent());
+			if(isset($this->content) && !is_null($this->getContent())) {
+				if($this->type == "post" || $this->type == "news" || $this->type == "videoreportage")
+					$data[POST_CONTENT] = $this->getContent();
+				else
+					$data[POST_CONTENT] = serialize($this->getContent());
+			}
 			if(isset($this->visible) && !is_null($this->isVisible()))
 				$data[POST_VISIBLE] = $this->isVisible() ? 1 : 0;
 			if(isset($this->author) && !is_null($this->getAuthor()))
@@ -341,7 +345,7 @@ class Post {
 				//echo "<br />" . serialize($this->ID); //DEBUG
 				$rs = $db->execute($s = Query::generateSelectStm(array($table),
 															 array(),
-															 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$EQUAL,$this->getID())),
+															 array(new WhereConstraint($table->getColumn(POST_ID),Operator::EQUAL,$this->getID())),
 															 array()),
 								  $table->getName(), $this);
 				//echo "<br />" . serialize($rs); //DEBUG
@@ -352,8 +356,8 @@ class Post {
 					$this->setModificationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[POST_CREATION_DATE])));
 					
 					//salvo i tag che non esistono
-					if(isset($data["tags"]))
-						TagManager::createTags(explode(",", $data["tags"]));
+					if(isset($data[POST_TAGS]) && !is_null($data[POST_TAGS]) && trim($data[POST_TAGS]) != "")
+						TagManager::createTags(explode(",", $data[POST_TAGS]));
 					
 					//echo "<br />" . serialize($row[POST_CREATION_DATE]); //DEBUG
 					//echo "<br />" . $this; //DEBUG
@@ -379,7 +383,7 @@ class Post {
 			$table = Query::getDBSchema()->getTable(TABLE_POST);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$EQUAL,$this->getID())),
+														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::EQUAL,$this->getID())),
 														 array()),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
@@ -393,8 +397,12 @@ class Post {
 					$data[POST_SUBTITLE] = $this->getSubtitle();
 				if($row[POST_HEADLINE] != $this->getHeadline())
 					$data[POST_HEADLINE] = $this->getHeadline();
-				if(unserialize($row[POST_CONTENT]) != $this->getContent())
-					$data[POST_CONTENT] = serialize($this->getContent());
+				if($row[POST_CONTENT] != $this->getContent()) {
+					if($this->type == "post" || $this->type == "news" || $this->type == "videoreportage")
+						$data[POST_CONTENT] = $this->getContent();
+					else
+						$data[POST_CONTENT] = serialize($this->getContent());
+				}
 				if($row[POST_PLACE] != $this->getPlace())
 					$data[POST_PLACE] = $this->getPlace();
 				if($row[POST_TAGS] != $this->getTags())
@@ -421,13 +429,14 @@ class Post {
 				
 				$rs = $db->execute($s = Query::generateUpdateStm($table,
 															 $data,
-															 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$EQUAL,$this->getID()))),
+															 array(new WhereConstraint($table->getColumn(POST_ID),Operator::EQUAL,$this->getID()))),
 								  $table->getName(), $this);
 				//echo "<br />" . $s; //DEBUG
 				//echo "<br />" . mysql_affected_rows(); //DEBUG
 				if($db->affected_rows() == 1) {
 					//salvo i tag che non esistono
-					TagManager::createTags(explode(",", $data["tags"]));
+					if(isset($data[POST_TAGS]) && !is_null($data[POST_TAGS]) && trim($data[POST_TAGS]) != "")
+						TagManager::createTags(explode(",", $data[POST_TAGS]));
 					
 					//echo "<br />" . $this; //DEBUG
 					return $this->getModificationDate();
@@ -451,7 +460,7 @@ class Post {
 			define_tables(); definePostColumns();
 			$table = Query::getDBSchema()->getTable(TABLE_POST);
 			$rs = $db->execute($s = Query::generateDeleteStm($table,
-														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$EQUAL,$this->getID()))),
+														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::EQUAL,$this->getID()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $db->affected_rows() . $s; //DEBUG
 			if($db->affected_rows() == 1) {
@@ -468,7 +477,7 @@ class Post {
 			define_tables(); definePostColumns();
 			$table = Query::getDBSchema()->getTable(TABLE_POST);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table), array(),
-															 array(new WhereConstraint($table->getColumn(POST_PERMALINK),Operator::$EQUAL,$permalink)),
+															 array(new WhereConstraint($table->getColumn(POST_PERMALINK),Operator::EQUAL,$permalink)),
 															 array("count" => 2)));
 			if($db->num_rows() == 1) {
 				$row = $db->fetch_result();
@@ -478,14 +487,18 @@ class Post {
 		return false;
 	}
 	
-	static function createFromDBResult($row) {
+	static function createFromDBResult($row, $loadComments = true) {
+		if($row[POST_TYPE] == "news" || $row[POST_TYPE] == "post" || $row[POST_TYPE] == "videoreportage")
+			$content = $row[POST_CONTENT];
+		else
+			$content = unserialize($row[POST_CONTENT]);
 		$data = array("title" => $row[POST_TITLE],
 					  "subtitle" => $row[POST_SUBTITLE],
 					  "headline" => $row[POST_HEADLINE],
 					  "author"=> intval($row[POST_AUTHOR]),
 					  "tags" => $row[POST_TAGS],
 					  "categories" => $row[POST_CATEGORIES],
-					  "content" => unserialize($row[POST_CONTENT]),
+					  "content" => $content,
 					  "visible" => $row[POST_VISIBLE] > 0,
 					  "type" => $row[POST_TYPE],
 					  "place" => $row[POST_PLACE]);
@@ -512,7 +525,8 @@ class Post {
 		if(!is_null($row[POST_MODIFICATION_DATE]))
 			$p->setModificationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[POST_MODIFICATION_DATE])));
 		else $p->setModificationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[POST_CREATION_DATE])));
-		$p->loadComments()->loadReports()->setPermalink($row[POST_PERMALINK]);
+		if($loadComments) $p->loadComments();
+		$p->loadReports()->setPermalink($row[POST_PERMALINK]);
 		
 		require_once("common.php");
 		$p->setAccessCount(LogManager::getAccessCount("Post", $p->getID()));
@@ -527,7 +541,7 @@ class Post {
 	 * @param $id: l'ID del post da caricare.
 	 * @return: il post caricato o FALSE se non lo trova.
 	 */
-	static function loadFromDatabase($id) {
+	static function loadFromDatabase($id, $loadComments = true) {
 		require_once("query.php");
 		$db = new DBManager();
 		if(!$db->connect_errno()) {
@@ -535,7 +549,7 @@ class Post {
 			$table = Query::getDBSchema()->getTable(TABLE_POST);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::$EQUAL,$id)),
+														 array(new WhereConstraint($table->getColumn(POST_ID),Operator::EQUAL,$id)),
 														 array()),
 							  $table->getName(), null);
 			
@@ -544,7 +558,7 @@ class Post {
 			if($db->num_rows() == 1) {
 				//echo serialize($db->fetch_result()); //DEBUG
 				$row = $db->fetch_result();
-				$p = self::createFromDBResult($row);
+				$p = self::createFromDBResult($row, $loadComments);
 				//echo "<p>" .$p ."</p>";
 				return $p;
 			} else $db->display_error("Post::loadFromDatabase()");
@@ -552,7 +566,7 @@ class Post {
 		return false;
 	}
 	
-	static function loadByPermalink($permalink) {
+	static function loadByPermalink($permalink, $loadComments = true) {
 		require_once("query.php");
 		$db = new DBManager();
 		if(!$db->connect_errno()) {
@@ -560,7 +574,7 @@ class Post {
 			$table = Query::getDBSchema()->getTable(TABLE_POST);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(POST_PERMALINK),Operator::$EQUAL,$permalink)),
+														 array(new WhereConstraint($table->getColumn(POST_PERMALINK),Operator::EQUAL,$permalink)),
 														 array()),
 							  $table->getName(), null);
 			
@@ -588,7 +602,7 @@ class Post {
 			$table = Query::getDBSchema()->getTable(TABLE_COMMENT);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(COMMENT_POST),Operator::$EQUAL,$this->getID())),
+														 array(new WhereConstraint($table->getColumn(COMMENT_POST),Operator::EQUAL,$this->getID())),
 														 array()),
 							  $table->getName(), $this);
 			
@@ -624,7 +638,7 @@ class Post {
 			$table = Query::getDBSchema()->getTable(TABLE_VOTE);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(VOTE_POST),Operator::$EQUAL,$this->getID())),
+														 array(new WhereConstraint($table->getColumn(VOTE_POST),Operator::EQUAL,$this->getID())),
 														 array()),
 							  $table->getName(), $this);
 			//echo "<p>" . $s . "</p>"; //DEBUG;
@@ -657,7 +671,7 @@ class Post {
 			$table = Query::getDBSchema()->getTable(TABLE_REPORT);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(REPORT_POST),Operator::$EQUAL,$this->getID())),
+														 array(new WhereConstraint($table->getColumn(REPORT_POST),Operator::EQUAL,$this->getID())),
 														 array()),
 							  $table->getName(), $this);
 			if($rs !== false) {

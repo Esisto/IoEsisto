@@ -22,7 +22,7 @@ class CategoryManager {
 			
 			$db->execute($s = Query::generateSelectStm(array($table),
 													   array(),
-													   array(new WhereConstraint($table->getColumn(CATEGORY_NAME), Operator::$EQUAL, $category)),
+													   array(new WhereConstraint($table->getColumn(CATEGORY_NAME), Operator::EQUAL, $category)),
 													   array()));
 			if($db->num_rows() == 1)
 				return true;
@@ -140,7 +140,7 @@ class TagManager {
 			
 			$db->execute($s = Query::generateSelectStm(array($table),
 													   array(),
-													   array(new WhereConstraint($table->getColumn(TAG_NAME), Operator::$EQUAL, $tag)),
+													   array(new WhereConstraint($table->getColumn(TAG_NAME), Operator::EQUAL, $tag)),
 													   array()));
 			if($db->num_rows() == 1)
 				return true;
@@ -261,7 +261,7 @@ class Comment {
 				//echo "<br />" . serialize($this->ID); //DEBUG
 				$rs = $db->execute($s = Query::generateSelectStm(array($table),
 															 array(),
-															 array(new WhereConstraint($table->getColumn(COMMENT_ID),Operator::$EQUAL,$this->getID())),
+															 array(new WhereConstraint($table->getColumn(COMMENT_ID),Operator::EQUAL,$this->getID())),
 															 array()),
 								  $table->getName(), $this);
 				//echo "<br />" . $s; //DEBUG
@@ -284,7 +284,7 @@ class Comment {
 			define_tables(); defineCommentColumns();
 			$table = Query::getDBSchema()->getTable(TABLE_COMMENT);
 			$rs = $db->execute($s = Query::generateDeleteStm($table,
-														 array(new WhereConstraint($table->getColumn(COMMENT_ID),Operator::$EQUAL,$this->getID()))),
+														 array(new WhereConstraint($table->getColumn(COMMENT_ID),Operator::EQUAL,$this->getID()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			if($db->affected_rows() == 1) {
@@ -308,7 +308,7 @@ class Comment {
 			$table = Query::getDBSchema()->getTable(TABLE_COMMENT);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(COMMENT_ID),Operator::$EQUAL,$id)),
+														 array(new WhereConstraint($table->getColumn(COMMENT_ID),Operator::EQUAL,$id)),
 														 array()),
 							  $table->getName(), null);
 			if($db->num_rows() == 1) {
@@ -401,8 +401,8 @@ class Vote {
 			if($db->affected_rows() == 1) {
 				$db->execute($s = Query::generateSelectStm(array($table),
 															 array(),
-															 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::$EQUAL,$this->getAuthor()),
-																   new WhereConstraint($table->getColumn(VOTE_POST),Operator::$EQUAL,$this->getPost())),
+															 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::EQUAL,$this->getAuthor()),
+																   new WhereConstraint($table->getColumn(VOTE_POST),Operator::EQUAL,$this->getPost())),
 															 array()),
 								  $table->getName(), $this);
 				//echo "<br />" . $s; //DEBUG
@@ -425,8 +425,8 @@ class Vote {
 			$table = Query::getDBSchema()->getTable(TABLE_VOTE);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::$EQUAL,$this->getAuthor()),
-															   new WhereConstraint($table->getColumn(VOTE_POST),Operator::$EQUAL,$this->getPost())),
+														 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::EQUAL,$this->getAuthor()),
+															   new WhereConstraint($table->getColumn(VOTE_POST),Operator::EQUAL,$this->getPost())),
 														 array()),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
@@ -441,8 +441,8 @@ class Vote {
 				
 				$rs = $db->execute($s = Query::generateUpdateStm($table,
 															 $data,
-															 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::$EQUAL,$this->getAuthor()),
-																   new WhereConstraint($table->getColumn(VOTE_POST),Operator::$EQUAL,$this->getPost()))),
+															 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::EQUAL,$this->getAuthor()),
+																   new WhereConstraint($table->getColumn(VOTE_POST),Operator::EQUAL,$this->getPost()))),
 								  $table->getName(), $this);
 				//echo "<br />" . $s; //DEBUG
 				//echo "<br />" . $rs; //DEBUG
@@ -462,8 +462,8 @@ class Vote {
 			define_tables(); defineVoteColumns();
 			$table = Query::getDBSchema()->getTable(TABLE_VOTE);
 			$rs = $db->execute($s = Query::generateDeleteStm($table,
-														 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::$EQUAL,$this->getAuthor()),
-															   new WhereConstraint($table->getColumn(VOTE_POST),Operator::$EQUAL,$this->getPost()))),
+														 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::EQUAL,$this->getAuthor()),
+															   new WhereConstraint($table->getColumn(VOTE_POST),Operator::EQUAL,$this->getPost()))),
 							  $table->getName(), $this);
 			//echo "<br />" . $s; //DEBUG
 			if($db->affected_rows() == 1) {
@@ -489,8 +489,8 @@ class Vote {
 			$table = Query::getDBSchema()->getTable(TABLE_VOTE);
 			$rs = $db->execute($s = Query::generateSelectStm(array($table),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::$EQUAL,$author),
-															   new WhereConstraint($table->getColumn(VOTE_POST),Operator::$EQUAL,$post)),
+														 array(new WhereConstraint($table->getColumn(VOTE_AUTHOR),Operator::EQUAL,$author),
+															   new WhereConstraint($table->getColumn(VOTE_POST),Operator::EQUAL,$post)),
 														 array()),
 							  $table->getName(), null);
 			if($db->num_rows() == 1) {

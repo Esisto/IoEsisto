@@ -4,6 +4,7 @@ function writePageHeader($ad) {
 ?>
 	<div id="headerBackground">
 		<div id="header">
+			<div id="logo"><a href="<?php echo FileManager::appendToRootPath(); ?>"><img src=""/></a></div>
 			<div id="login_place">
 	<?php 
 	if(Session::getUser() === false) {

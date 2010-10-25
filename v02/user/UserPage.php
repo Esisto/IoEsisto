@@ -115,13 +115,13 @@ echo recaptcha_get_html($publickey);
 	}
 
 	static function showProfile($user) {
+		$my_profile = $user->getID() == Session::getUser()->getID();
 		?>
 <div class="userProfile" id="<?php echo $user->getID(); ?>">
 <div class="user_avatar"><?php echo Filter::decodeFilteredText($user->getAvatar()); ?></div>
 <div class="user_nickname">Nickname: <?php echo Filter::decodeFilteredText($user->getNickname()); ?></div>
-<div class="user_password">Password: <?php echo Filter::decodeFilteredText($user->getPassword()); ?></div>
 <div class="user_name">Name: <?php echo Filter::decodeFilteredText($user->getName()); ?></div>
-<div class="user_surname">Surname: <?php echo Filter::decodeFilteredText($user->getAvatar()); ?></div>
+<div class="user_surname">Surname: <?php echo Filter::decodeFilteredText($user->getSurname()); ?></div>
 <div class="user_birthday">Birthday: <?php echo date('d-m-Y', $user->getBirthday()); ?></div>
 <div class="user_birthplace">Birthplace: <?php echo Filter::decodeFilteredText($user->getBirthplace()); ?>
 <!-- TODO: geolocate --></div>
