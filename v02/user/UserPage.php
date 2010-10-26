@@ -45,9 +45,9 @@ class UserPage {
 				echo $valore . "<br/>";
 			}
 		}?>
-<p>Username: <input type="text" name="username" value="" /></p>
-<p>Password: <input type="password" name="password" value="" /></p>
-<p><input type="submit" value="Login"></p></form>
+<p><label for="username">Username:</label> <input type="text" name="username" value="" /></p>
+<p><label for="password">Password:</label> <input type="password" name="password" value="" /></p>
+<p><input class="button" type="submit" value="Login"></p></form>
 			<?php
 	}
 
