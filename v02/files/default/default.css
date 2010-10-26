@@ -7,6 +7,9 @@ a {
 	text-decoration: none;
 	color: #000;
 }
+p {
+	margin: 0;
+}
 
 /*---------------------- clear ----------------------*/
 .clear {	
@@ -252,7 +255,6 @@ a {
 	width: 880px;
 	margin-top: 10px;
 	padding: 10px;
-	float: left;
 	background: rgba(230, 230, 230, 0.5);
 }
 .side {
@@ -308,7 +310,7 @@ a {
 	/*background-color: rgba(204, 204, 204, 0.4);*/
 }
 .pb_header {
-	margin-bottom: 10px;
+	margin-bottom: 5px;
 	padding: 0;
 }
 .post_creationDate {
@@ -326,7 +328,7 @@ a {
 .post_headline {
 	font-size: 14px;
 }
-.post_title {
+.post_title, .title {
 	font-size: 28px;
 	font-weight: bold;
 }
@@ -378,4 +380,12 @@ a {
 .vote_image {
 	float: left;
 	margin-right: 10px;
+}
+.error {
+	padding: 10px 0;
+	border: 1px solid f00;
+	border-radius: 5px 5px;
+	background: rgba(255, 0, 0, 0.4);
+	text-align: center;
+	margin: 10px auto;
 }
