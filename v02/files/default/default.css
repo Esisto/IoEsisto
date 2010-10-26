@@ -20,22 +20,43 @@ a {
 }
 #header{
 	width: 900px;
-	height: 220px;
+	height: 60px;
 	margin: 0 auto;
-	background: url(img/logo.png) no-repeat;
+/*	background: url(img/logo.png) no-repeat;*/
 	position:relative;
-	color: #ff8833;
+	color: #ff9933;
 }
 #login_place {
-	margin-left: 500px;
-	width: 250px;
-	padding-top: 50px;
+	float: right;
+	height: 50px;
+	text-align: right;
+	padding: 5px 1px;
+}
+#login_place form {
+	font-size: 11px;
+}
+#login_place input {
+	margin-bottom: 1px;
+	height: 15px;
+	font-size: 10px;
+}
+#login_place .button {
+	height: 20px;
 }
 #header p {
 	margin: 0;
 }
 #login_place a {
-	color: #ff8833;
+	color: #ff9933;
+}
+#logo {
+	margin-top: 5px;
+	margin-left: 1px;
+	float: left;
+}
+#logo img {
+	height: 50px;
+	width: auto; 
 }
 
 /*---------------------- operationsMenu ----------------------*/
@@ -43,55 +64,75 @@ a {
 	width: 900px;
 	margin: 0 auto;
 	position: absolute;
-	top: 185px;
+	top: 34px;
 	color: black;
 }
 #operations{
 	width: 600px;
 	margin: auto;
 }
-.operationsMenuButton{
-	text-align: center;
-	width: 99px;
-	height: 35px;
-	background: orange url(img/button.png) -60px;
+.operationsMenuButton.firstButton{
+	border-top-left-radius: 5px 5px;	
+}
+.operationsMenuButton.lastButton{
+	border-top-right-radius: 5px 5px;	
+}
+.operationsMenuButton {
+	text-transform: capitalize;
+	padding: 3px 0 7px 0;
+}
+.operationsMenuButton:hover{
+	padding: 4px 0 6px 0;
+}
+/*--------------------------- menu ---------------------------*/
+.operationsMenuButton:hover, .categoriesMenuButton:hover{
+	border-top: 1px solid 000;
 	border-left: 1px solid 000;
+	border-right: 1px solid #ffee99;
+	border-bottom: 1px solid #ffee99;
+}
+.categoriesMenuButton, .operationsMenuButton {
+	text-align: center;
+	width: 98px;
+	height: 14px;
+	font-size: 14px;
+	font-size-adjust:inherit;
+	border-top: 1px solid #ffee99;
+	border-left: 1px solid #ffee99;
+	border-right: 1px solid 000;
+	border-bottom: 1px solid 000;
+	background: #ff9911;
 	float: left;
 }
-
-.operationsMenuButton a{
+.categoriesMenuButton a, operationsMenuButton a {
 	text-decoration: none;
 	text-align: center;
 	color: #000000;	
 }
-
 /*---------------------- categoriesMenu ----------------------*/
 #categoriesMenu{	
 	width: 100%;
-	background:orange url(img/button.png) -60px;
+	background: #ff9911;
 }
 #categories{
 	width: 900px;
-	margin: 5px auto;
+	margin: 0 auto;
 } 
-.categoriesMenuButton{
-	text-align: center;
-	width: 99px;
-	height: 35px;
-	/*margin: 0 1px 0 1px;*/
-	border-left: 1px solid 000;
-	background: url(img/button.png) -60px;
-	float: left;
-}
-.categoriesMenuButton a{
-	text-decoration: none;
-	text-align: center;
-	color: #000000;	
-}
 
-.categoriesMenuButton.lastButton, .operationsMenuButton.lastButton {
-	width: 98px;
-	border-right: 1px solid 000;
+.categoriesMenuButton {
+	text-transform:uppercase;
+	padding: 4px 0 6px 0;
+}
+.categoriesMenuButton.firstButton{
+	border-bottom-left-radius: 5px 5px;
+	border-top-left-radius: 5px 5px;	
+}
+.categoriesMenuButton.lastButton{
+	border-bottom-right-radius: 5px 5px;
+	border-top-right-radius: 5px 5px;	
+}
+.categoriesMenuButton:hover{
+	padding: 5px 0 5px 0;
 }
 
 /*---------------------- page ----------------------*/
