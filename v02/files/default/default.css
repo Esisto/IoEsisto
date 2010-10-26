@@ -27,7 +27,7 @@ p {
 	margin: 0 auto;
 /*	background: url(img/logo.png) no-repeat;*/
 	position:relative;
-	color: #ff9933;
+	color: #ff6600;
 }
 #login_place {
 	float: right;
@@ -50,7 +50,7 @@ p {
 	margin: 0;
 }
 #login_place a {
-	color: #ff9933;
+	color: #ff6600;
 }
 #logo {
 	margin-top: 5px;
@@ -104,7 +104,7 @@ p {
 	border-left: 1px solid #ffee99;
 	border-right: 1px solid 000;
 	border-bottom: 1px solid 000;
-	background: #ff9911;
+	background: #ff6600;
 	float: left;
 }
 .categoriesMenuButton a, operationsMenuButton a {
@@ -115,7 +115,7 @@ p {
 /*---------------------- categoriesMenu ----------------------*/
 #categoriesMenu{	
 	width: 100%;
-	background: #ff9911;
+	background: #ff6600;
 }
 #categories{
 	width: 900px;
