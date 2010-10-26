@@ -239,9 +239,9 @@ p {
 
 /*-----------ALTRO-----------*/
 .medium {
-	width: 410px;
-	padding: 10px;
-	margin: 10px 10px 0 0;
+	width: 435px;
+}
+.left {
 	float: left;
 }
 .large {
@@ -388,4 +388,49 @@ p {
 	background: rgba(255, 0, 0, 0.4);
 	text-align: center;
 	margin: 10px auto;
+}
+.category_splash {
+	margin-top: 10px;
+	padding: 10px 10px;
+	border-radius: 10px 10px;
+	height: 170px;
+	border: 1px solid 000;
+}
+.category_splash_1 {
+	background: rgba(255, 255, 0, 0.4);
+	border-color: ff0;
+}
+.category_splash_2 {
+	background: rgba(255, 204, 0, 0.4);
+	border-color: f90;
+}
+.category_splash_3 {
+	background: rgba(255, 0, 0, 0.3);
+	border-color: f00;
+}
+.category_splash_4 {
+	background: rgba(0, 204, 0, 0.4);
+	border-color: 0c0;
+}
+.category_splash_5 {
+	background: rgba(204, 255, 204, 0.6);
+	border-color: 9f9;
+}
+.category_splash_6 {
+	background: rgba(0, 204, 255, 0.3);
+	border-color: 09f;
+}
+.category_splash_7 {
+	background: rgba(0, 0, 255, 0.4);
+	border-color: 00f;
+}
+.category_splash_8 {
+	background: rgba(204, 0, 255, 0.4);
+	border-color: 90f;
+}
+.category_splash_name {
+	font-size: 12px;
+	text-transform: uppercase;
+	font-weight: bold;
+	float: right;
 }
