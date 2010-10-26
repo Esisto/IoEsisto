@@ -4,7 +4,11 @@ function writePageHeader($ad) {
 ?>
 	<div id="headerBackground">
 		<div id="header">
-			<div id="logo"><a href="<?php echo FileManager::appendToRootPath(); ?>"><img src=""/></a></div>
+			<div id="logo">
+				<a href="<?php echo FileManager::appendToRootPath(); ?>">
+					<img src="<?php echo FileManager::appendToRootPath("files/default/img/logo.png"); ?>"/>
+				</a>
+			</div>
 			<div id="login_place">
 	<?php 
 	if(Session::getUser() === false) {
@@ -13,9 +17,8 @@ function writePageHeader($ad) {
 	} else {
 	?>
 				<p>Benvenut<?php echo (Session::getUser()->getGender() == "f" ? "a" : "o"); ?> 
-					<?php echo Session::getUser()->getNickname(); ?>
+					<b><?php echo Session::getUser()->getNickname(); ?></b>
 				</p>
-				<p><a href="<?php echo FileManager::appendToRootPath("Logout"); ?>">Logout</a></p>
 	<?php
 	}
 	?>
@@ -27,14 +30,14 @@ function writePageHeader($ad) {
 ?>
 			<div id="operationsMenu">
 				<div id="operations">
-					<div class="operationsMenuButton">
+					<div class="operationsMenuButton firstButton">
 						<a href="<?php echo FileManager::appendToRootPath("Post/New");?>">Nuova notizia</a></div>
 					<div class="operationsMenuButton">
 						<a href="<?php echo FileManager::appendToRootPath("Post/New?type=VideoReportage");?>">Nuovo Video</a></div>
 					<div class="operationsMenuButton"><a href="#"> OPERATION </a></div>
 					<div class="operationsMenuButton"><a href="#"> OPERATION </a></div>
 					<div class="operationsMenuButton"><a href="#"> OPERATION </a></div>
-					<div class="operationsMenuButton lastButton"><a href="#"> OPERATION </a></div>
+					<div class="operationsMenuButton lastButton"><a href="<?php echo FileManager::appendToRootPath("Logout");?>">Logout</a></div>
 					<div class="clear"></div>
 				</div>	
 			</div>
@@ -44,7 +47,7 @@ function writePageHeader($ad) {
 	
 	<div id="categoriesMenu">
 		<div id="categories">
-			<div class="categoriesMenuButton"><a href="<?php echo FileManager::appendToRootPath('Category/Cultura'); ?>">Cultura</a></div>
+			<div class="categoriesMenuButton firstButton"><a href="<?php echo FileManager::appendToRootPath('Category/Cultura'); ?>">Cultura</a></div>
 			<div class="categoriesMenuButton"><a href="<?php echo FileManager::appendToRootPath('Category/Web'); ?>">Web</a></div>
 			<div class="categoriesMenuButton"><a href="#"> CATEGORY </a></div>
 			<div class="categoriesMenuButton"><a href="#"> CATEGORY </a></div>
