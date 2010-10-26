@@ -977,11 +977,15 @@ class Page {
 	}
 	
 	private static function PCCategories($data) {
-		echo "Categorie";
+		echo "<p class='title'>Altri articoli</p>";
 	}
 	
-	private static function PCCat($data, $num) {
-		echo "<p>Categoria " . $num . "</p>";
+	private static function PCCat($data, $num) { ?>
+		<div class="category_splash category_splash_<?php echo $num; ?>">
+			<p class="category_splash_name">Category <?php echo $num; ?></p>
+			<?php //TODO echo writePosts; ?>
+		</div>
+<?php
 	}
 	
 	private static function PCRandomPosts($data) {
