@@ -26,18 +26,22 @@ function writePageHeader($ad) {
 <?php 
 	if($ad)
 		writeAD("header");
-	if(Session::getUser() !== false) {
+	if($u = Session::getUser() !== false) {
 ?>
 			<div id="operationsMenu">
 				<div id="operations">
 					<div class="operationsMenuButton firstButton">
-						<a href="<?php echo FileManager::appendToRootPath("Post/New");?>">Nuova notizia</a></div>
+						<a href="<?php echo FileManager::appendToRootPath();?>">Leggi</a></div>
 					<div class="operationsMenuButton">
-						<a href="<?php echo FileManager::appendToRootPath("Post/New?type=VideoReportage");?>">Nuovo Video</a></div>
-					<div class="operationsMenuButton"><a href="#"> OPERATION </a></div>
-					<div class="operationsMenuButton"><a href="#"> OPERATION </a></div>
-					<div class="operationsMenuButton"><a href="#"> OPERATION </a></div>
-					<div class="operationsMenuButton lastButton"><a href="<?php echo FileManager::appendToRootPath("Logout");?>">Logout</a></div>
+						<a href="<?php echo FileManager::appendToRootPath("Post/New");?>">Pubblica</a></div>
+					<div class="operationsMenuButton">
+						<a href="<?php echo FileManager::appendToRootPath("Edit");?>">Modifica</a></div>
+					<div class="operationsMenuButton">
+						<a href="<?php echo FileManager::appendToRootPath("Profile"); ?>">Profilo</a></div>
+					<div class="operationsMenuButton">
+						<a href="<?php echo FileManager::appendToRootPath("Favourites");?>">Preferiti</a></div>
+					<div class="operationsMenuButton lastButton">
+						<a href="<?php echo FileManager::appendToRootPath("Logout");?>">Logout</a></div>
 					<div class="clear"></div>
 				</div>	
 			</div>
