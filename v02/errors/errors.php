@@ -23,5 +23,7 @@ static $errors = array(
 			"" => "",
 			);
 
-
+function showError($error) {
+	echo "<p class='error'>" . $error . "</p>";
+}
 ?>
