@@ -60,11 +60,52 @@ class Page {
 		
 		//selezione dell'oggetto su cui lavorare
 		switch (self::$requestedObject) {
+			case "error.php":
+			case "error":
+				self::$requestedObject = "index";
+				self::$requestedAction = "error";
+				break;
 			case "Login":
 			case "Logout":
 			case "Signin":
 				if(self::$requestedAction != self::$requestedObject)
 					self::$requestedAction = self::$requestedObject;
+				break;
+			case "Profile":
+				if(self::$user === false) {
+					self::$requestedAction = "";
+					break;
+				}
+				if(self::$requestedAction == self::$requestedObject) self::$requestedAction = "Read";
+				self::$requestedObject = "User";
+				self::$currentID = self::$user->getNickname();
+				self::$currentObject = self::$user;
+				break;
+			case "Favourites":
+				if(self::$user === false) {
+					self::$requestedAction = "";
+					break;
+				}
+				if(self::$requestedAction == self::$requestedObject) self::$requestedAction = "Read";
+				self::$requestedObject = "Post";
+				require_once 'search/SearchManager.php';
+				$p = SearchManager::searchBy("Post", array("type" => "collection", "title" => "Favourites", "author" => self::$user->getID()), array());
+				if(is_array($p) && count($p) == 1) {
+					self::$currentObject = $p[0];
+					self::$currentID = $p->getPermalink();
+				} else {
+					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non è stata trovata."));
+				}
+				break;
+			case "Edit":
+				if(self::$user === false) {
+					self::$requestedAction = "";
+					break;
+				}
+				if(self::$requestedAction == self::$requestedObject) self::$requestedAction = "Posts";
+				self::$requestedObject = "User";
+				self::$currentID = self::$user->getNickname();
+				self::$currentObject = self::$user;
 				break;
 			case "Contest":
 				//modifica o leggi tutti i post di un contest //EDIT E DELETE SOLO ADMIN!!!
@@ -313,6 +354,10 @@ class Page {
 			case "index":
 			default:
 				//TODO: creare pagina index
+				if(self::$requestedAction == "error") {
+					require_once 'errors/errors.php';
+					showError($_GET["e"]);
+				}
 				require_once 'search/SearchManager.php';
 				$posts = SearchManager::searchBy(array("Post"), array(), array("limit" => 1, "order" => "DESC", "by" => array("ps_creationDate")));
 				require_once("post/PostPage.php");
@@ -744,6 +789,7 @@ class Page {
 		require_once 'web/footer.inc';
 		require_once 'template/TemplateManager.php';
 		
+		self::$user = Session::getUser();
 		$data = self::elaborateRequest($request);
 		if(self::$requestedObject == "Login")
 			self::redirect("");
@@ -752,7 +798,6 @@ class Page {
 			self::redirect("");
 		}
 		
-		self::$user = Session::getUser();
 		//return; //DEBUG
 		$default = TemplateManager::getDefaultTemplate();
 		$parser = null; $tentativi = 0;
