@@ -25,14 +25,14 @@
 		<div class="clear largest" cols="1">
 			<div>PCCategories</div>
 			<col cols="2">
-				<col class="medium">
+				<col class="medium left">
 					PCCat1
 					PCCat3
 					<ad/>
 					PCCat5
 					PCCat7
 				</col>
-				<col class="medium">
+				<col class="medium right">
 					PCCat2
 					PCCat4
 					<ad/>
