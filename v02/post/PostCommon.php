@@ -1,13 +1,13 @@
 <?php
 
 class PostType {
-	static $PHOTOREPORTAGE = "photoreportage";
-	static $VIDEOREPORTAGE = "videoreportage";
-	static $NEWS = "news";
-	static $COLLECTION = "collection";
-	static $ALBUM = "album";
-	static $MAGAZINE = "magazine";
-	static $PLAYLIST = "playlist";
+	const PHOTOREPORTAGE = "photoreportage";
+	const VIDEOREPORTAGE = "videoreportage";
+	const NEWS = "news";
+	const COLLECTION = "collection";
+	const ALBUM = "album";
+	const MAGAZINE = "magazine";
+	const PLAYLIST = "playlist";
 }
 
 
@@ -43,24 +43,25 @@ class CategoryManager {
 		
 		$new_categories = array();
 		foreach ($categories as $cat) {
-			if(self::categoryExists($cat))
-				$new_categories[] = $cat;
+			if(self::categoryExists(trim($cat)))
+				$new_categories[] = trim($cat);
 		}
 		return $new_categories;
 	}
 	
 	static function createCategoriesFromArray($array, $parent = null) {
 		if(!is_array($array)) {
+			echo "<p>Trying to create category " . $array . "</p>";
 			if(self::categoryExists($array)) return;
 			if(self::createCategoryWithParent($array, $parent))
-				$created++;
+				echo "<p style='color:green;'>Created category " . $array . "</p>";
 		} else {
 			foreach($array as $index => $value) {
 				if(!is_numeric($index)) {
 					self::createCategoriesFromArray($index, $parent);
 					self::createCategoriesFromArray($value, $index);
 				} else {
-					self::createCategoriesFromArray($value);
+					self::createCategoriesFromArray($value, $parent);
 				}
 			}
 		};
@@ -93,7 +94,7 @@ class CategoryManager {
 				$table = Query::getDBSchema()->getTable(TABLE_SUB_CATEGORY);
 				
 				$db->execute($s = Query::generateInsertStm($table, array(SUB_CATEGORY_PARENT => $parent, SUB_CATEGORY_CATEGORY => $category)));
-				if($db->num_rows() == 1)
+				if($db->affected_rows() == 1)
 					return true;
 				else
 					return $ret || false;
@@ -103,23 +104,84 @@ class CategoryManager {
 		return $ret;
 	}
 	
+	/**
+	 * Restituisce le categorie che non hanno un genitore (come oggetti Category).
+	 */
 	static function getCategories() {
 		require_once("query.php");
 		$db = new DBManager();
 		if(!$db->connect_errno()) {
 			require_once("strings/strings.php");
-			define_tables(); defineCategoryColumns();
-			$table = Query::getDBSchema()->getTable(TABLE_CATEGORY);
+			define_tables(); defineSubCategoryColumns();
+			defineCategoryColumns();
 			
-			$db->execute($s = Query::generateSelectStm(array($table), array(), array(), array()));
+			$s = "SELECT * from " . TABLE_CATEGORY . " WHERE " . CATEGORY_NAME . " NOT IN (SELECT DISTINCT " . SUB_CATEGORY_CATEGORY . " FROM " . TABLE_SUB_CATEGORY . ")";
+			$r = $db->execute($s);
+			
 			$cat = array();
 			if($db->num_rows() > 0) {
 				while($row = $db->fetch_result())
-					$cat[] = $row[CATEGORY_NAME];
-				return $cat;
+					$cat[] = new Category($row[CATEGORY_NAME]);
 			}
+			return $cat;
 		} else $db->display_connect_error("CategoryManager::getCategories()");
 		return false;
+	}
+}
+
+class Category {
+	var $name;
+	private $children;
+	private $parent;
+	
+	function __construct($name) {
+		$this->name = $name;
+	}
+	
+	function getChildren() {
+		if(isset($this->children))
+			return $this->children;
+		require_once("query.php");
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			require_once("strings/strings.php");
+			define_tables(); defineSubCategoryColumns();
+			$table = Query::getDBSchema()->getTable(TABLE_SUB_CATEGORY);
+			
+			$db->execute($s = Query::generateSelectStm(array($table), array(), array(new WhereConstraint($table->getColumn(SUB_CATEGORY_PARENT), Operator::EQUAL, $this->name)), array()));
+			$cat = array();
+			if($db->num_rows() > 0) {
+				while($row = $db->fetch_result())
+					$cat[] = new Category($row[SUB_CATEGORY_CATEGORY]);
+				$this->children = $cat;
+				return $this->children;
+			}
+		} else $db->display_connect_error("Category::getChildren()");
+		return false;
+	}
+	
+	function getParent() {
+		if(isset($this->parent))
+		return $this->parent;
+		require_once("query.php");
+		$db = new DBManager();
+		if(!$db->connect_errno()) {
+			require_once("strings/strings.php");
+			define_tables(); defineSubCategoryColumns();
+			$table = Query::getDBSchema()->getTable(TABLE_SUB_CATEGORY);
+			
+			$db->execute($s = Query::generateSelectStm(array($table), array(), array(new WhereConstraint($table->getColumn(SUB_CATEGORY_CATEGORY), Operator::EQUAL, $this->name)), array()));
+			if($db->num_rows() == 1) {
+				$row = $db->fetch_result();
+				$this->parent = new Category($row[SUB_CATEGORY_PARENT]);
+				return $this->parent;
+			}
+		} else $db->display_connect_error("Category::getParent()");
+		return false;
+	}
+	
+	function __toString() {
+		return $this->name;
 	}
 }
 

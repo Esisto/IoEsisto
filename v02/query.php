@@ -8,6 +8,7 @@ class Operator {
 	const GREATEROREQUAL = ">=";
 	const LIKE = "LIKE";
 	const NOTEQUAL = "<>";
+	const IS_NULL = "IS NULL";
 }
 
 class SelectOperator {
@@ -58,6 +59,7 @@ class WhereConstraint {
 		if(isset($alias) && !is_null($alias) && $alias != "")
 			$s.= $alias . ".";
 		$s = $this->getColumn()->getName() . " " . $this->getOperator() . " ";
+		if($this->getOperator() == Operator::IS_NULL) return $s;
 		if(is_string($this->getData())) $s.= "'";
 		if(is_bool($this->getData())) {
 			if($this->getData()) $s.= 1;

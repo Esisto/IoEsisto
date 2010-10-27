@@ -504,19 +504,19 @@ class Post {
 					  "place" => $row[POST_PLACE]);
 		require_once("post/PostCommon.php");
 		require_once("post/collection/Collection.php");
-		if($row[POST_TYPE] == PostType::$NEWS)
+		if($row[POST_TYPE] == PostType::NEWS)
 			$p = new News($data);
-		else if($row[POST_TYPE] == PostType::$VIDEOREPORTAGE)
+		else if($row[POST_TYPE] == PostType::VIDEOREPORTAGE)
 			$p = new VideoReportage($data);
-		else if($row[POST_TYPE] == PostType::$ALBUM)
+		else if($row[POST_TYPE] == PostType::ALBUM)
 			$p = new Album($data);
-		else if($row[POST_TYPE] == PostType::$MAGAZINE)
+		else if($row[POST_TYPE] == PostType::MAGAZINE)
 			$p = new Magazine($data);
-		else if($row[POST_TYPE] == PostType::$PHOTOREPORTAGE)
+		else if($row[POST_TYPE] == PostType::PHOTOREPORTAGE)
 			$p = new PhotoReportage($data);
-		else if($row[POST_TYPE] == PostType::$PLAYLIST)
+		else if($row[POST_TYPE] == PostType::PLAYLIST)
 			$p = new Playlist($data);
-		else if($row[POST_TYPE] == PostType::$COLLECTION)
+		else if($row[POST_TYPE] == PostType::COLLECTION)
 			$p = new Collection($data);
 		else
 			$p = new Post($data);
@@ -763,7 +763,7 @@ class VideoReportage extends Post {
 	function __construct($data) {
 		parent::__construct($data);
 		require_once("post/PostCommon.php");
-		$this->setType(PostType::$VIDEOREPORTAGE);
+		$this->setType(PostType::VIDEOREPORTAGE);
 	}
 	
 	/**
@@ -784,7 +784,7 @@ class News extends Post {
 	function __construct($data) {
 		parent::__construct($data);
 		require_once("post/PostCommon.php");
-		$this->setType(PostType::$NEWS);
+		$this->setType(PostType::NEWS);
 	}
 }
 ?>

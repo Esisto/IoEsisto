@@ -32,13 +32,13 @@ class CollectionManager {
 		if(!isset($data["type"]))
 		   return false;
 		$c = false;
-		if($data["type"] == PostType::$ALBUM) {
+		if($data["type"] == PostType::ALBUM) {
 			$c = new Album($data);
-		} else if($data["type"] == PostType::$MAGAZINE) {
+		} else if($data["type"] == PostType::MAGAZINE) {
 			$c = new Magazine($data);
-		} else if($data["type"] == PostType::$PLAYLIST) {
+		} else if($data["type"] == PostType::PLAYLIST) {
 			$c = new Playlist($data);
-		} else if($data["type"] == PostType::$PHOTOREPORTAGE) {
+		} else if($data["type"] == PostType::PHOTOREPORTAGE) {
 			$c = new PhotoReportage($data);
 		} else
 			return false;

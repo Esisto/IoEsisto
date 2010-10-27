@@ -434,3 +434,20 @@ p {
 	font-weight: bold;
 	float: right;
 }
+.category_tree {
+	height: 150px;
+	overflow-y: scroll;
+	border: 1px solid #999999;
+	margin-left: 2px;
+	background: white;
+}
+.category_tree li {
+	list-style-type: none;
+}
+.category_tree_level_0 {
+	margin: 0;
+	padding: 0;
+}
+.category_tree_level_0 ul {
+	padding-left: 20px;
+}

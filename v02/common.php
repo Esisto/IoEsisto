@@ -394,7 +394,7 @@ class Filter {
 	 * @param string $separator una stringa contenente un separatore. (Default ",")
 	 * @return una stringa con tutti i dati dell'array.
 	 */
-	static function arrayToText($array, $separator = ",") {
+	static function arrayToText($array, $separator = ", ") {
 		$s = "";
 		$first = true;
 		foreach ($array as $value) {

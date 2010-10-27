@@ -32,9 +32,9 @@ class PostManager {
 		if(!isset($data["type"]))
 		   return false;
 		$p = false;
-		if($data["type"] == PostType::$NEWS) {
+		if($data["type"] == PostType::NEWS) {
 			$p = new News($data);
-		} else if($data["type"]  == PostType::$VIDEOREPORTAGE) {
+		} else if($data["type"]  == PostType::VIDEOREPORTAGE) {
 			$p = new VideoReportage($data);
 		} else
 			return false;

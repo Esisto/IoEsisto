@@ -188,9 +188,16 @@ class PostPage {
 				$data["content"] = $_POST["content"];
 			else
 				$error[] = "Inserire un contenuto.";
-			
+			if(isset($_POST["cat"]) && is_array($_POST["cat"]) && count($_POST["cat"]) > 0) {
+				$cat = ""; $first = true;
+				foreach($_POST["cat"] as $k => $c) {
+					if($first) $first = false;
+					else $cat.= ", ";
+					$cat.= $c;
+				}
+				$data["categories"] = $cat;
+			}		
 			if(is_null($error) || (is_array($error) && count($error) == 0)) {
-				//$data["author"] = 1; //FIXME TOGLIMI
 				$data["author"] = Session::getUser()->getID();
 				$post = PostManager::createPost($data);
 				if($post !== false) {
@@ -309,17 +316,9 @@ class PostPage {
 			<p>Sottotilolo:<br /><input name="subtitle" value="<?php echo $post->getSubtitle(); ?>"/></p>
 			<p>Headline:<br /><input name="headline" value="<?php echo $post->getHeadline(); ?>"/></p>
 			<p>Tags:<br /><input name="tags" value="<?php echo $post->getTags(); ?>"/></p>
-			<p>Categorie: <br/>
-				<div style="width:200px;height:100px;overflow-y: scroll; border:1px solid black;">
-				<?php
-				require_once 'post/PostCommon.php';
-				$cat = CategoryManager::getCategories();
-				echo $cat[0];
-				$i = 0;
-				foreach($cat as $valore)
-					echo '<input type="checkbox" name="cat[' . ++$i . ']" value="' . $valore .'" /> ' . $valore . '<br>';
-				?>
-				</div>
+			<p>Categorie: <br/><?php
+				$cat = explode(", ", Filter::decodeFilteredText($post->getCategories()));
+				self::showCategoryTree($cat); ?>
 			</p>
             <p><input type="submit" value="Salva" /></p>
             <input name="type" type="hidden" value="news" />
@@ -410,6 +409,37 @@ class PostPage {
 		}
 		?></div>
 		<?php
+	}
+	
+	private static function showCategoryTree($checked = array()) {
+		?>
+				<div class="category_tree">
+				<?php
+				require_once 'post/PostCommon.php';
+				$cat = CategoryManager::getCategories();
+				$i = 0; ?>
+					<ul class="category_tree_level_0"><?php
+				foreach($cat as $valore)
+					$i = self::writeCategoryNode($valore, $i, 1, $checked);
+					?>
+					</ul><?php
+				?>
+				</div>
+		<?php
+	}
+	
+	private static function writeCategoryNode($node, $counter, $level, $checked = array()) {
+		$check = array_search($node->name, $checked) !== false; 
+		echo '<li><input type="checkbox" name="cat[' . ++$counter . ']" value="' . $node->name .'" ' . ($check ? "checked " : "") . '/> <label>' . $node->name . '</label></li>';
+		if(is_array($children = $node->getChildren())) { ?>
+					<ul class="category_tree_level_<?php echo $level++; ?>"><?php
+			foreach($children as $child) {
+				$counter = self::writeCategoryNode($child, $counter, $level);
+			}
+					?>
+					</ul><?php
+		}
+		return $counter;
 	}
 }
 

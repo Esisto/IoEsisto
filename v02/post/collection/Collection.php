@@ -18,7 +18,7 @@ class Collection extends Post {
 		}
 		// END DEBUG
 		require_once("post/PostCommon.php");
-		$this->setType(PostType::$COLLECTION);
+		$this->setType(PostType::COLLECTION);
 	}
 	
 	function addPost($post){
@@ -90,16 +90,16 @@ class Album extends Collection {
 	function __construct($data) {
 		parent::__construct($data);
 		require_once("post/PostCommon.php");
-		$this->setType(PostType::$ALBUM);
+		$this->setType(PostType::ALBUM);
 	}
 	
 	/**
 	 * @Override
-	 * Controlla inoltre che il post da aggiungere sia un PostType::$PHOTOREPORTAGE.
+	 * Controlla inoltre che il post da aggiungere sia un PostType::PHOTOREPORTAGE.
 	 */
 	function addPost($photo){
 		require_once("post/PostCommon.php");
-		if($photo->getType()==PostType::$PHOTOREPORTAGE){
+		if($photo->getType()==PostType::PHOTOREPORTAGE){
 			return parent::addPost($photo->getID());
 		}
 		return false;
@@ -113,16 +113,16 @@ class Magazine extends Collection {
 	function __construct($data) {
 		parent::__construct($data);
 		require_once("post/PostCommon.php");
-		$this->setType(PostType::$MAGAZINE);
+		$this->setType(PostType::MAGAZINE);
 	}
 	
 	/**
 	 * @Override
-	 * Controlla inoltre che il post da aggiungere sia un PostType::$NEWS.
+	 * Controlla inoltre che il post da aggiungere sia un PostType::NEWS.
 	 */
 	function addPost($news){
 		require_once("post/PostCommon.php");
-		if($news->getType()==PostType::$NEWS){
+		if($news->getType()==PostType::NEWS){
 			return parent::addPost($news->getID());
 		}
 		return false;
@@ -136,7 +136,7 @@ class PhotoReportage extends Collection {
 	function __construct($data) {
 		parent::__construct($data);
 		require_once("post/PostCommon.php");
-		$this->setType(PostType::$PHOTOREPORTAGE);
+		$this->setType(PostType::PHOTOREPORTAGE);
 	}
 	
 	/**
@@ -171,16 +171,16 @@ class Playlist extends Collection {
 	function __construct($data) {
 		parent::__construct($data);
 		require_once("post/PostCommon.php");
-		$this->setType(PostType::$PLAYLIST);
+		$this->setType(PostType::PLAYLIST);
 	}
 	
 	/**
 	 * @Override
-	 * Controlla inoltre che il post da aggiungere sia un PostType::$VIDEOREPORTAGE.
+	 * Controlla inoltre che il post da aggiungere sia un PostType::VIDEOREPORTAGE.
 	 */
 	function addPost($video){
 		require_once("post/PostCommon.php");
-		if($video->getType()==PostType::$VIDEOREPORTAGE){
+		if($video->getType()==PostType::VIDEOREPORTAGE){
 			return parent::addPost($video->getID());
 		}
 		return false;
