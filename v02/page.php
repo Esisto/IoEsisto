@@ -107,7 +107,7 @@ class Page {
 				self::$currentID = self::$user->getNickname();
 				self::$currentObject = self::$user;
 				break;
-			case "Mail":
+			case "Mailbox":
 				if(self::$user === false) {
 					self::$requestedAction = "";
 					break;

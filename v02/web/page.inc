@@ -35,7 +35,7 @@ function writePageHeader($user, $ad) {
 					<div class="operationsMenuButton">
 						<a href="<?php echo FileManager::appendToRootPath("Edit");?>">Modifica</a></div>
 					<div class="operationsMenuButton">
-						<a href="<?php echo FileManager::appendToRootPath("Mail");?>">Posta</a></div>
+						<a href="<?php echo FileManager::appendToRootPath("Mailbox");?>">Posta</a></div>
 					<div class="operationsMenuButton">
 						<a href="<?php echo FileManager::appendToRootPath("Profile"); ?>">Profilo</a></div>
 					<div class="operationsMenuButton">
