@@ -317,7 +317,9 @@ class PostPage {
 			<p>Headline:<br /><input name="headline" value="<?php echo $post->getHeadline(); ?>"/></p>
 			<p>Tags:<br /><input name="tags" value="<?php echo $post->getTags(); ?>"/></p>
 			<p>Categorie: <br/><?php
-				$cat = explode(", ", Filter::decodeFilteredText($post->getCategories()));
+				$cat = array();
+				if(trim($post->getCategories()) != "")
+					$cat = explode(", ", Filter::decodeFilteredText($post->getCategories()));
 				self::showCategoryTree($cat); ?>
 			</p>
             <p><input type="submit" value="Salva" /></p>
@@ -429,12 +431,15 @@ class PostPage {
 	}
 	
 	private static function writeCategoryNode($node, $counter, $level, $checked = array()) {
-		$check = array_search($node->name, $checked) !== false; 
+		if(count($checked) > 0) {
+			$check = array_search($node->name, $checked) !== false;
+			if($check) array_diff($checked, array($node->name));
+		}
 		echo '<li><input type="checkbox" name="cat[' . ++$counter . ']" value="' . $node->name .'" ' . ($check ? "checked " : "") . '/> <label>' . $node->name . '</label></li>';
 		if(is_array($children = $node->getChildren())) { ?>
 					<ul class="category_tree_level_<?php echo $level++; ?>"><?php
 			foreach($children as $child) {
-				$counter = self::writeCategoryNode($child, $counter, $level);
+				$counter = self::writeCategoryNode($child, $counter, $level, $checked);
 			}
 					?>
 					</ul><?php
