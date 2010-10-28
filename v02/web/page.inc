@@ -53,13 +53,13 @@ function writePageHeader($user, $ad) {
 		<div id="categories">
 			<div class="categoriesMenuButton firstButton"><a href="<?php echo FileManager::appendToRootPath('Category/Cultura'); ?>">Cultura</a></div>
 			<div class="categoriesMenuButton"><a href="<?php echo FileManager::appendToRootPath('Category/Web'); ?>">Web</a></div>
-			<div class="categoriesMenuButton"><a href="#"> CATEGORY </a></div>
-			<div class="categoriesMenuButton"><a href="#"> CATEGORY </a></div>
-			<div class="categoriesMenuButton"><a href="#"> CATEGORY </a></div>	
-			<div class="categoriesMenuButton"><a href="#"> CATEGORY </a></div>
-			<div class="categoriesMenuButton"><a href="#">Foto Report.</a></div>
+			<div class="categoriesMenuButton"><a href="#">Cronaca</a></div>
+			<div class="categoriesMenuButton"><a href="#">Sport</a></div>
+			<div class="categoriesMenuButton"><a href="#">Finanza</a></div>	
+			<div class="categoriesMenuButton"><a href="#">Meteo</a></div>
+			<div class="categoriesMenuButton"><a href="#">Foto Rep.</a></div>
 			<div class="categoriesMenuButton"><a href="#">Video</a></div>
-			<div class="categoriesMenuButton lastButton"><a href="#"> CATEGORY </a></div>
+			<div class="categoriesMenuButton lastButton"><a href="#">Cerca</a></div>
 			<div class="clear"></div>
 		</div>
 	</div>
