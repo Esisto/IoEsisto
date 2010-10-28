@@ -6,6 +6,7 @@ require_once("mail/MailManager.php"); //TODO da elimenare la path con una define
 class MailPage {
 	
 	static function showEditDirectoryForm( $error = null, $directory =  null ) {
+		$user = Session::getUser();
 		if ( count($_POST) == 0 ) {
 			?>
 			<form name="editdirectory" action="" method="post">
@@ -39,7 +40,6 @@ class MailPage {
 						}
 					</script>	
 					<?php
-						$user = Session::getUser();
 						
 						if ( $user != false ) {						
 							$directoryarray = MailManager::loadUsersDirectories($user->getID());
@@ -65,7 +65,6 @@ class MailPage {
 			if ( isset($_POST["create"]) && $_POST["create"] == "create" )
 			{
 				if ( isset($_POST["name"]) && $_POST["name"] !== "" ) {
-					$user = Session::getUser();
 					MailManager::createDirectory($_POST["name"], $user->getID() );
 					return true;
 				}
@@ -78,8 +77,6 @@ class MailPage {
 
 			if ( isset($_POST["delete"]) && $_POST["delete"] == "delete" )
 			{
-				$user = Session::getUser();
-						
 				if ( $user != false ) {
 					//loadDirectory(,$user);
 					MailManager::deleteDirectory();
@@ -105,7 +102,7 @@ class MailPage {
 	 * @param Mail $mail è la mail a cui rispondere.
 	 */
 	static function showNewForm($error = null, $mail = null) {
-	
+		$user = Session::getUser();
 		if ( count($_POST) == 0 )
 		{
 			if ( $mail == null ) {
@@ -114,7 +111,6 @@ class MailPage {
 					<fieldset>
 						<legend>New Mail</legend>
 						<?php 
-							$user = Session::getUser();
 							if ( $user != false )
 								echo "From: <input type=\"text\" name=\"from\" readonly=\"readonly\" value=\"" . $user->getNickName() . "\" />";
 							else 
@@ -136,10 +132,8 @@ class MailPage {
 		{	
 			$error = array();
 
-			if( isset($_POST["from"]) && $_POST["from"] !== "" ) {
-				$user = Session::getUser();
+			if( isset($_POST["from"]) && $_POST["from"] !== "" )
 				$data["from"] = $user->getID();
-			}			
 			else
 				$error["from"] = "it's obbligatory!";
 

@@ -421,6 +421,8 @@ class DBManager {
 			$this->free_result();
 		
 		$this->result = mysql_query($query, $this->dblink);
+		require_once 'session.php';
+		Session::incrementQueryCounter(substr($query, 0, 6));
 		$this->info = mysql_info($this->dblink);
 		$this->errno = mysql_errno($this->dblink);
 		$this->error = mysql_error($this->dblink);
@@ -431,9 +433,9 @@ class DBManager {
 		$this->query_type = substr($query, 0, 6);
 		//DEBUG
 		if(DEBUG) {
-			echo "<p>" . $this->query_type . ": " . $this->info(); //DEBUG
+			//echo "<p>" . $this->query_type . ": " . $this->info(); //DEBUG
 			//echo "<br /><font color='green'>" . var_export($this->result, true) . "</font>";
-			echo "<br />" . $query; //DEBUG
+			echo "<p>" . $query . "</p>"; //DEBUG
 		}
 
 		if($this->query_type == "SELECT") {
@@ -455,7 +457,7 @@ class DBManager {
 		if($this->affected_rows() > 0) {
 			require_once("session.php");
 			require_once("common.php");
-			LogManager::addLogEntry(Session::getUser(), substr($query, 0, 6), $tablename, $object);
+			LogManager::addLogEntry(Session::getUser()->getID(), substr($query, 0, 6), $tablename, $object);
 		}
 		return $this->result;
 	}

@@ -534,7 +534,7 @@ class User{
 																 new WhereConstraint($table->getColumn(FOLLOW_SUBJECT), Operator::EQUAL, $this->getID()))),
 						$table->getName(), $this);
 			
-			if($db->affected_rows() == 1)
+			if($db->affected_rows() > 1)
 				$db->display_error("User::removeFollower()"); //Genera un errore ma ritorna comunque $this
 		} else $db->display_connect_error("User::removeFollower()");
 		return $this->loadFollowers();
@@ -706,7 +706,7 @@ class User{
 		return false;
 	}
 	
-	static function loadByNickname($nickname) {
+	static function loadByNickname($nickname, $loadDependences = true) {
 		require_once("query.php");
 		$db = new DBManager();
 		if(!$db->connect_errno()) {
@@ -719,7 +719,12 @@ class User{
 			
 			if($db->num_rows() == 1) {
 				$u = self::createFromDBManager($db);
-				return $u->loadContacts()->loadFeedback()->loadFollowers()->loadFollows();
+				if($loadDependences) {
+					$loadDependences = false;
+					$u->loadContacts()->loadFeedback()->loadFollows()->loadFollowers();
+					$loadDependences = true;
+				}
+				return $u;
 			} else $db->display_error("User::loadByNickname()");
 		} else $db->display_connect_error("User::loadByNickname()");
 		return false;
@@ -754,7 +759,7 @@ class User{
 		return $user;
 	}
 	
-	static function loadByMail($mail) {
+	static function loadByMail($mail, $loadDependences = true) {
 		require_once("query.php");
 		$db = new DBManager();
 		if(!$db->connect_errno()) {
@@ -767,7 +772,12 @@ class User{
 			
 			if($db->num_rows() == 1) {
 				$u = self::createFromDBManager($db);
-				return $u->loadContacts()->loadFeedback()->loadFollowers()->loadFollows();
+				if($loadDependences) {
+					$loadDependences = false;
+					$u->loadContacts()->loadFeedback()->loadFollows()->loadFollowers();
+					$loadDependences = true;
+				}
+				return $u;
 			} else $db->display_error("User::loadByMail()");
 		} else $db->display_connect_error("User::loadByMail()");
 		return false;

@@ -144,16 +144,16 @@ class UserManager {
         return $user->delete();
     }
     
-    static function loadUser($id, $error = null) {
-        return User::loadFromDatabase($id);
+    static function loadUser($id, $loadDependencies = true, $error = null) {
+        return User::loadFromDatabase($id, $loadDependencies);
     }
     
-    static function loadUserByMail($email, $error = null) {
-        return User::loadByMail($email);
+    static function loadUserByMail($email, $loadDependencies = true, $error = null) {
+        return User::loadByMail($email, $loadDependencies);
     }
 
-    static function loadUserByNickname($nickname, $error = null) {
-        return User::loadByNickname($nickname);
+    static function loadUserByNickname($nickname, $loadDependencies = true, $error = null) {
+        return User::loadByNickname($nickname, $loadDependencies);
     }
 }
 

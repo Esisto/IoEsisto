@@ -9,8 +9,8 @@ class Post {
 	protected $subtitle;				// sottotitolo
 	protected $headline; 				// occhiello
 	protected $author;					// id di oggetto User
-	protected $creationDate;			// UNIX like TimeStamp
-	protected $modificationDate;		// UNIX like TimeStamp
+	protected $creationDate;			// UNIX-like TimeStamp
+	protected $modificationDate;		// UNIX-like TimeStamp
 	protected $tags;					// stringa di tag separati da virgole
 	protected $categories;				// stringa di categorie separate da virgole
 	protected $comments;				// array di oggetti COMMENTO
@@ -167,7 +167,7 @@ class Post {
 		require_once("user/UserManager.php");
 		if(is_null($this->getAuthor()))
 			return "Anonimous";
-		$u = UserManager::loadUser($this->getAuthor());
+		$u = UserManager::loadUser($this->getAuthor(), false);
 		if(!is_null($u->getNickname()))
 			return $u->getNickname();
 		return $this->getAuthor();
@@ -526,7 +526,12 @@ class Post {
 			$p->setModificationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[POST_MODIFICATION_DATE])));
 		else $p->setModificationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[POST_CREATION_DATE])));
 		if($loadComments) $p->loadComments();
-		$p->loadReports()->setPermalink($row[POST_PERMALINK]);
+		
+		$user = Session::getUser();
+		if($user !== false && $user->getRole() == "admin")
+			$p->loadReports();
+		
+		$p->setPermalink($row[POST_PERMALINK]);
 		
 		require_once("common.php");
 		$p->setAccessCount(LogManager::getAccessCount("Post", $p->getID()));
@@ -583,7 +588,7 @@ class Post {
 			if($db->num_rows() == 1) {
 				//echo serialize($db->fetch_result()); //DEBUG
 				$row = $db->fetch_result();
-				$p = self::createFromDBResult($row);
+				$p = self::createFromDBResult($row, $loadComments);
 				//echo "<p>" .$p ."</p>";
 				return $p;
 			} else $db->display_error("Post::loadByPermalink()");

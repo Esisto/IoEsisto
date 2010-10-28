@@ -107,6 +107,15 @@ class Page {
 				self::$currentID = self::$user->getNickname();
 				self::$currentObject = self::$user;
 				break;
+			case "Mail":
+				if(self::$user === false) {
+					self::$requestedAction = "";
+					break;
+				}
+				if(self::$requestedAction == self::$requestedObject) self::$requestedAction = "Mails";
+				self::$requestedObject = "Directory";
+				self::$currentID = MAILBOX;
+				break;
 			case "Contest":
 				//modifica o leggi tutti i post di un contest //EDIT E DELETE SOLO ADMIN!!!
 				if(self::$requestedAction == "Edit" || self::$requestedAction == "Posts" || self::$requestedAction == "Delete") {	//esempio: /Contest/%contest_id%/Edit
@@ -370,10 +379,17 @@ class Page {
 	private static function doUserAction($request) {
 		//echo "<p>" . serialize($request) . "</p>"; //DEBUG
 		$user = null;
+		$loadDependencies = self::$requestedAction == "Follow" || 
+							self::$requestedAction == "Feedback" ||
+							self::$requestedAction == "AddContact" ||
+							self::$requestedAction == "StopFollow" ||
+							self::$requestedAction == "Read";
+		if($loadDependencies && self::$requestedAction != "Read")
+			self::$user->loadFollows();
 		if(is_numeric(self::$currentID))
-			$user = UserManager::loadUser(self::$currentID);
+			$user = UserManager::loadUser(self::$currentID, $loadDependencies);
 		else if(isset(self::$currentID))
-			$user = UserManager::loadUserByNickname(self::$currentID);
+			$user = UserManager::loadUserByNickname(self::$currentID, $loadDependencies);
 		
 		switch (self::$requestedAction) {
 			case "Edit":
@@ -472,7 +488,7 @@ class Page {
 			case "Delete":
 				require_once 'user/User.php';
 				$contact = Contact::loadFromDatabase(self::$currentID);
-				$user = UserManager::loadUser($contact->getUser());
+				$user = UserManager::loadUser($contact->getUser(), false);
 				UserManager::deleteContact($contact, $user);
 				require_once 'user/UserPage.php';
 				UserPage::showProfile($user);
@@ -577,9 +593,9 @@ class Page {
 		switch (self::$requestedAction) {
 			case "Delete":
 				if(is_numeric(self::$currentID))
-					$subject = UserManager::loadUser(self::$currentID);
+					$subject = UserManager::loadUser(self::$currentID, false);
 				else
-					$subject = UserManager::loadUserByNickname(self::$currentID);
+					$subject = UserManager::loadUserByNickname(self::$currentID, false);
 				if(is_null($user) || $user === false)
 					header("location: " . FileManager::appendToRootPath("/error.php?e=Oops la pagina non è stata trovata."));
 				UserManager::deleteFeedbackFromUser(self::$user, $subject);
@@ -789,6 +805,10 @@ class Page {
 		require_once 'web/footer.inc';
 		require_once 'template/TemplateManager.php';
 		
+		//inizio il conteggio delle query
+		require_once 'session.php';
+		Session::initializeQueryCounter();
+		
 		self::$user = Session::getUser();
 		$data = self::elaborateRequest($request);
 		if(self::$requestedObject == "Login")
@@ -798,7 +818,6 @@ class Page {
 			self::redirect("");
 		}
 		
-		//return; //DEBUG
 		$default = TemplateManager::getDefaultTemplate();
 		$parser = null; $tentativi = 0;
 		while(is_numeric($parser) || is_null($parser)) {
@@ -838,14 +857,14 @@ class Page {
 				case "HEADER":
 					$write_h = true;
 					if($el["type"] == "close") {
-						writePageHeader($ad);
+						writePageHeader(self::$user, $ad);
 						$write_h = false;
 					}
 					break;
 				case "FOOTER":
 					$write_f = true;
 					if($el["type"] == "close" || $el["type"] == "complete") {
-						writeFooter($ad);
+						writePageFooter(null, $ad);
 						$write_f = false;
 					}
 					break;
@@ -888,6 +907,7 @@ class Page {
 			}
 			//echo "<p style='color:red;'>element: " . $el["tag"] . "</p>";  //DEBUG
 		}
+		writeFooter();
 	}
 	
 	private static function evaluateText($text, $data) {
@@ -1011,7 +1031,7 @@ class Page {
 	private static function PCAuthor($data) {
 		if(isset(self::$currentObject) && !is_null(self::$currentObject) && self::$currentObject !== false) {
 			require_once 'user/UserManager.php';
-			$user = UserManager::loadUser(self::$currentObject->getAuthor());
+			$user = UserManager::loadUser(self::$currentObject->getAuthor(), false);
 			if(true) { //TODO se l'autore vuole
 				echo "<p>L'autore</p>";
 				require_once 'user/UserPage.php';
@@ -1023,7 +1043,7 @@ class Page {
 	private static function PCSameAuthor($data) {
 		if(isset(self::$currentObject) && !is_null(self::$currentObject) && self::$currentObject !== false) {
 			require_once 'user/UserManager.php';
-			$user = UserManager::loadUser(self::$currentObject->getAuthor());
+			$user = UserManager::loadUser(self::$currentObject->getAuthor(), false);
 			if(true) { //TODO se l'autore vuole
 				echo "<p>Dello stesso autore</p>";
 				require_once 'search/SearchManager.php';
@@ -1044,7 +1064,11 @@ class Page {
 		}
 	}
 	
-	private static  function redirect($where = "") {
+	private static function PCCommands() {
+		echo '<p>PCCommands</p>';
+	}
+	
+	private static function redirect($where = "") {
 		if(!headers_sent()) {
 			header("location: " . self::createLinkPath($where));
 		} else {

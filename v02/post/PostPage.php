@@ -173,6 +173,7 @@ class PostPage {
 	}
 	
 	static function showNewPostForm($data = null, $error = null) {
+		$user = Session::getUser();
 		//TODO controlla sessione
 		if(is_null($error) && count($_POST) > 0) {
 			$data = array();
@@ -198,7 +199,7 @@ class PostPage {
 				$data["categories"] = $cat;
 			}		
 			if(is_null($error) || (is_array($error) && count($error) == 0)) {
-				$data["author"] = Session::getUser()->getID();
+				$data["author"] = $user->getID();
 				$post = PostManager::createPost($data);
 				if($post !== false) {
 					echo '
@@ -230,7 +231,7 @@ class PostPage {
 	}
 	
 	static function showCommentForm($user, $post, $error = null) {
-		if ($user == Session::getUser($user) && is_a($user, "user") ){ //controllo se l'untente è loggato
+		if ($user == Session::getUser($user)){ //controllo se l'untente è loggato
 			if($error==null && count($_POST) > 0){  
 				if(isset($_POST["comment"]))
 					$comment = $_POST["comment"];
@@ -305,24 +306,29 @@ class PostPage {
 		}
 		?>
 		<form name="<?php echo $name; ?>Post" action="?type=News" method="post">
-			<p>Titolo:<br /><input name="title" value="<?php echo $post->getTitle(); ?>"/></p>
-			<p>Contenuto:<br/>
+			<p class="post_headline"><label>Occhiello:</label><br />
+				<input class="post_headline" name="headline" value="<?php echo $post->getHeadline(); ?>"/></p>
+			<p class="title"><label>Titolo:</label><br/>
+				<input class="post_title" name="title" value="<?php echo $post->getTitle(); ?>"/></p>
+			<p class="post_subtitle"><label>Sottotilolo:</label><br />
+				<input class="post_subtitle" name="subtitle" value="<?php echo $post->getSubtitle(); ?>"/></p>
+			<p class="content"><label>Contenuto:</label><br/>
 				<textarea name="content" id="post_content"><?php echo $post->getContent(); ?></textarea>
 				<!-- sostituisco textarea standard con ckeditor -->
 				<script type="text/javascript">
 					CKEDITOR.replace('post_content');
 				</script>
 			</p>
-			<p>Sottotilolo:<br /><input name="subtitle" value="<?php echo $post->getSubtitle(); ?>"/></p>
-			<p>Headline:<br /><input name="headline" value="<?php echo $post->getHeadline(); ?>"/></p>
-			<p>Tags:<br /><input name="tags" value="<?php echo $post->getTags(); ?>"/></p>
-			<p>Categorie: <br/><?php
+			<p class="tags"><label>Tags:</label><br />
+				<input class="tags" id="post_tags_input" name="tags" value="<?php echo $post->getTags(); ?>"/></p>
+			<p class="categories"><label>Categorie:</label><br/><?php
 				$cat = array();
 				if(trim($post->getCategories()) != "")
 					$cat = explode(", ", Filter::decodeFilteredText($post->getCategories()));
 				self::showCategoryTree($cat); ?>
 			</p>
-            <p><input type="submit" value="Salva" /></p>
+			<p class="invisible"><label>Salva come bozza?</label> <input type="checkbox" name="invisible"/></p>
+            <p class="submit"><input type="submit" value="Salva" /></p>
             <input name="type" type="hidden" value="news" />
         </form>
         <?php
@@ -431,6 +437,7 @@ class PostPage {
 	}
 	
 	private static function writeCategoryNode($node, $counter, $level, $checked = array()) {
+		$check = false;
 		if(count($checked) > 0) {
 			$check = array_search($node->name, $checked) !== false;
 			if($check) array_diff($checked, array($node->name));

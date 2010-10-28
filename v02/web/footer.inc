@@ -1,6 +1,6 @@
 <?php 
 
-function writeFooter($ad) {
+function writeFooter() {
 ?>
 </body>
 </html>

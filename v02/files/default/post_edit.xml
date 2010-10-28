@@ -6,9 +6,8 @@
 	<content cols="1">
 		<col cols="2">
 			<col class="side left">
-				PCSearch
+				PCCommands
 				<ad/>
-				//PCCommands
 				<div class="clear" />
 			</col>
 			<col id="main" class="large right">
