@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 
-<template name="ie_home" style="default/default">
+<template name="post">
+	<head>
+		<stylesheet css="default/default" />
+	</head>
 	<header><ad/></header>
 	<content cols="1">
 		<col cols="2">

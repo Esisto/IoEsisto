@@ -28,7 +28,14 @@ if(count($js) <= 1) {
 }
 foreach($js as $src) {
 ?>
-    <script src="<?php echo FileManager::appendToRootPath("files/" . $src . ".js"); ?>" type="text/javascript"></script>
+    <script src="<?php 
+    if(strpos($src, "http://") === 0)
+    	$str = $src;
+    else if(strpos($src, "plugins") === 0)
+    	$str = FileManager::appendToRootPath($src);
+    else
+    	$str = FileManager::appendToRootPath("files/" . $src . (strpos($src, ".js") ? "" : ".js"));
+    echo $str; ?>" type="text/javascript"></script>
 <?php
 }
 ?>
