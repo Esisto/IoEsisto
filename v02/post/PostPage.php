@@ -197,7 +197,16 @@ class PostPage {
 					$cat.= $c;
 				}
 				$data["categories"] = $cat;
-			}		
+			}
+			if(isset($_POST["place"]) && trim($_POST["place"]) != "")
+				$data["place"] = $_POST["place"];
+			if(isset($_POST["headline"]) && trim($_POST["headline"]) != "")
+				$data["headline"] = $_POST["headline"];
+			if(isset($_POST["subtitle"]) && trim($_POST["subtitle"]) != "")
+				$data["subtitle"] = $_POST["subtitle"];
+			if(isset($_POST["tags"]) && trim($_POST["tags"]) != "")
+				$data["tags"] = $_POST["tags"];
+				
 			if(is_null($error) || (is_array($error) && count($error) == 0)) {
 				$data["author"] = $user->getID();
 				$post = PostManager::createPost($data);
@@ -274,12 +283,72 @@ class PostPage {
         <?php
 	}
 
-	static function showEditPostForm() {
-		?>
-        <form name="" action="" method="get"> <!-- TODO -->
-            <input type="submit" value="">
-        </form>
-        <?php
+	static function showEditPostForm($post, $data = null, $error = null) {
+		$user = Session::getUser();
+		if($user->getID() != $post->getAuthor()) return;
+		//TODO controlla sessione
+		if(is_null($error) && count($_POST) > 0) {
+			$data = array();
+			if(isset($_POST["title"]) && trim($_POST["title"]) != "")
+				$data["title"] = $_POST["title"];
+			else
+				$error = array("Inserire un titolo.");
+			if(isset($_POST["type"]))
+				$data["type"] = $_POST["type"];
+			else
+				$error[] = "Scegliere il tipo di post da pubblicare.";
+			if(isset($_POST["content"]) && trim($_POST["content"]) != "")
+				$data["content"] = $_POST["content"];
+			else
+				$error[] = "Inserire un contenuto.";
+			if(isset($_POST["cat"]) && is_array($_POST["cat"]) && count($_POST["cat"]) > 0) {
+				$cat = ""; $first = true;
+				foreach($_POST["cat"] as $k => $c) {
+					if($first) $first = false;
+					else $cat.= ", ";
+					$cat.= $c;
+				}
+				$data["categories"] = $cat;
+			}
+			if(isset($_POST["place"]) && trim($_POST["place"]) != "")
+				$data["place"] = $_POST["place"];
+			if(isset($_POST["headline"]) && trim($_POST["headline"]) != "")
+				$data["headline"] = $_POST["headline"];
+			if(isset($_POST["subtitle"]) && trim($_POST["subtitle"]) != "")
+				$data["subtitle"] = $_POST["subtitle"];
+			if(isset($_POST["tags"]) && trim($_POST["tags"]) != "")
+				$data["tags"] = $_POST["tags"];
+				
+			if(is_null($error) || (is_array($error) && count($error) == 0)) {
+				$data["author"] = $user->getID();
+				$post = PostManager::createPost($data);
+				if($post !== false) {
+					echo '
+			<div class="message">
+				Notizia salvata: <a href="' . $post->getFullPermalink() . '">Visualizza</a>
+			</div>';
+				}
+			} else {
+				self::showNewPostForm($data, $error);
+				return;
+			}
+		}
+		//echo serialize(isset($_GET["type"])) . "<br/>"; //DEBUG
+		if(isset($_GET["type"])) {
+			switch($_GET["type"]) {
+				case "Collection":
+				case "PhotoReportage":
+				case "VideoReportage":
+				case "Album":
+				case "Magazine":
+				case "Playlist":
+					call_user_func(array("PostPage","showEdit" . $_GET["type"] . "Form"), $data, $error);
+					break;
+				case "News":
+				default:
+					self::showEditNewsForm($data, $error);
+			}
+		} else self::showEditNewsForm($data, $error);
 	}
 
 	private static function showEditNewsForm($post, $error, $new = false) {
@@ -319,7 +388,7 @@ class PostPage {
 					CKEDITOR.replace( 'post_content', { toolbar : 'edited'});
 				</script>
 			</p>
-			<p class="tags"><label>Tags:</label><br />
+			<p class="tags"><label>Tags:</label> 
 				<input class="tags" id="post_tags_input" name="tags" value="<?php echo $post->getTags(); ?>"/></p>
 			<p class="categories"><label>Categorie:</label><br/><?php
 				$cat = array();
@@ -327,9 +396,22 @@ class PostPage {
 					$cat = explode(", ", Filter::decodeFilteredText($post->getCategories()));
 				self::showCategoryTree($cat); ?>
 			</p>
-			<p class="invisible"><label>Salva come bozza?</label> <input type="checkbox" name="invisible"/></p>
-            <p class="submit"><input type="submit" value="Salva" /></p>
+            <p><label id="place_label" class="<?php trim($post->getPlace()) == "" ? "hidden" : ""; ?>">Posizione:</label> 
+            	<input id="post_place" name="place" type="<?php trim($post->getPlace()) == "" ? "hidden" : "text"; ?>" value="<?php echo $post->getPlace(); ?>" /></p>
+            <input name="visible" type="hidden" value="true" />
             <input name="type" type="hidden" value="news" />
+           	<p class="submit"><input type="submit" value="Pubblica" /> 
+            	<input type="button" onclick="javascript:save();" value="Salva come bozza"/></p>
+             <script type="text/javascript">
+            	function save() {
+					document.<?php echo $name; ?>Post.visible.value = false;
+					document.<?php echo $name; ?>Post.submit();
+            	}
+            </script>
+		<?php 
+		require_once 'maps/geolocate.php';
+		MapManager::setCenterToMap($post->getPlace(), "map_canvas");
+		?>
         </form>
         <?php
 	}

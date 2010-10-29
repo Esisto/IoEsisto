@@ -16,6 +16,8 @@ define("LANG", "en"); // selezionare il linguaggio voluto.
 
 // Google API settings
 define("GKEY", "ABQIAAAAjg_c7D-9UshGFUSLngI0kRTb-vLQlFZmc2N8bgWI8YDPp5FEVBRY2O1KZH9g1Dq5uxwllWjXB-Lu5Q");
+define("DEF_LAT", 45.463688);
+define("DEF_LNG", 9.18814);
 
 // Debug settings
 define("DEBUG", false);

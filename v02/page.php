@@ -20,11 +20,11 @@ class Page {
 	 * %oggetto%/%identificativo oggetto%/%azione%/?%nome parametro%=%valore parametro%
 	 * 
 	 * @return un array associativo contenente i seguenti parametri:
-	 * object => l'oggetto o se c'√® un errore: index.
+	 * object => l'oggetto o se c'è un errore: index.
 	 * identificativo (o identificativi) dell'oggetto.
-	 * permalink oggetto => il permalink (che √® anche la richiesta).
+	 * permalink oggetto => il permalink (che è anche la richiesta).
 	 * azione => l'azione da eseguire sull'oggetto.
-	 * il parametro potr√† ancora essere recuperato attraverso $_GET[%nome parametro%].
+	 * il parametro potrà ancora essere recuperato attraverso $_GET[%nome parametro%].
 	 */
 	private static function elaborateRequest($request) {
 		require_once("file_manager.php");
@@ -43,7 +43,7 @@ class Page {
 				//echo "<br />" . $bookmark_index; //DEBUG
 			}
 		}
-		$start = strlen(dirname($_SERVER["PHP_SELF"])) + 1; //il +1 √® per lo /
+		$start = strlen(dirname($_SERVER["PHP_SELF"])) + 1; //il +1 è per lo /
 		$return = array();
 		//echo "<br />" . $start . " " . $index; //DEBUG
 		self::$currentPermalink = substr($request, $start, $index - $start);
@@ -52,7 +52,7 @@ class Page {
 		$parts = explode("/", self::$currentPermalink);
 		$count = count($parts);
 		//echo "<p style='color:red'>" . $count . "</p>"; //DEBUG
-		//se parts √® vuoto eseguo l'index
+		//se parts è vuoto eseguo l'index
 		if($count == 0) return array("object" => "index");
 		
 		self::$requestedObject = $parts[0];
@@ -94,7 +94,7 @@ class Page {
 					self::$currentObject = $p[0];
 					self::$currentID = $p->getPermalink();
 				} else {
-					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non √® stata trovata."));
+					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non è stata trovata."));
 				}
 				break;
 			case "Edit":
@@ -394,49 +394,49 @@ class Page {
 		switch (self::$requestedAction) {
 			case "Edit":
 				if(is_null($user) || $user === false)
-					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non √® stata trovata."));
+					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non è stata trovata."));
 				
 				require_once 'user/UserPage.php';
 				UserPage::showEditProfileForm($user);
 				break;
 			case "Follow":
 				if(is_null($user) || $user === false)
-					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non √® stata trovata."));
+					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non è stata trovata."));
 				
 				UserManager::followUser(self::$user, $user);
 				header("location:" . FileManager::appendToRootPath("User/" . $user->getID()));
 				break;
 			case "Feedback":
 				if(is_null($user) || $user === false)
-					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non √® stata trovata."));
+					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non è stata trovata."));
 				
 				require_once 'user/UserPage.php';
 				UserPage::showFeedbackForm($user);
 				break;
 			case "AddContact":
 				if(is_null($user) || $user === false)
-					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non √® stata trovata."));
+					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non è stata trovata."));
 				
 				require_once 'user/UserPage.php';
 				UserPage::showNewContactForm($user);
 				break;
 			case "StopFollow":
 				if(is_null($user) || $user === false)
-					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non √® stata trovata."));
+					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non è stata trovata."));
 				
 				UserManager::stopFollowingUser(self::$user, $user);
 				header("location:" . FileManager::appendToRootPath("User/" . $user->getID()));
 				break;
 			case "Verify":
 				if(is_null($user) || $user === false)
-					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non √® stata trovata."));
+					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non è stata trovata."));
 				
 				UserManager::verifyUser($user, $_GET["code"]);
 				header("location:" . FileManager::appendToRootPath("User/" . $user->getID()));
 				break;
 			case "Posts":
 				if(is_null($user) || $user === false)
-					header("location: " . FileManager::appendToRootPath("error?e=Oops la pagina non √® stata trovata."));
+					header("location: " . FileManager::appendToRootPath("error?e=Oops la pagina non è stata trovata."));
 				
 				require_once 'search/SearchManager.php';
 				$posts = SearchManager::searchBy("Post", array("ps_author" => $user->getID()), array("order" => -1, "by" => "ps_creationDate"));
@@ -453,7 +453,7 @@ class Page {
 				break;
 			case "Delete":
 				if(is_null($user) || $user === false)
-					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non √® stata trovata."));
+					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non è stata trovata."));
 				
 				UserManager::deleteUser($user);
 				header("location: " . FileManager::appendToRootPath(""));
@@ -464,7 +464,7 @@ class Page {
 				break;
 			case "Read":
 				if(is_null($user) || $user === false)
-					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non √® stata trovata."));
+					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non è stata trovata."));
 				
 				require_once 'user/UserPage.php';
 				UserPage::showProfile($user);
@@ -597,7 +597,7 @@ class Page {
 				else
 					$subject = UserManager::loadUserByNickname(self::$currentID, false);
 				if(is_null($user) || $user === false)
-					header("location: " . FileManager::appendToRootPath("/error.php?e=Oops la pagina non √® stata trovata."));
+					header("location: " . FileManager::appendToRootPath("/error.php?e=Oops la pagina non è stata trovata."));
 				UserManager::deleteFeedbackFromUser(self::$user, $subject);
 			default:
 				header("location: " . FileManager::appendToRootPath("User/" . $user->getID()));
@@ -609,7 +609,7 @@ class Page {
 		if(isset(self::$currentID) && self::$currentID != null)
 			self::$currentObject = MailManager::loadMail(self::$currentID);
 		switch (self::$requestedAction) {
-			case "Edit": //una mail non si pu√≤ modificare...
+			case "Edit": //una mail non si può modificare...
 				break;
 			case "Move":
 				require_once 'mail/MailPage.php';
@@ -673,7 +673,7 @@ class Page {
 					MailPage::showShortMail($mail);
 				break;
 			case "Unread":
-				//@deprecated non ce n'√® bisogno...
+				//@deprecated non ce n'è bisogno...
 				$inbox = MailManager::loadDirectoryFromName(MAILBOX, self::$user);
 				header("location: " . FileManager::appendToRootPath("Directory/" . $inbox->getID()));
 				break;
@@ -753,7 +753,7 @@ class Page {
 						$vote = true;
 					if($_GET["vote"] == "n" || $_GET["vote"] == "no")
 						$vote = false;
-					if(!isset($_GET["vote"])) header("location: " . FileManager::appendToRootPath("error.php?error=Oops, il voto da te inserito non √® valido."));
+					if(!isset($_GET["vote"])) header("location: " . FileManager::appendToRootPath("error.php?error=Oops, il voto da te inserito non è valido."));
 					PostManager::votePost(self::$user->getID(), self::$currentObject, $vote);
 				}
 				PostPage::showPost(self::$currentObject, self::$post_options);
@@ -836,7 +836,7 @@ class Page {
 			//echo "<p>" . serialize(is_numeric($parser)) . "</p>"; //DEBUG
 		}
 		//echo "parser creato: " . serialize($parser) . "<br />";  //DEBUG
-		$css = "default"; $title = self::titleForRequest($request);
+		$css = array(); $js = array(); $title = self::titleForRequest($request);
 		$cols_stack = array();
 		$write_h = false; $write_f = false; $ad = false;
 //		$i=0; //DEBUG
@@ -847,12 +847,21 @@ class Page {
 			$id = null; $class = null;
 			switch ($el["tag"]) {
 				case "TEMPLATE":
-					if($el["type"] != "open") continue;
-					$css = $el["attributes"]["STYLE"];
-					$c = array("default/default");
-					if($css != "default/default")
-						$c[] = $css;
-					writeHeader($title, $c, $c);
+					break;
+				case "HEAD":
+					if($el["type"] != "close") continue;
+					writeHeader($title, $css, $js);
+					break;
+				case "STYLESHEET":
+					if(isset($el["attributes"]["CSS"])) {
+						$c = $el["attributes"]["CSS"];
+						if($c != "default/default")
+							$css[] = $c;
+					}
+					break;
+				case "JS":
+					if(isset($el["attributes"]["SRC"]))
+						$js[] = $el["attributes"]["SRC"];
 					break;
 				case "HEADER":
 					$write_h = true;
@@ -1066,6 +1075,39 @@ class Page {
 	
 	private static function PCCommands() {
 		echo '<p>PCCommands</p>';
+	}
+	
+	private static function PCMapPost() {
+		$class = "mini_map";
+		$place = "";
+		if(isset(self::$currentObject) && !is_null(self::$currentObject))
+			$place = self::$currentObject->getPlace();
+		echo $place;
+		?>
+		<div id="map_post">
+		<?php 
+		require_once 'maps/geolocate.php';
+		MapManager::showPostMap($place, "place", $class);	
+		?>
+			<p><input type="button" value="Mappa questa notizia" onclick="javascript:savePosition(post_place, place_label)"/></p>
+		</div>
+		<?php
+	}
+	
+	private static function PCMap() {
+		$class = "mini_map";
+		$place = "";
+		if(isset(self::$currentObject) && !is_null(self::$currentObject))
+			$place = self::$currentObject->getPlace();
+		echo $place;
+		?>
+		<div id="map_post">
+		<?php 
+		require_once 'maps/geolocate.php';
+		MapManager::showPostMap($place, "place", $class);	
+		?>
+		</div>
+		<?php
 	}
 	
 	private static function redirect($where = "") {
