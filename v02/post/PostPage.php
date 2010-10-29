@@ -385,7 +385,7 @@ class PostPage {
 				<textarea name="content" id="post_content"><?php echo $post->getContent(); ?></textarea>
 				<!-- sostituisco textarea standard con ckeditor -->
 				<script type="text/javascript">
-					CKEDITOR.replace( 'post_content', { toolbar : 'edited'});
+					CKEDITOR.replace( 'post_content'/*, { toolbar : 'edited'}*/);
 				</script>
 			</p>
 			<p class="tags"><label>Tags:</label> 
@@ -396,8 +396,8 @@ class PostPage {
 					$cat = explode(", ", Filter::decodeFilteredText($post->getCategories()));
 				self::showCategoryTree($cat); ?>
 			</p>
-            <p><label id="place_label" class="<?php trim($post->getPlace()) == "" ? "hidden" : ""; ?>">Posizione:</label> 
-            	<input id="post_place" name="place" type="<?php trim($post->getPlace()) == "" ? "hidden" : "text"; ?>" value="<?php echo $post->getPlace(); ?>" /></p>
+            <p><label id="place_label" class="<?php echo trim($post->getPlace()) == "" ? "hidden" : ""; ?>">Posizione:</label> 
+            	<input id="post_place" name="place" type="<?php echo trim($post->getPlace()) == "" ? "hidden" : "text"; ?>" value="<?php echo $post->getPlace(); ?>" /></p>
             <input name="visible" type="hidden" value="true" />
             <input name="type" type="hidden" value="news" />
            	<p class="submit"><input type="submit" value="Pubblica" /> 

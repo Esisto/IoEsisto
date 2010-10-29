@@ -512,3 +512,6 @@ input.tags {
 	width:100%;
 	height: 200px;
 }
+.hidden {
+	display: none;
+}
