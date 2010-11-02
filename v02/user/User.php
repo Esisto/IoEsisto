@@ -474,7 +474,7 @@ class User{
 		if(isset($data[EMAIL]))
 			$this->setEMail($data[EMAIL]);
 		if(isset($data[PASSWORD]))
-			$this->setPassword($data[PASSWORD]);
+			$this->setPassword(sha1($data[PASSWORD]));
 		if(isset($data[NAME]))
 			$this->setName($data[NAME]);
 		if(isset($data[SURNAME]))

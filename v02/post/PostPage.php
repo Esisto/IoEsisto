@@ -385,7 +385,7 @@ class PostPage {
 				<textarea name="content" id="post_content"><?php echo $post->getContent(); ?></textarea>
 				<!-- sostituisco textarea standard con ckeditor -->
 				<script type="text/javascript">
-					CKEDITOR.replace( 'post_content'/*, { toolbar : 'edited'}*/);
+					CKEDITOR.replace( 'post_content', { toolbar : 'edited'});
 				</script>
 			</p>
 			<p class="tags"><label>Tags:</label> 
