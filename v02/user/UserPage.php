@@ -283,17 +283,22 @@ else
 		}
 	}
 
-
+	/**
+	 * @deprecated
+	 * Enter description here ...
+	 */
 	function addFollow() {
-		// TODO
 	}
 
 	function addFeedback() {
 		// TODO
 	}
 
+	/**
+	 * @deprecated
+	 * Enter description here ...
+	 */
 	function removeFeedback() {
-		// TODO
 	}
 
 }
