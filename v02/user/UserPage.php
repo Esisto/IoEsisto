@@ -101,10 +101,10 @@ class UserPage {
 				}
 			}
 	?>
-Nickname: <input type="text" name="nickname" value="<?php if(!$POST_data) echo $_POST["nickname"]; ?>" /><br>
+Nickname: <input type="text" name="nickname" value="<?php if($POST_data) echo $_POST["nickname"]; ?>" /><br>
 Password: <input type="password" name="password" value="" /><br>
 Check Password: <input type="password" name="check_password" value="" /><br>
-Email: <input type="text" name="email" value="<?php if(!$POST_data) echo $_POST["email"]; ?>" /><br>
+Email: <input type="text" name="email" value="<?php if($POST_data) echo $_POST["email"]; ?>" /><br>
 <!-- show reCAPTCHA --> <?php
 require_once('recaptchalib.php');
 $publickey = "6LcAhL0SAAAAANoKUZXVByUdlzJmJgKUtL0O2uFU";
@@ -149,15 +149,16 @@ echo recaptcha_get_html($publickey);
 				$data["nickname"] = $_POST["nickname"];
 			else
 				$error[] = "non c'è il nickname";
-			if(isset($_POST["current_password"]) && isset($_POST["check_password"]) && isset($_POST["new_password"])){
-				if ($_POST["current_password"] == $user->getPassword()){
-					if ($_POST["new_password"] == $_POST["check_password"])
-						$data["password"] = $_POST["new_password"];
-					else
-					$error[] = "le password non corrispondono";
-				}else{
-					$error[] = "password non corretta";
-				}
+			if(isset($_POST["current_password"])){
+				//if ($_POST["current_password"] == $user->getPassword()){
+					//if (isset($_POST["check_password"]) && isset($_POST["new_password"])){
+						//if ($_POST["new_password"] == $_POST["check_password"])
+						//else
+						//	$error[] = "le password non corrispondono";
+					//}
+				//}else{
+				//	$error[] = "password non corretta";
+				//}
 			} else {
 				$error[] = "password non presente";
 			}
@@ -191,8 +192,8 @@ echo recaptcha_get_html($publickey);
 				$data["job"] = $_POST["job"];
 			if(isset($_POST["birthplace"]))
 				$data["birthplace"] = $_POST["birthplace"];
-			if(isset($_POST["living_place"]))
-				$data["living_place"] = $_POST["living_place"];
+			if(isset($_POST["livingPlace"]))
+				$data["livingPlace"] = $_POST["livingPlace"];
 			if(isset($_POST["hobbies"]))
 				$data["hobbies"] = $_POST["hobbies"];
 
@@ -220,10 +221,10 @@ echo recaptcha_get_html($publickey);
 Avatar: <input type="text" name="avatar" value="<?php
 			if(!$POST_data) echo Filter::decodeFilteredText($user->getAvatar());
 			else echo $_POST["avatar"]; ?>" /> <br>
-Nickname: <input type="text" name="nickname" value="<?php
+Nickname*: <input type="text" name="nickname" value="<?php
 			if (!$POST_data) echo Filter::decodeFilteredText($user->getNickname());
 			else echo $_POST["nickname"]; ?>" /> <br>
-Current Password: <input type="password" name="current_password" value="" /> <br>
+Current Password*: <input type="password" name="current_password" value="" /> <br>
 New Password: <input type="password" name="new_password" value="" /> <br>
 Check Password: <input type="password" name="check_password" value="" />
 <br>
@@ -260,15 +261,19 @@ Birthday: <?php
 <input type="text" name="birthday_month" value="<?php echo $birthday_month ?>" />
 <input type="text" name="birthday_day" value="<?php echo $birthday_day ?>" />
 <br>
-Birthplace: <input type="text" name="birthpalce" value="<?php echo Filter::decodeFilteredText($user->getBirthplace()); ?>" />
+Birthplace: <input type="text" name="birthplace" value="<?php
+		if (!$POST_data) echo Filter::decodeFilteredText($user->getBirthplace());
+		else echo $_POST["birthplace"]; ?>" />
 <br>
 <!-- TODO: geolocate -->
-Living Place: <input type="text" name="living_palce" value="<?php echo Filter::decodeFilteredText($user->getLivingPlace()); ?>" />
+Living Place: <input type="text" name="livingPlace" value="<?php
+		if (!$POST_data) echo Filter::decodeFilteredText($user->getLivingPlace());
+		else echo $_POST["livingPlace"]; ?>" /> <br>
 <br>
 <!-- TODO: geolocate-->
 <?php
 if (!$POST_data) 
-	$user->getHobbies();
+	$hobbies = $user->getHobbies();
 else
 	$hobbies = $_POST["hobbies"];
 ?> Hobbies: <textarea cols="50" rows="4" name="hobbies"><?php echo $hobbies ?></textarea><br>
