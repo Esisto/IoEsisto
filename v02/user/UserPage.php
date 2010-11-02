@@ -118,7 +118,7 @@ echo recaptcha_get_html($publickey);
 		$my_profile = $user->getID() == Session::getUser()->getID();
 		?>
 <div class="userProfile" id="<?php echo $user->getID(); ?>">
-<div class="user_avatar"><?php echo Filter::decodeFilteredText($user->getAvatar()); ?></div>
+<div class="user_avatar">Avatar: <?php echo Filter::decodeFilteredText($user->getAvatar()); ?></div>
 <div class="user_nickname">Nickname: <?php echo Filter::decodeFilteredText($user->getNickname()); ?></div>
 <div class="user_name">Name: <?php echo Filter::decodeFilteredText($user->getName()); ?></div>
 <div class="user_surname">Surname: <?php echo Filter::decodeFilteredText($user->getSurname()); ?></div>
@@ -150,15 +150,16 @@ echo recaptcha_get_html($publickey);
 			else
 				$error[] = "non c'è il nickname";
 			if(isset($_POST["current_password"])){
-				//if ($_POST["current_password"] == $user->getPassword()){
-					//if (isset($_POST["check_password"]) && isset($_POST["new_password"])){
-						//if ($_POST["new_password"] == $_POST["check_password"])
-						//else
-						//	$error[] = "le password non corrispondono";
-					//}
-				//}else{
-				//	$error[] = "password non corretta";
-				//}
+				if ($user->getPassword() == sha1($_POST["current_password"])){
+					if (isset($_POST["check_password"]) && isset($_POST["new_password"])){
+						if ($_POST["new_password"] == $_POST["check_password"])
+							$data["password"] = sha1($_POST["new_password"]);
+						else
+							$error[] = "le password non corrispondono";
+					}
+				}else{
+					$error[] = "password non corretta";
+				}
 			} else {
 				$error[] = "password non presente";
 			}
@@ -181,10 +182,10 @@ echo recaptcha_get_html($publickey);
 			if(isset($_POST["surname"]))
 				$data["surname"] = $_POST["surname"];
 			if(isset($_POST["gender"])){
-				if ($_POST["gender"] == "Male")
-				$data["gender"] = $_POST["m"];
+				if ($_POST["gender"] == "male")
+					$data["gender"] = "m";
 				else
-				$data["gender"] = $_POST["f"];
+					$data["gender"] = "f";
 			}
 			if(isset($_POST["nickname"]))
 				$data["nickname"] = $_POST["nickname"];
@@ -237,11 +238,11 @@ Surname: <input type="text" name="surname" value="<?php
 email: <input type="text" name="email" value="<?php
 			if (!$POST_data) echo Filter::decodeFilteredText($user->getEMail());
 			else echo $_POST["email"]; ?>" /> <br>
-Gender: <label for="Male">Male</label><input type="radio" name="gender" value="Male" <?php
+Gender: <label for="male">Male</label><input type="radio" name="gender" value="male" <?php
 			if ($user->getGender() == "m")
 			echo 'checked="checked"'; ?> />
-		<label for="Female">Female</label>
-		<input type="radio" name="gender" value="Female" <?php
+		<label for="female">Female</label>
+		<input type="radio" name="gender" value="female" <?php
 			if ($user->getGender() == "f")
 			echo 'checked="checked"'; ?> /><br>
 Job: <input type="text" name="job" value="<?php
