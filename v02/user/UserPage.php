@@ -153,7 +153,7 @@ echo recaptcha_get_html($publickey);
 				if ($user->getPassword() == sha1($_POST["current_password"])){
 					if (isset($_POST["check_password"]) && isset($_POST["new_password"])){
 						if ($_POST["new_password"] == $_POST["check_password"])
-							$data["password"] = sha1($_POST["new_password"]);
+							$data["password"] = $_POST["new_password"];
 						else
 							$error[] = "le password non corrispondono";
 					}
