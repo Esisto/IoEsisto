@@ -153,7 +153,7 @@ echo recaptcha_get_html($publickey);
 				if ($user->getPassword() == sha1($_POST["current_password"])){
 					if (isset($_POST["check_password"]) && isset($_POST["new_password"])){
 						if ($_POST["new_password"] == $_POST["check_password"])
-							$data["password"] = $_POST["new_password"];
+							$data["password"] = ($_POST["new_password"]);
 						else
 							$error[] = "le password non corrispondono";
 					}
@@ -248,7 +248,7 @@ Gender: <label for="male">Male</label><input type="radio" name="gender" value="m
 Job: <input type="text" name="job" value="<?php
 			if (!$POST_data) echo Filter::decodeFilteredText($user->getJob());
 			else echo $_POST["job"]; ?>" /> <br>
-Birthday: <?php
+<p>Birthday: <br><?php
 			if ($POST_data == false) {
 				$birthday_year = date('Y', $user->getBirthday());
 				$birthday_month = date('m', $user->getBirthday());
@@ -258,10 +258,9 @@ Birthday: <?php
 				$birthday_month = $_POST["birthday_month"];
 				$birthday_day = $_POST["birthday_day"];
 			}?>
-<input type="text" name="birthday_year" value="<?php echo $birthday_year ?>" />
-<input type="text" name="birthday_month" value="<?php echo $birthday_month ?>" />
-<input type="text" name="birthday_day" value="<?php echo $birthday_day ?>" />
-<br>
+Year: <input type="text" name="birthday_year" value="<?php echo $birthday_year ?>" /><br>
+Month: <input type="text" name="birthday_month" value="<?php echo $birthday_month ?>" /><br>
+Day: <input type="text" name="birthday_day" value="<?php echo $birthday_day ?>" /><br></p>
 Birthplace: <input type="text" name="birthplace" value="<?php
 		if (!$POST_data) echo Filter::decodeFilteredText($user->getBirthplace());
 		else echo $_POST["birthplace"]; ?>" />
@@ -277,7 +276,7 @@ if (!$POST_data)
 	$hobbies = $user->getHobbies();
 else
 	$hobbies = $_POST["hobbies"];
-?> Hobbies: <textarea cols="50" rows="4" name="hobbies"><?php echo $hobbies ?></textarea><br>
+?> Hobbies: <br><textarea cols="50" rows="4" name="hobbies"><?php echo $hobbies ?></textarea><br>
 <input type="submit" value="Edit"></div>
 </form>
 <?php
