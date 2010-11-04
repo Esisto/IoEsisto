@@ -404,5 +404,15 @@ class Filter {
 		}
 		return $s;
 	}
+	
+	static function hash($text) {
+		return sha1($text);	
+	}
+	
+	static function encodePassword($password) {
+		return self::hash($text); //si può decidere di cambiare questo encoding
+	}
+	
+	
 }
 ?>
