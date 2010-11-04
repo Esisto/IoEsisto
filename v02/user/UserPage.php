@@ -201,9 +201,10 @@ echo recaptcha_get_html($publickey);
 			/* show error message or apply changes and show the profile page updated*/
 			if(count($error) > 0) {
 				self::showEditProfileForm($user, $error);
+				return;
 			} else {
 				$dataFiltered= Filter::filterArray($data);
-				UserManager::editUser($user, $dataFiltered);
+				UserManager::editUser($user, dataFiltered$);
 				self::showProfile($user);
 			}
 		} else {
