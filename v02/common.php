@@ -410,9 +410,7 @@ class Filter {
 	}
 	
 	static function encodePassword($password) {
-		return self::hash($text); //si può decidere di cambiare questo encoding
+		return self::hash($password); //si può decidere di cambiare questo encoding
 	}
-	
-	
 }
 ?>
