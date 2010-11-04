@@ -204,7 +204,7 @@ echo recaptcha_get_html($publickey);
 				return;
 			} else {
 				$dataFiltered= Filter::filterArray($data);
-				UserManager::editUser($user, dataFiltered$);
+				UserManager::editUser($user, $dataFiltered);
 				self::showProfile($user);
 			}
 		} else {
