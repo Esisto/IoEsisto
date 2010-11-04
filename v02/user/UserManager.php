@@ -63,7 +63,8 @@ class UserManager {
            	$u = self::loadUserByNickname($data["username"]);
            	// assumo che la password mi sia arrivata in chiaro attraverso una connessione sicura
             //echo "<p>" . serialize($u !== false) . " " . serialize($u->getPassword()) . " " . serialize(sha1($data["password"])) . "</p>"; //DEBUG
-	        if($u !== false && trim($u->getPassword()) == sha1($data["password"]))
+                if($u !== false && $u->getPassword() == (sha1(sha1($data["password"]))))
+                
             	$logged = true;
             if($u === false) {
 	       		//check mail and password

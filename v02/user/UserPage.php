@@ -150,10 +150,10 @@ echo recaptcha_get_html($publickey);
 			else
 				$error[] = "non c'è il nickname";
 			if(isset($_POST["current_password"])){
-				if ($user->getPassword() == sha1($_POST["current_password"])){
+				if ($user->getPassword() == sha1(sha1($_POST["current_password"]))){
 					if (isset($_POST["check_password"]) && isset($_POST["new_password"])){
 						if ($_POST["new_password"] == $_POST["check_password"])
-							$data["password"] = ($_POST["new_password"]);
+							$data["password"] = $_POST["new_password"];
 						else
 							$error[] = "le password non corrispondono";
 					}
