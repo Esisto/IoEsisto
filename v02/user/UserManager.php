@@ -10,6 +10,7 @@ class UserManager {
 	const UM_NoSessionError = "UM_NoSession";
 	
     static function createUser($data, $error = null) {
+    	$data["password"] = Filter::encodePassword($data["passowrd"]);
         $data = Filter::filterArray($data);
         $user = new User($data);
         $u = $user->save();
@@ -45,7 +46,7 @@ class UserManager {
     }
     
     private static function generateValidationCode($user) {
-    	return sha1($user->getMail() . $user->getPassword());
+    	return Filter::hash($user->getMail() . $user->getPassword());
     }
     
     static function verifyUser($user, $code, $error = null) {
@@ -62,15 +63,14 @@ class UserManager {
             //check nick and password
            	$u = self::loadUserByNickname($data["username"]);
            	// assumo che la password mi sia arrivata in chiaro attraverso una connessione sicura
-            //echo "<p>" . serialize($u !== false) . " " . serialize($u->getPassword()) . " " . serialize(sha1($data["password"])) . "</p>"; //DEBUG
-                if($u !== false && $u->getPassword() == (sha1(sha1($data["password"]))))
+                if($u !== false && $u->getPassword() == Filter::encodePassword($data["password"]))
                 
             	$logged = true;
             if($u === false) {
 	       		//check mail and password
 	            $u = self::loadUserByMail($data["username"]);
 	            // assumo che la password mi sia arrivata in chiaro attraverso una connessione sicura
-            	if($u !== false && $u->getPassword() == sha1($data["password"]))
+            	if($u !== false && $u->getPassword() == Filter::encodePassword($data["password"]))
 	            	header("location: " . FileManager::appendToRootPath());
             }
             if($u !== false) {
@@ -80,7 +80,6 @@ class UserManager {
 			    	else
 						return self::UM_NoSessionError; 
 	            }
-	            //echo "<p>password: " . $u->getPassword() . " tu hai inserito: " . sha1($data["password"]) . "</p>"; //DEBUG
 	            return self::UM_NoPasswordError;
             }
             return self::UM_NoUserError;
@@ -94,6 +93,7 @@ class UserManager {
     
     static function editUser($user, $data, $error = null) {
         require_once("common.php");
+        $data["password"] = Filter::encodePassword($data["password"]);
         $data = Filter::filterArray($data);
         return $user->edit($data);
     }
