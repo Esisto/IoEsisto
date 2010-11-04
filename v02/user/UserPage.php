@@ -18,24 +18,24 @@ class UserPage {
 				$error[] = "password non presente";
 
 			if(count($error) > 0) {
-				self::showLoginForm($error);
+				$s = FileManager::appendToRootPath("error?e=" . $error[0]);
 			} else {
 				$dataFiltered = Filter::filterArray($data);
 				if(($logged = UserManager::login($data)) === true) {
-					if(!headers_sent())
-						header("location: " . FileManager::appendToRootPath(""));
-					else {
-						?>
-						<script type="text/javascript">
-							location.href = "<?php echo FileManager::appendToRootPath(""); ?>";
-						</script>
-						<?php
-					}
+					$s = FileManager::appendToRootPath("");
 				} else {
 					require_once 'errors/errors.php';
-					$error[] = $errors[$logged];
-				} 
-				echo $logged;
+					$s = FileManager::appendToRootPath("error?e=" . $logged /*$errors[$logged]*/);
+				}
+			}
+			if(!headers_sent())
+				header("location: " . $s);
+			else {
+				?>
+				<script type="text/javascript">
+					location.href = "<?php echo $s; ?>";
+				</script>
+				<?php
 			}
 		} ?>
 <form name="login" action="<?php echo FileManager::appendToRootPath("Login"); ?>" method="post">
