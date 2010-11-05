@@ -35,12 +35,6 @@ class PostPage {
 			<div class="post_title small_title"><a href="<?php echo FileManager::appendToRootPath($post->getPermalink()); ?>"><?php echo Filter::decodeFilteredText($post->getTitle()); ?></a></div>
 		</div>
 		<div class="post_content clear">
-			<?php
-				if(!is_null($post->getPlace())) {
-					require_once("maps/geolocate.php");
-					MapManager::printInfoInElement($post->getPlace(), "post_place_" . $post->getID());
-				}
-			?>
 			<span id="post_place_<?php echo $post->getID(); ?>" class="post_place"></span><?php
 			if(is_array($post->getContent())) {
 				$first = true;
@@ -51,6 +45,10 @@ class PostPage {
 				}
 			} else
 				echo substr(Filter::decodeFilteredText($post->getContent()), 0, 200) . (strlen(Filter::decodeFilteredText($post->getContent())) < 200 ? "" : "...");
+			if(!is_null($post->getPlace())) {
+				require_once("maps/geolocate.php");
+				MapManager::printInfoInElement($post->getPlace(), "post_place_" . $post->getID());
+			}
 			?><div class="post_authorname"><a href="<?php echo FileManager::appendToRootPath("User/" . $post->getAuthorName()); ?>"><?php echo $post->getAuthorName(); ?></a></div>	
 		</div>
 	</div>
@@ -92,12 +90,6 @@ class PostPage {
 			<div class="post_subtitle"><?php echo Filter::decodeFilteredText($post->getSubtitle()); ?></div>
 		</div>
 		<div class="post_content clear">
-			<?php
-				if(!is_null($post->getPlace())) {
-					require_once("maps/geolocate.php");
-					MapManager::printInfoInElement($post->getPlace(), "post_place_" . $post->getID());
-				}
-			?>
 			<span id="post_place_<?php echo $post->getID(); ?>" class="post_place"></span><?php
 			if(is_array($post->getContent())) {
 				$first = true;
@@ -108,12 +100,16 @@ class PostPage {
 				}
 			} else
 				echo Filter::decodeFilteredText($post->getContent());
+			if(!is_null($post->getPlace())) {
+				require_once("maps/geolocate.php");
+				MapManager::printInfoInElement($post->getPlace(), "post_place_" . $post->getID());
+			}
 			?>
 		<div class="post_authorname"><a href="<?php echo FileManager::appendToRootPath("User/" . $post->getAuthorName()); ?>"><?php echo $post->getAuthorName(); ?></a></div>	
 		</div>
 		<div class="post_footer clear">
 			<div class="post_vote">
-				<div class="vote_image"><a href="<?php echo $post->getFullPermalink() . "/Vote?vote=yes"; ?>">sì</a></div>
+				<div class="vote_image"><a href="<?php echo $post->getFullPermalink() . "/Vote?vote=yes"; ?>">sÃ¬</a></div>
 				<div class="vote_image"><a href="<?php echo $post->getFullPermalink() . "/Vote?vote=no"; ?>">no</a></div>
 				Voto: <?php echo $post->getAvgVote(); ?>
 			</div>
@@ -240,7 +236,7 @@ class PostPage {
 	}
 	
 	static function showCommentForm($user, $post, $error = null) {
-		if ($user == Session::getUser($user)){ //controllo se l'untente è loggato
+		if ($user == Session::getUser($user)){ //controllo se l'untente Ã¨ loggato
 			if($error==null && count($_POST) > 0){  
 				if(isset($_POST["comment"]))
 					$comment = $_POST["comment"];
@@ -275,7 +271,6 @@ class PostPage {
 	 * @deprecated
 	 */
 	static function showVoteForm() {
-		//TODO
 		?>
         <form name="" action="" method="get"> <!-- TODO -->
             <input type="submit" value="">
@@ -396,8 +391,8 @@ class PostPage {
 					$cat = explode(", ", Filter::decodeFilteredText($post->getCategories()));
 				self::showCategoryTree($cat); ?>
 			</p>
-            <p><label id="place_label" class="<?php echo trim($post->getPlace()) == "" ? "hidden" : ""; ?>">Posizione:</label> 
-            	<input id="post_place" name="place" type="<?php echo trim($post->getPlace()) == "" ? "hidden" : "text"; ?>" value="<?php echo $post->getPlace(); ?>" /></p>
+            <p class="<?php echo trim($post->getPlace()) == "" ? "hidden" : ""; ?>"><label id="place_label">Posizione: <?php echo $post->getPlace(); ?></label></p>
+            	<input id="post_place" name="place" type="hidden" value="<?php echo $post->getPlace(); ?>" />
             <input name="visible" type="hidden" value="true" />
             <input name="type" type="hidden" value="news" />
            	<p class="submit"><input type="submit" value="Pubblica" /> 
