@@ -55,7 +55,7 @@ class UserPage {
 		if($error==null && count($_POST) > 0) {
 			$data=array();
 			$error=array();
-			$privatekey = "6LcAhL0SAAAAAE5Tdd4ocLXOexEc4Z2gCS5ePxM8";
+			$privatekey = CAPTCHA_PRIVATE;
 
 			if(isset($_POST["nickname"]))
 				$data["nickname"] = $_POST["nickname"];
@@ -107,7 +107,7 @@ Check Password: <input type="password" name="check_password" value="" /><br>
 Email: <input type="text" name="email" value="<?php if($POST_data) echo $_POST["email"]; ?>" /><br>
 <!-- show reCAPTCHA --> <?php
 require_once('recaptchalib.php');
-$publickey = "6LcAhL0SAAAAANoKUZXVByUdlzJmJgKUtL0O2uFU";
+$publickey = CAPTCHA_PUBLIC;
 echo recaptcha_get_html($publickey);
 ?> <input type="submit" value="Sign In"></form>
 <?php
