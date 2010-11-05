@@ -4,6 +4,9 @@
 <template name="post">
 	<head>
 		<stylesheet css="default/default" />
+		<js src="http://maps.google.com/maps/api/js?sensor=false" />
+		<js src="http://code.google.com/apis/gears/gears_init.js" />
+		<js src="default/map_utils.js" />
 	</head>
 	<header><ad/></header>
 	<content cols="1">
