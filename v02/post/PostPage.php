@@ -109,7 +109,7 @@ class PostPage {
 		</div>
 		<div class="post_footer clear">
 			<div class="post_vote">
-				<div class="vote_image"><a href="<?php echo $post->getFullPermalink() . "/Vote?vote=yes"; ?>">sÃ¬</a></div>
+				<div class="vote_image"><a href="<?php echo $post->getFullPermalink() . "/Vote?vote=yes"; ?>">s&igrave;</a></div>
 				<div class="vote_image"><a href="<?php echo $post->getFullPermalink() . "/Vote?vote=no"; ?>">no</a></div>
 				Voto: <?php echo $post->getAvgVote(); ?>
 			</div>
@@ -236,7 +236,7 @@ class PostPage {
 	}
 	
 	static function showCommentForm($user, $post, $error = null) {
-		if ($user == Session::getUser($user)){ //controllo se l'untente Ã¨ loggato
+		if ($user == Session::getUser($user)){ //controllo se l'untente è loggato
 			if($error==null && count($_POST) > 0){  
 				if(isset($_POST["comment"]))
 					$comment = $_POST["comment"];

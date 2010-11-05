@@ -157,9 +157,4 @@ class UserManager {
         return User::loadByNickname($nickname, $loadDependencies);
     }
 }
-
-
-
-
-
 ?>
