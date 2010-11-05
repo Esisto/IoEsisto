@@ -32,26 +32,8 @@ class MapManager {
 	static function printInfoInElement($place, $elementid, $types = null) {
 		$latlng = explode(", ", $place);
 		?>
-		<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
-		<script type="text/javascript" src="http://code.google.com/apis/gears/gears_init.js"></script>
 		<script type="text/javascript">
-			var geocoder = new google.maps.Geocoder();
-			var latlng = new google.maps.LatLng(<?php echo $latlng[0]; ?>, <?php echo $latlng[1]; ?>);
-			geocoder.geocode({'latLng': latlng}, function(results, status) {
-				if(status == google.maps.GeocoderStatus.OK) {
-					var i = 0;
-					while(results[i]) {
-						//document.getElementById("<?php echo $elementid; ?>").innerHTML = results[2].types;
-						if(results[i].types == "locality,political") {
-							document.getElementById("<?php echo $elementid; ?>").innerHTML = results[i].formatted_address + " - ";
-							break;
-						}
-						i++;
-					}
-				} else {
-					alert("Geocoder failed due to: " + status);
-				}
-			});
+			printNameOfPlace(<?php echo $latlng[0]; ?>, <?php echo $latlng[1]; ?>, <?php echo $elementid; ?>);
 		</script>
 		<?php
 	}
@@ -89,9 +71,8 @@ class MapManager {
 				ll = map.getCenter();
 
 				input_element.value = ll.lat() + ", " + ll.lng();
-				input_element.type = "text";
-				label_element.innerHTML = "Posizione salvata:";
-				label_element.setAttribute("class", "");
+				label_element.innerHTML = "Posizione salvata: " + input_element.value;
+				label_element.parentElement.setAttribute("class", "");
 			}
 			function codeAddress() {
 			    var address = document.getElementById("address").value;
