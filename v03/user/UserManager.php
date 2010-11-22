@@ -156,5 +156,9 @@ class UserManager {
     static function loadUserByNickname($nickname, $loadDependencies = true, $error = null) {
         return User::loadByNickname($nickname, $loadDependencies);
     }
+    
+    static function userExists($user) {
+    	return User::exists($user);
+    }
 }
 ?>

@@ -285,15 +285,15 @@ class LogManager {
 			if($type == "Post") {
 				require_once 'post/PostManager.php';
 				return 0;
-				$exists = PostManager::postExists($id); //TODO
+				$exists = PostManager::postExists($id);
 			} else if ($type == "User") {
 				require_once 'user/UserManager.php';
 				return 0;
-				$exists = UserManager::userExists($id); //TODO
+				$exists = UserManager::userExists($id);
 			} elseif ($type == "Partner") {
 				//TODO: implementa Partner
-//				require_once 'post/PostManager.php';
-//				$exists = PostManager::postExists($id);
+//				require_once 'post/PartnerManager.php';
+//				$exists = PartnerManager::partnerExists($id);
 			}
 			if($exists) {
 				$wheres = array(new WhereConstraint($table->getColumn("alog_type"), Operator::EQUAL, $type),
@@ -323,7 +323,6 @@ class Filter {
 		return htmlspecialchars(htmlentities(self::clean($text)));
 	}
 	
-	// TODO controlla il funzionamento
 	static function textToHyperlink($text) {
 		return preg_replace("#http://([A-z0-9./-]+)#", '<a href="$1">$0</a>', $text);
 	}

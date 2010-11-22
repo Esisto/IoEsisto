@@ -128,32 +128,6 @@ class MailDirectory {
 		return false;
 	}
 	
-	/**
-	 * @deprecated
-	 */
-	function getMailReadStatus($mail) {
-		require_once("query.php");
-		$db = new DBManager();
-		if(!$db->connect_errno()) {
-			define_tables(); defineMailInDirColumns();
-			$table = Query::getDBSchema()->getTable(TABLE_MAIL_IN_DIRECTORY);
-			$db->execute($s = Query::generateSelectStm(array($table),
-												   array(),
-												   array(new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_DIRECTORY), Operator::EQUAL, $this->getID()),
-														 new WhereConstraint($table->getColumn(MAIL_IN_DIRECTORY_MAIL), Operator::EQUAL, $mail->getID())),
-												   array()),
-						$table->getName(), $this);
-				
-			//echo "<p>" . $s . "</p>"; //DEBUG
-			if($db->num_rows() == 1) {
-				$row = $db->fetch_result();
-				//echo "<p>" . $row[MAIL_IN_DIRECTORY_READ] . "</p>"; //DEBUG
-				return $row[MAIL_IN_DIRECTORY_READ] > 0;
-			} else $db->display_error("MailDirectory::getMailReadStatus()");
-		} else $db->display_connect_error("MailDirectory::getMailReadStatus()");
-		return false;		
-	}
-	
 	function save() {
 		require_once("query.php");
 		$db = new DBManager();
@@ -441,26 +415,6 @@ class Mail {
 			} else $db->display_error("Mail::save()");
 		} else $db->display_connect_error("Mail::save()");
 		return false;
-	}
-	
-	/**
-	 * @deprecated
-	 */
-	function delete() {
-		require_once("query.php");
-		$db = new DBManager();
-		if(!$db->connect_errno()) {
-			define_tables(); defineMailColumns();
-			$table = Query::getDBSchema()->getTable(TABLE_MAIL);
-			$rs = $db->execute($s = Query::generateDeleteStm($table,
-														 array(new WhereConstraint($table->getColumn(MAIL_ID),Operator::EQUAL,$this->getID()))),
-							  $table->getName(), $this);
-			//echo "<br />" . $db->affected_rows() . $s; //DEBUG
-			if($db->affected_rows() == 1) {
-				return $this;
-			} else $db->display_error("Mail::delete()");
-		} else $db->display_connect_error("Mail::delete()");
-		return false;		
 	}
 	
 	static function loadFromDatabase($id) {

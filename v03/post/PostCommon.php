@@ -293,10 +293,9 @@ class Comment {
 		return $this;
 	}
 	
-	/**
-	 * @deprecated
-	 */
-	function loadReports() {}
+	function loadReports() {
+		//TODO da implementare
+	}
 	
 	/**
 	 * Salva il commento nel database.

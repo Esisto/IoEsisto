@@ -19,33 +19,17 @@ class TemplateManager {
 				return "files/default/profile.xml";
 			case "Mail":
 			case "Directory":
-				//FIXME return "files/default/mail.xml";
+				return "files/default/mail.xml";
 			case "Contest":
-				//FIXME return "files/default/contest.xml";
+				return "files/default/contest.xml";
 			case "Partner":
-				//FIXME return "files/default/partner.xml";
-			case "Contest":
-				//FIXME return "files/default/contest.xml";
+				return "files/default/partner.xml";
 			case "Resource":
-				//FIXME return "files/default/resource.xml";
+				return "files/default/resource.xml";
 			case "Preferences":
-				//FIXME return "files/default/preferences.xml";
+				return "files/default/preferences.xml";
 		}
 		return self::getDefaultTemplate();
-	}
-	
-	/**
-	 * @deprecated serve solo come test per il parsing, usare TemplateParser.
-	 * @param unknown_type $filename
-	 */
-	static function parseTemplateFile($filename) {
-		$parser = xml_parser_create();
-		if(!file_exists($filename))
-			echo self::$FILE_NOT_EXISTS;
-		
-		if(xml_parse_into_struct($parser, file_get_contents($filename), $template))
-			echo var_export($template);
-		else echo self::$PARSE_ERROR;
 	}
 }
 
@@ -55,17 +39,6 @@ class TemplateParser {
 	static $PARSE_ERROR = 2;
 	
 	var $parser;
-	
-	/**
-	 * @deprecated
-	 */
-	static function createParser($filename) {
-		$tp = new TemplateParser();
-		$tp->parser = xml_parser_create();
-		$tp->setFile($filename);
-		//var_dump($tp); //DEBUG
-		return $tp;
-	}
 	
 	function setFile($filename) {
 		$this->filename = $filename;

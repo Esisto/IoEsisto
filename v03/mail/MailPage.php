@@ -86,15 +86,15 @@ class MailPage {
 	}
 	
 	static function showMail($mail) {
-		//TODO
+		//TODO da implementare
 	}
 
 	static function showShortMail($mail) {
-		//TODO
+		//TODO da implementare
 	}
 	
 	static function showMoveToForm($mail) {
-		//TODO
+		//TODO da implementare
 	}
 	
 	/**

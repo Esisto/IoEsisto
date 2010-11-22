@@ -90,7 +90,6 @@ function writePlainText($text) {
 }
 
 function writeAD($class) {
-	//return; //TODO test and remove it!
 ?>
 <div class="ad ad_<?php echo $class; ?>"><?php
 	//$p = PartnerManager::searchPartnerForClass($class); ?>

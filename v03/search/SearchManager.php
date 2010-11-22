@@ -116,11 +116,11 @@ class SearchManager {
 		return $posts;
 	}
 	
-	private static function searchUsersBy($keys, $options, $echo_query = false /*DEBUG*/) {} //TODO
-	private static function searchMailsBy($keys, $options, $echo_query = false /*DEBUG*/) {} //TODO
-	private static function searchContestsBy($keys, $options, $echo_query = false /*DEBUG*/) {} //TODO
-	private static function searchCollectionsBy($keys, $options, $echo_query = false /*DEBUG*/) {} //TODO
-	private static function searchDirectoriesBy($keys, $options, $echo_query = false /*DEBUG*/) {} //TODO
+	private static function searchUsersBy($keys, $options, $echo_query = false /*DEBUG*/) {} //TODO da implementare
+	private static function searchMailsBy($keys, $options, $echo_query = false /*DEBUG*/) {} //TODO da implementare
+	private static function searchContestsBy($keys, $options, $echo_query = false /*DEBUG*/) {} //TODO da implementare
+	private static function searchCollectionsBy($keys, $options, $echo_query = false /*DEBUG*/) {} //TODO da implementare
+	private static function searchDirectoriesBy($keys, $options, $echo_query = false /*DEBUG*/) {} //TODO da implementare
 }
 
 

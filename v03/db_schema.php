@@ -132,14 +132,6 @@ class DBSchema {
 		}
 	}
 	
-	/**
-	 * @deprecated
-	 * da usare solo per debug, togliere in versione finale.
-	 */
-	function __destruct() {
-		$this->save();
-	}
-	
 	function save() {
 		$fp = fopen("db_schema.dbs", "w+");
 		fwrite($fp, serialize($this->tables));

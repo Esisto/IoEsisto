@@ -284,22 +284,7 @@ else
 		}
 	}
 
-	/**
-	 * @deprecated
-	 * Enter description here ...
-	 */
-	function addFollow() {
-	}
-
 	function addFeedback() {
-		// TODO
+		// TODO da implementare
 	}
-
-	/**
-	 * @deprecated
-	 * Enter description here ...
-	 */
-	function removeFeedback() {
-	}
-
 }

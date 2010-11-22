@@ -306,7 +306,7 @@ class Page {
 				}
 				break;
 			case "Partner":
-				//TODO
+				//TODO da implementare
 				break;
 			default:
 				self::$requestedAction = "";
@@ -672,11 +672,6 @@ class Page {
 				foreach($mails->getMails() as $mail)
 					MailPage::showShortMail($mail);
 				break;
-			case "Unread":
-				//@deprecated non ce n'è bisogno...
-				$inbox = MailManager::loadDirectoryFromName(MAILBOX, self::$user);
-				header("location: " . FileManager::appendToRootPath("Directory/" . $inbox->getID()));
-				break;
 			case "New":
 				require_once 'mail/MailPage.php';
 				MailPage::showNewDirectoryForm();
@@ -791,7 +786,7 @@ class Page {
 		}
 	}
 	
-	private static function canUserDo($object, $objectType, $action) {
+	public static function canUserDo($object, $objectType, $action) {
 		return true; //TODO deve leggere le autorizzazioni per il tipo di utente.
 	}
 	
@@ -1041,7 +1036,7 @@ class Page {
 		if(isset(self::$currentObject) && !is_null(self::$currentObject) && self::$currentObject !== false) {
 			require_once 'user/UserManager.php';
 			$user = UserManager::loadUser(self::$currentObject->getAuthor(), false);
-			if(true) { //TODO se l'autore vuole
+			if(true) { //FIXME se l'autore vuole
 				echo "<p>L'autore</p>";
 				require_once 'user/UserPage.php';
 				UserPage::showProfile($user);
@@ -1053,7 +1048,7 @@ class Page {
 		if(isset(self::$currentObject) && !is_null(self::$currentObject) && self::$currentObject !== false) {
 			require_once 'user/UserManager.php';
 			$user = UserManager::loadUser(self::$currentObject->getAuthor(), false);
-			if(true) { //TODO se l'autore vuole
+			if(true) { //FIXME se l'autore vuole
 				echo "<p>Dello stesso autore</p>";
 				require_once 'search/SearchManager.php';
 				$posts = SearchManager::searchBy("Post", array("author" => $user->getID(), "no_id" => self::$currentObject->getID(), "loadComments" => false), array("order" => -1, "by" => "ps_creationDate"));

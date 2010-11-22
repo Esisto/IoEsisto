@@ -9,7 +9,7 @@ class AdminCategoryManager extends CategoryManager {
 	static $CHILDRENUPDATE = "ChildrenUpdate";
 	
 	static function editCategory($categoryid, $newname, $parent) {
-		//TODO
+		//TODO da implementare
 	}
 	
 	static function renameCategory($categoryid, $newname) {
@@ -21,7 +21,7 @@ class AdminCategoryManager extends CategoryManager {
 	}
 	
 	static function createCategory($name, $parent) {
-		//TODO
+		//TODO da implementare
 	}
 	
 	/**
@@ -35,13 +35,13 @@ class AdminCategoryManager extends CategoryManager {
 	 * se vuoto, i post che rimarrebbero senza categoria e le sottocategorie vengono spostati in default_category.
 	 */
 	static function deleteCategory($categoryid, $options = null) {
-		//TODO
+		//TODO da implementare
 	}
 }
 
 class CategoryPage {
 	static function showEditCategoryForm($categoryid = null) {
-		//TODO
+		//TODO da implementare
 	}
 	
 	static function showNewCategoryForm() {
@@ -89,7 +89,7 @@ class AdminContestManager extends ContestManager {
 
 class ContestPage {
 	static function showEditContestForm($contestid = null) {
-		//TODO
+		//TODO da implementare
 	}
 	
 	static function showNewContestForm() {

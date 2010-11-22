@@ -122,7 +122,7 @@ class PostManager {
 	 * @return: commento aggiornato.
 	 */
 	static function reportComment($author, $comment, $report) {
-		//TODO Not iplemented
+		//TODO da implementare
 		return false;
 	}
 	
@@ -185,7 +185,6 @@ class PostManager {
 	
 	/**
 	 * Iscrive un Post ad un Contest.
-	 * TODO FORSE DA METTERE IN ContestManager.
 	 *
 	 * @param post: il post da iscrivere.
 	 * @param contest: il contest a cui iscrivere il post
@@ -226,6 +225,10 @@ class PostManager {
 	
 	static function loadPostByPermalink($permalink) {
 		return Post::loadByPermalink($permalink);
-	} 
+	}
+	
+	static function postExists($post) {
+		return Post::exists($post);
+	}
 }
 ?>

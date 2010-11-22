@@ -1,7 +1,7 @@
 <?php
 
 class Post {
-	const DEFAULT_CATEGORY = "News";	//TODO: trovare un valore per questo…
+	const DEFAULT_CATEGORY = "News";
 	protected $ID;						// id recuperato dal database
 	protected $permalink;				// permalink generato automaticamente dal titolo ecc…
 	protected $type;					// appartenente a PostType
@@ -118,15 +118,6 @@ class Post {
 		if(!isset($this->comments) || !is_array($this->comments))
 			return array();
 		return $this->comments;
-	}
-	/**
-	 * @deprecated il voto viene caricato attraverso getAvgVote()
-	 */
-	function getVotes() {
-		return $this->votes;
-	}
-	function getAccessCount() {
-		return $this->accessCount;
 	}
 	
 	/**
@@ -632,40 +623,6 @@ class Post {
 	}
 	
 	/**
-	 * @deprecated il voto viene caricato attraverso getAvgVote()
-	 * Carica in this i voti recuperati dal database per questo post (deve avere un ID!).
-	 */
-	function loadVotes() {
-		require_once("query.php");
-		$db = new DBManager();
-		if(!$db->connect_errno()) {
-			define_tables(); defineVoteColumns();
-			$table = Query::getDBSchema()->getTable(TABLE_VOTE);
-			$rs = $db->execute($s = Query::generateSelectStm(array($table),
-														 array(),
-														 array(new WhereConstraint($table->getColumn(VOTE_POST),Operator::EQUAL,$this->getID())),
-														 array()),
-							  $table->getName(), $this);
-			//echo "<p>" . $s . "</p>"; //DEBUG;
-			if($db->num_rows() > 0) {
-				$votes = array();
-				while($row = $db->fetch_result()) {
-					require_once("post/PostCommon.php");
-					$vote = new Vote(intval($row[VOTE_AUTHOR]), intval($row[VOTE_POST]), $row[VOTE_VOTE] > 0);
-					$vote->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[VOTE_CREATION_DATE])));
-					$votes[] = $vote;
-				}
-				//echo "<p>" . serialize($votes) . "</p>"; //DEBUG;
-				$this->setVotes($votes);
-			} else {
-				if($db->errno())
-					$db->display_error("Post::loadVotes()");
-			}
-		} else $db->display_connect_error("Post::loadVotes()");
-		return $this;
-	}
-	
-	/**
 	 * Carica in this i report recuperati dal database per questo post (deve avere un ID!).
 	 */
 	function loadReports() {
@@ -694,34 +651,6 @@ class Post {
 			}
 		} else $db->display_connect_error("Post::loadReports()");
 		return $this;
-	}
-	
-	/**
-	 * TODO Da testare
-	 * @deprecated troppo lunga da implementare�
-	 */
-	function equals($post) {
-		if(is_a($post, "Post") || get_parent_class($post) == "post") {
-			if($this->getTitle() == $post->getTitle() &&
-				$this->getSubtitle() == $post->getSubtitle() &&
-				$this->getHeadline() == $post->getHeadline() &&
-				$this->getAuthor() == $post->getAuthor() &&
-				$this->getTags() == $post->getTags() &&
-				$this->getCategories() == $post->getCategories() &&
-				$this->getContent() == $post->getContent() &&
-				$this->isVisible() == $post->isVisible() &&
-				$this->getComments() == $post->getComments() && //TODO controllare il contenuto di comments
-				$this->getContent() == $post->getContent() && //TODO controllare il contenuto di contents
-				$this->getCreationDate() == $post->getCreationDate() &&
-				$this->getID() == $post->getID() &&
-				$this->getModificationDate() == $post->getModificationDate() &&
-				$this->getPlace() == $post->getPlace() &&
-				$this->getReports() == $post->getReports() && //TODO controllare il contenuto di reports
-				$this->getType() == $post->getType() &&
-				$this->getVotes() == $podt->getVotes()) //TODO controllare il contenuto di votes
-				return true;
-		}
-		return false;
 	}
 	
 	/**
@@ -758,6 +687,10 @@ class Post {
 		}
 		$s.= "))";
 		return $s;
+	}
+	
+	static function exists($post) {
+		//TODO da implementare
 	}
 }
 

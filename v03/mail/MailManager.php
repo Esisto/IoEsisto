@@ -67,18 +67,6 @@ class MailManager {
 	}
 	
 	/**
-	 * @deprecated use moveToTrashInstead
-	 * Cancella $mail dalle directory di $user
-	 * 
-	 * @param $mail: un oggetto Mail.
-	 * @param $user: uno user id.
-	 */
-	static function deleteMail($mail, $user) {
-		$dir = self::loadDirectoryFromName(TRASH, $user);
-		return $dir->removeMail($mail);
-	}
-	
-	/**
 	 * Sposta $mail da $olddir nella cartella cartella spam dello stesso owner di $olddir.
 	 * 
 	 * @param $mail: un oggetto Mail.
@@ -143,7 +131,7 @@ class MailManager {
 	static function searchMail() {}
 	
 	static function emptyTrash($user) {
-		//TODO
+		//TODO da implementare
 	}
 }
 

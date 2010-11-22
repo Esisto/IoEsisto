@@ -285,7 +285,7 @@ class User{
 	protected $feedback;				//valore totale feedback
 	protected $follows = array();		//chi segue
 	protected $followers = array();		//chi lo segue
-	protected $reports = array(); 		//TODO Not implemented
+	protected $reports = array(); 		//TODO da implementare
 	
 	function setID($id) {
 		$this->ID = $id;
@@ -937,6 +937,10 @@ class User{
 		}
 		$s.= ")</font>)";
 		return $s;
+	}
+	
+	static function exists($user) {
+		//TODO da implementare
 	}
 }
 

@@ -84,6 +84,13 @@ class WhereConstraint {
 }
 
 class Query {
+	const COUNT = "count";
+	const AVG = "avg";
+	const SUM = "sum";
+	const LIMIT = "limit";
+	const ORDER = "order";
+	const BY = "by";
+	const GROUP = "group";
 	private static $dbSchema = null;
 	
 	function initDBSchema() {
@@ -100,7 +107,7 @@ class Query {
 	 * @param options: opzioni aggiuntive, il sistema cerca:
 	 * 			count: se usare l'operatore count. (boolean)
 	 * 			avg: se usare l'operatore average. (colonna su cui calcolare la media)
-	 * 			sum: se usare l'operatore somma. (colonna su cui calcolare la somma) //TODO
+	 * 			sum: se usare l'operatore somma. (colonna su cui calcolare la somma)
 	 * 			limit: se usare l'operatore limit. (int, se 0 non usa limit)
 	 * 			order: se usare l'operatore order. (int, >0 per ASC, altrimenti DESC)
 	 * 			by: se usare l'operatore order. (array di stringhe, se vuoto non usa order)
@@ -118,18 +125,18 @@ class Query {
 		// SELECT
 		$s = "SELECT ";
 		$set_star = false;
-		if(isset($options["count"])) {
+		if(isset($options[self::COUNT])) {
 			$s.= "COUNT(*)";
 			$set_star = true;
-		} else if(isset($options["avg"])) {
-			if(self::columnExists($options["avg"])) {
+		} else if(isset($options[self::AVG])) {
+			if(self::columnExists($options[self::AVG])) {
 				$set_star = true;
-				$s.= "AVG(" . $options["avg"]->getName() . ")";
+				$s.= "AVG(" . $options[self::AVG]->getName() . ")";
 			}
-		} else if(isset($options["sum"])) {
-			if(self::columnExists($options["sum"])) {
+		} else if(isset($options[self::SUM])) {
+			if(self::columnExists($options[self::SUM])) {
 				$set_star = true;
-				$s.= "SUM(" . $options["sum"]->getName() . ")";
+				$s.= "SUM(" . $options[self::SUM]->getName() . ")";
 			}
 		}
 		if(!$set_star) $s.= "*";
@@ -171,9 +178,9 @@ class Query {
 		}
 		// OPZIONI
 		// ORDER BY
-		if(isset($options["order"]) && isset($options["by"]) &&
-			is_array($options["by"]) && count($options["by"] > 0)) {
-			$by = $options["by"];
+		if(isset($options[self::ORDER]) && isset($options[self::BY]) &&
+			is_array($options[self::BY]) && count($options[self::BY] > 0)) {
+			$by = $options[self::BY];
 			$s1= " ORDER BY ";
 			$first = true;
 			for($i=0; $i<count($by); $i++) {
@@ -185,18 +192,18 @@ class Query {
 			}
 			if(!$first) { //se mi da un array di null non devo inserire order
 				$s.= $s1;
-				if($options["order"] > 0)
+				if($options[self::ORDER] > 0)
 					$s.= " ASC";
 				else
 					$s.= " DESC";
 			}
 		}
 		// LIMIT
-		if(isset($options["limit"]) && $options["limit"] > 0)
-			$s.= " LIMIT " . $options["limit"];
+		if(isset($options[self::LIMIT]) && $options[self::LIMIT] > 0)
+			$s.= " LIMIT " . $options[self::LIMIT];
 		// GROUP BY
-		if(isset($options["group"]) && is_array($options["group"]) && count($options["group"] > 0)) {
-			$group = $options["group"];
+		if(isset($options[self::GROUP]) && is_array($options[self::GROUP]) && count($options[self::GROUP] > 0)) {
+			$group = $options[self::GROUP];
 			$s1 = " GROUP BY ";
 			$first = true;
 			for($i=0; $i<count($group); $i++) {
@@ -508,13 +515,13 @@ class DBManager {
 	function display_error($from) {
 		if($this->errno())
 			echo "<p><b>$from:</b> SQL ERROR " . $this->errno() . ": <font color='red'>" . $this->error() . "</font></p>";
-		echo "<p><b>$from:</b> NO SQL ERROR</p>"; //DEBUG deve dare un errore solo se c'è!
+		//echo "<p><b>$from:</b> NO SQL ERROR</p>"; //DEBUG deve dare un errore solo se c'è!
 	}
 	
 	function display_connect_error($from) {
 		if($this->errno())
 			echo "<p><b>$from:</b> CONNECTION ERROR " . $this->errno() . ": <font color='red'>" . $this->error() . "</font></p>";
-		echo "<p><b>$from:</b> NO CONNECTION ERROR</p>"; //DEBUG deve dare un errore solo se c'è!
+		//echo "<p><b>$from:</b> NO CONNECTION ERROR</p>"; //DEBUG deve dare un errore solo se c'è!
 	}
 }
 

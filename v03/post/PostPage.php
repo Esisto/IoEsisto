@@ -139,11 +139,6 @@ class PostPage {
 <?php
 	}
 
-	/**
-	 * @deprecated
-	 */
-	static function showForLikelihood() {}
-	
 	private static function showNewNewsForm($data = null, $error = null) {
 		self::showEditNewsForm($data, $error, true);
 	}
@@ -170,7 +165,8 @@ class PostPage {
 	
 	static function showNewPostForm($data = null, $error = null) {
 		$user = Session::getUser();
-		//TODO controlla sessione
+		require_once 'page.php';
+		if(!Page::canUserDo($user)) return; //TODO redirect verso pagina di errore.
 		if(is_null($error) && count($_POST) > 0) {
 			$data = array();
 			if(isset($_POST["title"]) && trim($_POST["title"]) != "")
@@ -267,21 +263,10 @@ class PostPage {
 		}
 	}
 
-	/**
-	 * @deprecated
-	 */
-	static function showVoteForm() {
-		?>
-        <form name="" action="" method="get"> <!-- TODO -->
-            <input type="submit" value="">
-        </form>
-        <?php
-	}
-
 	static function showEditPostForm($post, $data = null, $error = null) {
 		$user = Session::getUser();
 		if($user->getID() != $post->getAuthor()) return;
-		//TODO controlla sessione
+		if(!Page::canUserDo($user)) return; //TODO redirect verso pagina di errore.
 		if(is_null($error) && count($_POST) > 0) {
 			$data = array();
 			if(isset($_POST["title"]) && trim($_POST["title"]) != "")
@@ -347,7 +332,6 @@ class PostPage {
 	}
 
 	private static function showEditNewsForm($post, $error, $new = false) {
-		//TODO
 		$name = "Edit";
 		$caption = "Modifica";
 		if($new) {
@@ -422,7 +406,7 @@ class PostPage {
 		?>
 		<div class="title"><?php echo $caption; ?> Fotoreportage</div>
 		<?php
-		//TODO
+		//TODO da implementare
 	}
 
 	private static function showEditCollectionForm($post, $error, $new = false) {
@@ -436,7 +420,7 @@ class PostPage {
 		?>
 		<div class="title"><?php echo $caption; ?> Collezione</div>
 		<?php
-		//TODO
+		//TODO da implementare
 	}
 	
 	private static function showEditAlbumForm($post, $error, $new = false) {
@@ -450,7 +434,7 @@ class PostPage {
 		?>
 		<div class="title"><?php echo $caption; ?> Album</div>
 		<?php
-		//TODO
+		//TODO da implementare
 	}
 
 	private static function showEditMagazineForm($post, $error, $new = false) {
@@ -464,7 +448,7 @@ class PostPage {
 		?>
 		<div class="title"><?php echo $caption; ?> Rivista</div>
 		<?php
-		//TODO
+		//TODO da implementare
 	}
 	
 	private static function showEditVideoReportageForm($post, $error, $new = false) {
@@ -478,11 +462,11 @@ class PostPage {
 		?>
 		<div class="title"><?php echo $caption; ?> Videoreportage</div>
 		<?php
-		//TODO
+		//TODO da implementare
 	}
 	
 	static function showContestDetails($contest) {
-		//TODO
+		//TODO da implementare
 	}
 	
 	static function showComments($post, $limit = 0, $js = false) {

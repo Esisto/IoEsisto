@@ -38,7 +38,13 @@ class Collection extends Post {
 	function setContent($content) {
 		if(!is_array($content))
 			$content = array($content);
-		//TODO Check che il contenuto sia di tipo Post.
+		
+		foreach ($content as $post) {
+			if(!is_a($post, "Post")) {
+				echo "ERRORE!!! non stai aggiungendo Post"; //TODO redirect verso pagina di errore.
+				return null;
+			}
+		}
 		$this->content = $content;
 	}
 	
@@ -145,7 +151,13 @@ class PhotoReportage extends Collection {
 	function setContent($content) {
 		if(!is_array($content))
 			$content = array($content);
-		//TODO check if are Resources.
+		
+		foreach ($content as $resource) {
+			if(!is_a($resource, "Resource")) {
+				echo "ERRORE!!! non stai aggiungendo Risorse"; //TODO redirect verso pagina di errore.
+				return null;
+			}
+		}
 		$this->content = $content;
 		return $this;
 	}
