@@ -12,7 +12,14 @@ define("ROOT_LINK", "ioesisto/v03/");
 // Language settings.
 define("LANG", "en"); // selezionare il linguaggio voluto.
 
+// Content coloring
+define("HIDE", "black");
+define("VM18", "red");
+define("OFFENSE", "yellow");
+define("GOOD", "green");
+
 // Google API settings
+define("MAPS_ENABLED", false);
 define("GKEY", "ABQIAAAAjg_c7D-9UshGFUSLngI0kRTb-vLQlFZmc2N8bgWI8YDPp5FEVBRY2O1KZH9g1Dq5uxwllWjXB-Lu5Q");
 define("DEF_LAT", 45.463688);
 define("DEF_LNG", 9.18814);

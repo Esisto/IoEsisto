@@ -101,6 +101,8 @@ class DB {
 	const ROLE_NAME = "rl_name";
 	const SUB_CATEGORY_PARENT = "sc_parent";
 	const SUB_CATEGORY_CATEGORY = "sc_category";
+	const SUSPENDED_ID = "sp_ID";
+	const SUSPENDED_USER = "sp_user";
 	const TAG_NAME = "tag_name";
 	const TAG_ACCESS_COUNT = "tag_access_count"; //TODO implementare la cosa in TagManager
 	const USER_ID = "us_ID";
@@ -245,8 +247,8 @@ CREATE TABLE IF NOT EXISTS `" . self::TABLE_USER . "` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin AUTO_INCREMENT=1;
 
 CREATE TABLE IF NOT EXISTS `" . self::TABLE_SUSPENDED . "` (
-  `sp_ID` bigint(20) NOT NULL AUTO_INCREMENT,
-  `sp_user` bigint(20) NOT NULL,
+  `" . self::SUSPENDED_ID . "` bigint(20) NOT NULL AUTO_INCREMENT,
+  `" . self::SUSPENDED_USER . "` bigint(20) NOT NULL,
   `sp_by` bigint(20) NOT NULL,
   `sp_fomerrole` varchar(20) NOT NULL,
   `sp_reason` blob,
