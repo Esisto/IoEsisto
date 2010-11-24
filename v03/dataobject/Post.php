@@ -234,6 +234,13 @@ class Post extends Editable {
 		return $this;
 	}
 	
+	function addComment($comment) {
+		if(!is_array($this->comments))
+			$this->comments = array();
+		$this->comments[] = $comment;
+		return $this;
+	}
+	
 	/**
 	 * @Override
 	 */
