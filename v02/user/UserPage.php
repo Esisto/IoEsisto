@@ -84,7 +84,7 @@ class UserPage {
 					self::showSignInForm($error);
 				} else {
 					$dataFiltered= Filter::filterArray($data);
-					$user = UserManager::createUser($data);
+					$user = UserManager::createUser($dataFiltered);
 					self::showProfile($user);
 				}
 			}
