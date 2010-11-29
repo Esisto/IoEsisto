@@ -36,7 +36,7 @@ class PostManager {
 			$p = new News($data);
 		} else if($data["type"]  == PostType::VIDEOREPORTAGE) {
 			$p = new VideoReportage($data);
-		} else
+		} else 
 			return false;
 		
 		$p->save();

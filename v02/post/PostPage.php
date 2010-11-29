@@ -177,9 +177,10 @@ class PostPage {
 				$data["title"] = $_POST["title"];
 			else
 				$error = array("Inserire un titolo.");
-			if(isset($_POST["type"]))
+			if(isset($_POST["type"])){
 				$data["type"] = $_POST["type"];
-			else
+				/*DEBUG*/echo $data["type"];
+			}else
 				$error[] = "Scegliere il tipo di post da pubblicare.";
 			if(isset($_POST["content"]) && trim($_POST["content"]) != "")
 				$data["content"] = $_POST["content"];
@@ -194,6 +195,15 @@ class PostPage {
 				}
 				$data["categories"] = $cat;
 			}
+			//se sto creando photoreportage carico le foto
+			if($data["type"]=="photoreportage"){
+				/*DEBUG*/echo "</br>caricamento immagini</br>";
+			}
+			//se sto creando videoreportage carico i video
+			if($data["type"]=="videoreportage"){
+				/*DEBUG*/echo "</br>caricamento video</br>";
+			}
+			
 			if(isset($_POST["place"]) && trim($_POST["place"]) != "")
 				$data["place"] = $_POST["place"];
 			if(isset($_POST["headline"]) && trim($_POST["headline"]) != "")
@@ -221,8 +231,8 @@ class PostPage {
 		if(isset($_GET["type"])) {
 			switch($_GET["type"]) {
 				case "Collection":
-				case "PhotoReportage":
-				case "VideoReportage":
+				case "photoreportage":
+				case "videoreportage":
 				case "Album":
 				case "Magazine":
 				case "Playlist":
@@ -332,8 +342,8 @@ class PostPage {
 		if(isset($_GET["type"])) {
 			switch($_GET["type"]) {
 				case "Collection":
-				case "PhotoReportage":
-				case "VideoReportage":
+				case "photoreportage":
+				case "videoreportage":
 				case "Album":
 				case "Magazine":
 				case "Playlist":
@@ -347,7 +357,6 @@ class PostPage {
 	}
 
 	private static function showEditNewsForm($post, $error, $new = false) {
-		//TODO
 		$name = "Edit";
 		$caption = "Modifica";
 		if($new) {
@@ -420,9 +429,65 @@ class PostPage {
 			$caption = "Nuovo";
 		}
 		?>
-		<div class="title"><?php echo $caption; ?> Fotoreportage</div>
+		<div class="title"><?php echo $caption; ?> Photoreportage</div>
 		<?php
-		//TODO
+			if(is_array($error)) {
+		?>
+		<div class="error"><?php
+			foreach($error as $err) {?>
+			<p><?php echo $err; ?></p>
+			<?php 
+			}
+		?></div>
+		<?php
+		}
+		?>
+		<form name="<?php echo $name; ?>Post" action="?type=photoreportage" method="post">
+			<p class="post_headline"><label>Occhiello:</label><br />
+				<input class="post_headline" name="headline" value="<?php echo $post->getHeadline(); ?>"/></p>
+			<p class="title"><label>Titolo:</label><br/>
+				<input class="post_title" name="title" value="<?php echo $post->getTitle(); ?>"/></p>
+			<p class="post_subtitle"><label>Sottotilolo:</label><br />
+				<input class="post_subtitle" name="subtitle" value="<?php echo $post->getSubtitle(); ?>"/></p>
+			<p class="content"><label>Contenuto:</label><br/>
+				<textarea name="content" id="post_content"><?php echo $post->getContent(); ?></textarea>
+				<!-- sostituisco textarea standard con ckeditor -->
+				<script type="text/javascript">
+					CKEDITOR.replace( 'post_content', { toolbar : 'edited'});
+				</script>
+			</p>
+			<!-- Inserimento immagini -->
+			<p class="uploadPhotos"><fieldset><legend>upload immagini</legend>
+			<?php for($i=0;$i<10;$i++){
+				echo "<input type=\"file\"name=\"upfile$i\"></br>";
+			}?>
+			</fieldset></p>
+			<p class="tags"><label>Tags:</label> 
+				<input class="tags" id="post_tags_input" name="tags" value="<?php echo $post->getTags(); ?>"/></p>
+			<p class="categories"><label>Categorie:</label><br/><?php
+				$cat = array();
+				if(trim($post->getCategories()) != "")
+					$cat = explode(", ", Filter::decodeFilteredText($post->getCategories()));
+				self::showCategoryTree($cat); ?>
+			</p>
+			<p class="<?php echo trim($post->getPlace()) == "" ? "hidden" : ""; ?>"><label id="place_label">Posizione: <?php echo $post->getPlace(); ?></label></p>
+			<input id="post_place" name="place" type="hidden" value="<?php echo $post->getPlace(); ?>" />
+			<input name="visible" type="hidden" value="true" />
+			<input name="type" type="hidden" value="photoreportage" />
+			<p class="submit"><input type="submit" value="Pubblica" /> 
+				<input type="button" onclick="javascript:save();" value="Salva come bozza"/></p>
+			<script type="text/javascript">
+				function save() {
+					document.<?php echo $name; ?>Post.visible.value = false;
+					document.<?php echo $name; ?>Post.submit();
+				}
+			</script>
+			<?php 
+			require_once 'maps/geolocate.php';
+			MapManager::setCenterToMap($post->getPlace(), "map_canvas");
+			?>
+		</form>
+        <?php
 	}
 
 	private static function showEditCollectionForm($post, $error, $new = false) {
@@ -478,7 +543,61 @@ class PostPage {
 		?>
 		<div class="title"><?php echo $caption; ?> Videoreportage</div>
 		<?php
-		//TODO
+			if(is_array($error)) {
+		?>
+		<div class="error"><?php
+			foreach($error as $err) {?>
+			<p><?php echo $err; ?></p>
+			<?php 
+			}
+		?></div>
+		<?php
+		}
+		?>
+		<form name="<?php echo $name; ?>Post" action="?type=videoreportage" method="post">
+			<p class="post_headline"><label>Occhiello:</label><br />
+				<input class="post_headline" name="headline" value="<?php echo $post->getHeadline(); ?>"/></p>
+			<p class="title"><label>Titolo:</label><br/>
+				<input class="post_title" name="title" value="<?php echo $post->getTitle(); ?>"/></p>
+			<p class="post_subtitle"><label>Sottotilolo:</label><br />
+				<input class="post_subtitle" name="subtitle" value="<?php echo $post->getSubtitle(); ?>"/></p>
+			<p class="content"><label>Contenuto:</label><br/>
+				<textarea name="content" id="post_content"><?php echo $post->getContent(); ?></textarea>
+				<!-- sostituisco textarea standard con ckeditor -->
+				<script type="text/javascript">
+					CKEDITOR.replace( 'post_content', { toolbar : 'edited'});
+				</script>
+			</p>
+			<!-- Inserimento video -->  
+			<p class="uploadVideos"><fieldset><legend>upload video</legend>
+			<!-- TODO -->
+			</fieldset></p>
+			<p class="tags"><label>Tags:</label> 
+				<input class="tags" id="post_tags_input" name="tags" value="<?php echo $post->getTags(); ?>"/></p>
+			<p class="categories"><label>Categorie:</label><br/><?php
+				$cat = array();
+				if(trim($post->getCategories()) != "")
+					$cat = explode(", ", Filter::decodeFilteredText($post->getCategories()));
+				self::showCategoryTree($cat); ?>
+			</p>
+			<p class="<?php echo trim($post->getPlace()) == "" ? "hidden" : ""; ?>"><label id="place_label">Posizione: <?php echo $post->getPlace(); ?></label></p>
+			<input id="post_place" name="place" type="hidden" value="<?php echo $post->getPlace(); ?>" />
+			<input name="visible" type="hidden" value="true" />
+			<input name="type" type="hidden" value="videoreportage" />
+			<p class="submit"><input type="submit" value="Pubblica" /> 
+				<input type="button" onclick="javascript:save();" value="Salva come bozza"/></p>
+			<script type="text/javascript">
+				function save() {
+					document.<?php echo $name; ?>Post.visible.value = false;
+					document.<?php echo $name; ?>Post.submit();
+				}
+			</script>
+			<?php 
+			require_once 'maps/geolocate.php';
+			MapManager::setCenterToMap($post->getPlace(), "map_canvas");
+			?>
+		</form>
+	<?php
 	}
 	
 	static function showContestDetails($contest) {
