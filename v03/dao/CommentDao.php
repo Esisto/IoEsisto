@@ -15,29 +15,30 @@ class CommentDao implements Dao {
 			$this->db->display_connect_error("CommentDao::__construct()");
 	}
 	
-	static function loadFromDatabase($id) { //TODO
-		require_once("query.php");
-		$db = new DBManager();
-		if(!$db->connect_errno()) {
-			$table = Query::getDBSchema()->getTable(TABLE_COMMENT);
-			$rs = $db->execute($s = Query::generateSelectStm(array($table),
+	static function loadFromDatabase($id) {
+		if(is_null($id)) throw new Exception("Attenzione! Non hai inserito un id.");
+		
+		if($this->db->connect_errno())
+			throw new Exception("Si è verificato un errore di connessione. Aggiornare la pagina e riprovare.");
+
+		$rs = $this->db->execute($s = Query::generateSelectStm(array($this->table_comment),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(COMMENT_ID),Operator::EQUAL,$id)),
+														 array(new WhereConstraint($this->table_comment->getColumn(DB::COMMENT_ID),Operator::EQUAL,intval($id))),
 														 array()),
-							  $table->getName(), null);
-			if($db->num_rows() == 1) {
-				$row = $db->fetch_result();
-				$data = array("comment" => $row[COMMENT_COMMENT],
-							  "author" => intval($row[COMMENT_AUTHOR]),
-							  "post" => intval($row[COMMENT_POST]));
-				$c = new Comment($data);
-				$c->setID(intval($row[COMMENT_ID]));
-				$c->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[COMMENT_CREATION_DATE])));
-				//$c->loadReports();
-				return $c;
-			} else $db->display_error("Comment::loadFromDatabase()");
-		} else $db->display_connect_error("Comment::loadFromDatabase()");
-		return false;
+							  $this->table_comment->getName(), null);
+		
+		if($this->db->num_rows() != 1)
+			throw new Exception("L'oggetto cercato non è stato trovato.");
+		
+		$row = $this->db->fetch_result();
+		$data = array("comment" => $row[COMMENT_COMMENT],
+					  "author" => intval($row[COMMENT_AUTHOR]),
+					  "post" => intval($row[COMMENT_POST]));
+		$c = new Comment($data);
+		$c->setID(intval($row[COMMENT_ID]));
+		$c->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[COMMENT_CREATION_DATE])));
+		//$c->loadReports();
+		return $c;
 	}
 	
 	function loadAll($post) { //TODO

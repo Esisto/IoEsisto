@@ -41,17 +41,13 @@ class PostDao implements Dao {
 														 array(new WhereConstraint($this->table_post->getColumn(DB::POST_ID),Operator::EQUAL,intval($id))),
 														 array()),
 							$this->table_post->getName(), null);
-			
-		//echo "<p>" . $s . "</p>"; //DEBUG
-		//echo "<p>" . $db->num_rows() . "</p>"; //DEBUG
-		if($db->num_rows() == 1) {
-			//echo serialize($db->fetch_result()); //DEBUG
-			$row = $db->fetch_result();
-			$p = $this->createFromDBResult($row);
-			//echo "<p>" .$p ."</p>";
-			return $p;
-		} else $db->display_error("PostDao::load()");
-		throw new Exception("L'oggetto cercato non è stato trovato. Riprovare.");
+		
+		if($db->num_rows() != 1)
+			throw new Exception("L'oggetto cercato non è stato trovato. Riprovare.");
+		
+		$row = $db->fetch_result();
+		$p = $this->createFromDBResult($row);
+		return $p;
 	}
 	
 	function loadByPermalink($permalink) {
