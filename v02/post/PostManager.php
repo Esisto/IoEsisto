@@ -29,6 +29,8 @@ class PostManager {
 		$data = Filter::filterArray($data);
 		
 		require_once("post/PostCommon.php");
+		require_once("post/collection/Collection.php");
+		
 		if(!isset($data["type"]))
 		   return false;
 		$p = false;
@@ -36,7 +38,9 @@ class PostManager {
 			$p = new News($data);
 		} else if($data["type"]  == PostType::VIDEOREPORTAGE) {
 			$p = new VideoReportage($data);
-		} else 
+		} else if($data["type"]  == PostType::PHOTOREPORTAGE) {
+			$p = new PhotoReportage($data);
+		}else
 			return false;
 		
 		$p->save();

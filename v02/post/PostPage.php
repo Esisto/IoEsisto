@@ -4,7 +4,7 @@ require_once("strings/" . LANG . "strings.php");
 require_once("file_manager.php");
 require_once("post/Post.php");
 require_once("post/PostManager.php");
-
+require_once("post/resourceManager.php");
 
 class PostPage {
 	const NO_DATE = "no_date";
@@ -198,6 +198,15 @@ class PostPage {
 			//se sto creando photoreportage carico le foto
 			if($data["type"]=="photoreportage"){
 				/*DEBUG*/echo "</br>caricamento immagini</br>";
+				for($i=0,$numphoto=0;$i<10;$i++){
+					if(isset($_POST["upfile$i"])){
+						$photo[$numphoto]=$_POST["upfile$i"];
+						$numphoto++;
+					}
+				}
+				/*DEBUG*/echo "</br>FINE caricamento immagini</br>";
+				//if(!resourceManager::uploadPhoto($photo, $user))
+				//	$error[]="errori nel caricamento delle imamgini";
 			}
 			//se sto creando videoreportage carico i video
 			if($data["type"]=="videoreportage"){
@@ -213,9 +222,12 @@ class PostPage {
 			if(isset($_POST["tags"]) && trim($_POST["tags"]) != "")
 				$data["tags"] = $_POST["tags"];
 				
+			/*DEBUG*/echo "</br>controllo errori</br>";
 			if(is_null($error) || (is_array($error) && count($error) == 0)) {
+				/*DEBUG*/echo "</br>NO errori</br>";
 				$data["author"] = $user->getID();
 				$post = PostManager::createPost($data);
+				/*DEBUG*/ var_dump($post);
 				if($post !== false) {
 					echo '
 			<div class="message">
@@ -223,6 +235,7 @@ class PostPage {
 			</div>';
 				}
 			} else {
+				/*DEBUG*/echo "</br>SI errori</br>";
 				self::showNewPostForm($data, $error);
 				return;
 			}
@@ -231,8 +244,8 @@ class PostPage {
 		if(isset($_GET["type"])) {
 			switch($_GET["type"]) {
 				case "Collection":
-				case "photoreportage":
-				case "videoreportage":
+				case "PhotoReportage":
+				case "VideoReportage":
 				case "Album":
 				case "Magazine":
 				case "Playlist":
@@ -327,6 +340,7 @@ class PostPage {
 			if(is_null($error) || (is_array($error) && count($error) == 0)) {
 				$data["author"] = $user->getID();
 				$post = PostManager::createPost($data);
+				/*DEBUG*/ echo $post;
 				if($post !== false) {
 					echo '
 			<div class="message">
@@ -342,8 +356,8 @@ class PostPage {
 		if(isset($_GET["type"])) {
 			switch($_GET["type"]) {
 				case "Collection":
-				case "photoreportage":
-				case "videoreportage":
+				case "PhotoReportage":
+				case "VideoReportage":
 				case "Album":
 				case "Magazine":
 				case "Playlist":

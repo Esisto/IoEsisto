@@ -1075,8 +1075,8 @@ class Page {
 	
 	private static function PCCommands() {
 		echo '<p>PCCommands</p></br>';
-		echo "<p><a href=\"New?type=photoreportage\">Crea nuovo PhotoReportage</a></p></br>";
-		echo "<p><a href=\"New?type=videoreportage\">Crea nuovo VideoReportage</a></p></br>";
+		echo "<p><a href=\"New?type=PhotoReportage\">Crea nuovo PhotoReportage</a></p></br>";
+		echo "<p><a href=\"New?type=VideoReportage\">Crea nuovo VideoReportage</a></p></br>";
 		echo "<p><a href=\"New?type=News\">Crea nuova Notizia</a></p></br>";
 	}
 	
