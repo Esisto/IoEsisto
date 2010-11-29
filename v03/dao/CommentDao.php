@@ -2,10 +2,12 @@
 require_once 'dao/Dao.php';
 require_once("db.php");
 require_once("query.php");
+require_once("dataobject/Comment.php");
 
 class CommentDao implements Dao {
-	private $db;
-	private $table_comment;
+	const OBJECT_CLASS = "Comment";
+	
+	private $loadReports = false;
 	
 	function __construct() {
 		$this->table_comment = Query::getDBSchema()->getTable(DB::TABLE_COMMENT);
@@ -14,114 +16,97 @@ class CommentDao implements Dao {
 		if($this->db->connect_errno())
 			$this->db->display_connect_error("CommentDao::__construct()");
 	}
-	
-	static function loadFromDatabase($id) {
-		if(is_null($id)) throw new Exception("Attenzione! Non hai inserito un id.");
-		
-		if($this->db->connect_errno())
-			throw new Exception("Si è verificato un errore di connessione. Aggiornare la pagina e riprovare.");
 
+	function setLoadReports($load) {
+		settype($load, "boolean");
+		$this->loadReports = $load;
+		return $this;
+	}
+	
+	function quickLoad($id) {
+		$loadR = $this->loadReports; $this->loadReports = false;
+		$p = null;
+		try {
+			$p = $this->load($id);
+			$this->loadReports = $loadR;
+		} catch(Exception $e) {
+			$this->loadReports = $loadR;
+			throw $e;
+		}
+		$return = $p;
+	}
+	
+	function load($id) {
+		parent::load($id);
 		$rs = $this->db->execute($s = Query::generateSelectStm(array($this->table_comment),
 														 array(),
 														 array(new WhereConstraint($this->table_comment->getColumn(DB::COMMENT_ID),Operator::EQUAL,intval($id))),
-														 array()),
-							  $this->table_comment->getName(), null);
+														 array()));
 		
 		if($this->db->num_rows() != 1)
 			throw new Exception("L'oggetto cercato non è stato trovato.");
 		
 		$row = $this->db->fetch_result();
-		$data = array("comment" => $row[COMMENT_COMMENT],
-					  "author" => intval($row[COMMENT_AUTHOR]),
-					  "post" => intval($row[COMMENT_POST]));
-		$c = new Comment($data);
-		$c->setID(intval($row[COMMENT_ID]));
-		$c->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[COMMENT_CREATION_DATE])));
-		//$c->loadReports();
+		$c = new Comment($row[DB::COMMENT_COMMENT], intval($row[DB::COMMENT_POST]), intval($row[DB::COMMENT_AUTHOR]));
+		$c->setID(intval($row[DB::COMMENT_ID]))->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[DB::COMMENT_CREATION_DATE])));
+		$u = Session::getUser();
+		if($this->loadReports && $u) //FIXME usa authorizationManager o roleManager
+			$c->loadReports();
 		return $c;
 	}
 	
-	function loadAll($post) { //TODO
-		require_once("query.php");
-		$db = new DBManager();
-		if(!$db->connect_errno()) {
-			define_tables(); defineCommentColumns();
-			$table = Query::getDBSchema()->getTable(TABLE_COMMENT);
-			$rs = $db->execute($s = Query::generateSelectStm(array($table),
+	function loadAll($post) {
+		parent::load($post);
+		if(!is_subclass_of($post, "Post"))
+			throw new Exception("Attenzione! Il parametro di ricerca non è un post.");
+		
+		$rs = $db->execute($s = Query::generateSelectStm(array($this->table_comment),
 														 array(),
-														 array(new WhereConstraint($table->getColumn(COMMENT_POST),Operator::EQUAL,$this->getID())),
-														 array()),
-							  $table->getName(), $this);
-			
-			//echo "<p>" . $s . "</p>"; //DEBUG;
-			if($db->num_rows() > 0) {
-				$comm = array();
-				while($row = $db->fetch_result()) {
-					require_once("post/PostCommon.php");
-					$com = new Comment(array("author" => intval($row[COMMENT_AUTHOR]),
-											 "post" => intval($row[COMMENT_POST]),
-											 "comment" => $row[COMMENT_COMMENT]));
-					$com->setID($row[COMMENT_ID])->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[COMMENT_CREATION_DATE])));
-					$comm[] = $com;
-				}
-				$this->setComments($comm);
-			} else {
-				if($db->errno())
-					$db->display_error("Post::loadComments()");
+														 array(new WhereConstraint($this->table_comment->getColumn(DB::COMMENT_POST),Operator::EQUAL,intval($post->getID()))),
+														 array()), $this->table_comment->getName(), $this);
+		
+		$comm = array();
+		if($db->num_rows() > 0) {
+			while($row = $db->fetch_result()) {
+				$c = new Comment($row[DB::COMMENT_COMMENT], intval($row[DB::COMMENT_POST]), intval($row[DB::COMMENT_AUTHOR]));
+				$com->setID($row[DB::COMMENT_ID])->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[DB::COMMENT_CREATION_DATE])));
+				$comm[] = $com;
 			}
-		} else $db->display_connect_error("Post::loadComments()");
-		return $this;
+		}
+		$post->setComments($comm);
+		return $post;
 	}
 	
-	function save() { //TODO
-		require_once("query.php");
-		$db = new DBManager();
-		if(!$db->connect_errno()) {
-			define_tables(); defineCommentColumns();
-			$table = Query::getDBSchema()->getTable(TABLE_COMMENT);
-			$data = array(COMMENT_COMMENT => $this->getComment(),
-						  COMMENT_POST => $this->getPost(),
-						  COMMENT_AUTHOR => $this->getAuthor());
-			$rs = $db->execute($s = Query::generateInsertStm($table,$data),
-							  $table->getName(), $this);
-			//echo "<br />" . $s; //DEBUG
-			//echo "<br />" . serialize($rs); //DEBUG
-			if($db->affected_rows() == 1) {
-				$this->ID = $db->last_inserted_id();
-				//echo "<br />" . serialize($this->ID); //DEBUG
-				$rs = $db->execute($s = Query::generateSelectStm(array($table),
-															 array(),
-															 array(new WhereConstraint($table->getColumn(COMMENT_ID),Operator::EQUAL,$this->getID())),
-															 array()),
-								  $table->getName(), $this);
-				//echo "<br />" . $s; //DEBUG
-				if($db->num_rows() == 1) {
-					$row = $db->fetch_result();
-					$this->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[COMMENT_CREATION_DATE])));
-					//echo "<br />" . serialize($row[COMMENT_CREATION_DATE]); //DEBUG
-					//echo "<br />" . $this; //DEBUG
-					return $this->ID;
-				} else $db->display_error("Comment::save()");
-			} else $db->display_error("Comment::save()");
-		} else $db->display_connect_error("Comment::save()");
-		return false;
+	function save($comm) {
+		parent::save($comm, self::OBJECT_CLASS);
+		$data = array(DB::COMMENT_COMMENT => $comm->getComment(),
+					  DB::COMMENT_POST => $comm->getPost(),
+					  DB::COMMENT_AUTHOR => $comm->getAuthor());
+		$rs = $this->db->execute($s = Query::generateInsertStm($this->table_comment, $data), $this->table_comment->getName(), $comm);
+
+		if($this->db->affected_rows() != 1)
+			throw new Exception("Errore durante l'inserimento dell'oggetto.");
+		//carico il post inserito.
+		$c = $this->quickLoad(intval($this->db->last_inserted_id()));
+		return $c;
 	}
 	
-	function delete() { //TODO
-		require_once("query.php");
-		$db = new DBManager();
-		if(!$db->connect_errno()) {
-			define_tables(); defineCommentColumns();
-			$table = Query::getDBSchema()->getTable(TABLE_COMMENT);
-			$rs = $db->execute($s = Query::generateDeleteStm($table,
-														 array(new WhereConstraint($table->getColumn(COMMENT_ID),Operator::EQUAL,$this->getID()))),
-							  $table->getName(), $this);
-			//echo "<br />" . $s; //DEBUG
-			if($db->affected_rows() == 1) {
-				return $this;
-			} else $db->display_error("Comment::delete()");
-		} else $db->display_connect_error("Comment::delete()");
-		return false;
+	function delete($comm) {
+		parent::delete($comm, self::OBJECT_CLASS);
+		$rs = $db->execute($s = Query::generateDeleteStm($this->table_comment,
+														 array(new WhereConstraint($this->table_comment->getColumn(DB::COMMENT_ID),Operator::EQUAL,$comm->getID()))), $this->table_comment->getName(), $comm);
+		if($this->db->affected_rows() != 1)
+			throw new Exception("Errore durante l'eliminazione dell'oggetto.");
+		return $comm;
+	}
+	
+	function updateState($comment) {
+		//TODO
+		//check se lo stato è uguale:
+		// - isRemovable
+		// - contentColor
+		
+		//se lo stato è diverso si aggiornano sul db solo i campi di stato.
 	}
 }
 ?>

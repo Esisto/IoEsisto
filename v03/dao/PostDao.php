@@ -2,21 +2,18 @@
 require_once 'dao/Dao.php';
 require_once("db.php");
 require_once("query.php");
+require_once("dataobject/Post.php");
 
-class PostDao implements Dao {
+class PostDao extends Dao {
+	const OBJECT_CLASS = "Post";
 	private $loadReports = false;
 	private $loadComments = true;
-	private $db;
-	private $table_post;
 	
 	const DEFAULT_CATEGORY = "News";
 	
 	function __construct() {
-		$this->table_post = Query::getDBSchema()->getTable(DB::TABLE_POST);
-		
-		$this->db = new DBManager();
-		if($this->db->connect_errno())
-			$this->db->display_connect_error("PostDao::__construct()");
+		parent::__construct();
+		$this->setMainTable(DB::TABLE_POST);
 	}
 	
 	function setLoadReports($load) {
@@ -28,19 +25,15 @@ class PostDao implements Dao {
 		settype($load, "boolean");
 		$this->loadComments = $load;
 		return $this;
-	} 
+	}
 	
 	function load($id) {
-		if(is_null($id)) throw new Exception("Attenzione! Non hai inserito un id.");
-		
-		if($this->db->connect_errno())
-			throw new Exception("Si è verificato un errore di connessione. Aggiornare la pagina e riprovare.");
-		
-		$rs = $db->execute($s = Query::generateSelectStm(array($this->table_post),
+		parent::load($id);
+		$rs = $db->execute($s = Query::generateSelectStm(array($this->table),
 														 array(),
-														 array(new WhereConstraint($this->table_post->getColumn(DB::POST_ID),Operator::EQUAL,intval($id))),
+														 array(new WhereConstraint($this->table->getColumn(DB::POST_ID),Operator::EQUAL,intval($id))),
 														 array()),
-							$this->table_post->getName(), null);
+							$this->table->getName(), null);
 		
 		if($db->num_rows() != 1)
 			throw new Exception("L'oggetto cercato non è stato trovato. Riprovare.");
@@ -50,31 +43,39 @@ class PostDao implements Dao {
 		return $p;
 	}
 	
+	function quickLoad($id) {
+		$loadC = $this->loadComments; $this->loadComments = false;
+		$loadR = $this->loadReports; $this->loadReports = false;
+		$p = null;
+		try {
+			$p = $this->load($id);
+			$this->loadComments = $loadC;
+			$this->loadReports = $loadR;
+		} catch(Exception $e) {
+			$this->loadComments = $loadC;
+			$this->loadReports = $loadR;
+			throw $e;
+		}
+		return $p;
+	}
+	
 	function loadByPermalink($permalink) {
-		if(is_null($id)) throw new Exception("Attenzione! Non hai inserito un permalink.");
-		
-		if($this->db->connect_errno())
-			throw new Exception("Si è verificato un errore di connessione. Aggiornare la pagina e riprovare.");
-		$rs = $db->execute($s = Query::generateSelectStm(array($this->table_post),
+		parent::load($permalink);
+		$rs = $db->execute($s = Query::generateSelectStm(array($this->table),
 														 array(),
-														 array(new WhereConstraint($this->table_post->getColumn(DB::POST_PERMALINK),Operator::EQUAL,$permalink)),
+														 array(new WhereConstraint($this->table->getColumn(DB::POST_PERMALINK),Operator::EQUAL,$permalink)),
 														 array()),
-							$this->table_post->getName(), null);
-			
-		//echo "<p>" . $s . "</p>"; //DEBUG
-		//echo "<p>" . $db->num_rows() . "</p>"; //DEBUG
-		if($db->num_rows() == 1) {
-			//echo serialize($db->fetch_result()); //DEBUG
-			$row = $db->fetch_result();
-			$p = $this->createFromDBResult($row);
-			//echo "<p>" .$p ."</p>";
-			return $p;
-		} else $db->display_error("PostDao::loadByPermalink()");
-		throw new Exception("L'oggetto cercato non è stato trovato. Riprovare.");
+							$this->table->getName(), null);
+		
+		if($db->num_rows() != 1)
+			throw new Exception("L'oggetto cercato non è stato trovato. Riprovare.");
+		
+		$row = $db->fetch_result();
+		$p = $this->createFromDBResult($row);
+		return $p;
 	}
 	
 	function createFromDBResult($row) {
-		require_once("dataobject/Post.php");
 		$type = $row[DB::POST_TYPE];
 		if($type == Post::NEWS || $type == Post::VIDEOREP)
 			$content = $row[DB::POST_CONTENT];
@@ -127,7 +128,7 @@ class PostDao implements Dao {
 		$post->setVote(VoteDao::getVote($post));
 		
 		$user = Session::getUser();
-		if($this->loadReports && $user->getRole() == "admin") {
+		if($this->loadReports && $user->getRole() == "admin") { //FIXME usa authorizationManager o roleManager
 			require_once 'dao/ReportDao.php';
 			$reportDao = new ReportDao();
 			$reportDao->loadAll($p);
@@ -136,46 +137,35 @@ class PostDao implements Dao {
 		$p->setPermalink($row[DB::POST_PERMALINK]);
 		
 		require_once("common.php");
-		$p->setAccessCount(LogManager::getAccessCount("Post", $p->getID())); //TODO modificare LogManager
+		$p->setAccessCount(LogManager::getAccessCount(self::OBJECT_CLASS, $p->getID())); //TODO modificare LogManager
 		
 		return $p;
 	}
 
 	function permalinkExists($permalink) {
-		if($this->db->connect_errno())
-			throw new Exception("Si è verificato un errore di connessione. Aggiornare la pagina e riprovare.");
-		
-		$rs = $db->execute($s = Query::generateSelectStm(array($this->table_post), array(),
-														 array(new WhereConstraint($this->table_post->getColumn(DB::POST_PERMALINK),Operator::EQUAL,$permalink)),
+		parent::load($permalink);
+		$rs = $db->execute($s = Query::generateSelectStm(array($this->table), array(),
+														 array(new WhereConstraint($this->table->getColumn(DB::POST_PERMALINK),Operator::EQUAL,$permalink)),
 														 array("count" => 2)));
-		if($db->num_rows() == 1) {
-			$row = $db->fetch_result();
-			return $row["COUNT(*)"] > 0;
-		} else $db->display_error("Post::permalinkExists()");
+		if($db->num_rows() != 1)
+			throw new Exception("Si è verificato un errore. Riprovare.");
 		
-		return false;
+		$row = $db->fetch_row();
+		return $row[0] > 0;
 	}
 	
 	function exists($post) {
-		$loadC = $this->loadComments; $this->loadComments = false;
-		$loadR = $this->loadReports; $this->loadReports = true;
-		
-		$result = false;
 		try {
 			$p = $this->load($post->getID());
-			$result = is_subclass_of($p, "Post");
+			return is_subclass_of($p, self::OBJECT_CLASS);
 		} catch(Exception $e) {
-			$result = false;
+			return false;
 		}
-		$this->loadComments = $loadC;
-		$this->loadReports = $loadR;
-		return $result;
 	}
 	
 	function save($post) {
-		if($this->db->connect_errno())
-			throw new Exception("Si è verificato un errore di connessione. Aggiornare la pagina e riprovare.");
-
+		parent::save($post, self::OBJECT_CLASS);
+		
 		$data = array(DB::POST_TYPE => $post->getType());
 		if(!is_null($post->getTitle()))
 			$data[DB::POST_TITLE] = $post->getTitle();
@@ -205,125 +195,121 @@ class PostDao implements Dao {
 			$data[DB::POST_AUTHOR] = $post->getAuthor();
 		if(!is_null($post->getPlace()))
 			$data[DB::POST_PLACE] = $post->getPlace();
+		if(is_null($post->getPermalink()));
+			$post->setPermalink($this->generatePermalink($post));
 		$data[DB::POST_PERMALINK] = $post->getPermalink();
-		$rand = "";
+		$rand = ""; $count = 0;
 		while(!$this->permalinkExists($post->getPermalink() . $rand)) {
-			//finché esiste già un permalink del genere, ne genero uno radfom.
+			if($count >= 1000) throw new Exception("Attenzione! Hai troppi atricol che si chiamano in questo modo. Prova a cambiare titolo.");
+			//finché esiste già un permalink del genere, ne genero uno random.
 			$rand = "(" . rand(65535, $_SERVER["REQUEST_TIME"]) . ")";
 			$data[DB::POST_PERMALINK] = $post->getPermalink() . $rand;
+			$count++;
 		}
 		$data[DB::POST_CREATION_DATE] = date("Y-m-d G:i:s", $_SERVER["REQUEST_TIME"]);
 		
-		$rs = $this->db->execute($s = Query::generateInsertStm($this->table_post,$data), $this->table_post->getName(), $this);
-		if($this->db->affected_rows() == 1) {
-			$post->setID($this->db->last_inserted_id());
-			$rs = $this->db->execute($s = Query::generateSelectStm(array($this->table_post),
-														 array(),
-														 array(new WhereConstraint($this->table_post->getColumn(DB::POST_ID),Operator::EQUAL,$this->getID())),
-														 array()),
-							  $this->table_post->getName(), $this);
-			
-			if($this->db->num_rows() == 1) {
-				$row = $this->db->fetch_result();
-				$post->setPermalink($row[DB::POST_PERMALINK]);
-				$post->setModificationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[DB::POST_CREATION_DATE])));
-				
-				//salvo i tag che non esistono
-				if(isset($data[DB::POST_TAGS]) && !is_null($data[DB::POST_TAGS]) && trim($data[DB::POST_TAGS]) != "")
-					TagManager::createTags(explode(",", $data[DB::POST_TAGS]));
-				
-				return $post->getID();
-			}
-		}
-		throw new Exception("Si è verificato un errore salvando il dato. Riprovare.");
+		$rs = $this->db->execute($s = Query::generateInsertStm($this->table,$data), $this->table->getName(), $this);
+		
+		if($this->db->affected_rows() != 1)
+			throw new Exception("Si è verificato un errore salvando l'oggetto. Riprovare.");
+		//carico il post inserito.
+		$p = $this->quickLoad(intval($this->db->last_inserted_id()));
+		//salvo i tag che non esistono
+		if(isset($data[DB::POST_TAGS]) && !is_null($data[DB::POST_TAGS]) && trim($data[DB::POST_TAGS]) != "")
+			TagManager::createTags(explode(",", $data[DB::POST_TAGS]));
+		return $p;
 	}
 	
 	function update($post) {
-		if(!$post->isEditable())
-			throw new Exception("Il post non può essere modificato perché è stato iscritto ad un contest o è sotto revisione di un redattore.");
+		parent::update($post, self::OBJECT_CLASS);
 		
-		if($this->db->connect_errno())
-			throw new Exception("Si è verificato un errore di connessione. Aggiornare la pagina e riprovare.");
-		
-		//carico il post per trovare le differenze.
-		$loadC = $this->loadComments; $this->loadComments = false;
-		$loadR = $this->loadReports; $this->loadReports = true;
-		$p_old = $this->load($post->getID());
-		$this->loadComments = $loadC;
-		$this->loadReports = $loadR;
+		$p_old = $this->quickLoad($post->getID());
 	
 		$data = array();
-		if($p_old != null) {
-			//cerco le differenze e le salvo.
-			if($p_old->getTitle() != $post->getTitle())
-				$data[DB::POST_TITLE] = $post->getTitle();
-			if($p_old->getSubtitle() != $post->getSubtitle())
-				$data[DB::POST_SUBTITLE] = $post->getSubtitle();
-			if($p_old->getHeadline() != $post->getHeadline())
-				$data[DB::POST_HEADLINE] = $post->getHeadline();
-			if($p_old->getContent() != $post->getContent()) {
-				if($post->type == Post::NEWS || $post->type == Post::VIDEOREP)
-					$data[DB::POST_CONTENT] = $post->getContent();
-				else
-					$data[DB::POST_CONTENT] = serialize($post->getContent());
-			}
-			if($p_old->getPlace() != $post->getPlace())
-				$data[DB::POST_PLACE] = $post->getPlace();
-			if($p_old->getPlaceName() != $post->getPlaceName())
-				$data[DB::POST_PLACE_NAME] = $post->getPlaceName();
-			if($p_old->getTags() != $post->getTags())
-				$data[DB::POST_TAGS] = $post->getTags();
-			if($p_old->getCategories() != $post->getCategories()) {
-				// check sulle categorie, eliminazione di quelle che non esistono nel sistema, se vuoto inserimento di quella di default
-				$new_cat = CategoryManager::filterWrongCategories(explode(",", $post->getCategories())); //TODO
-				if(count($new_cat) == 0)
-					$new_cat[] = self::DEFAULT_CATEGORY;
-				$post->setCategories(Filter::arrayToText($new_cat));
-				$data[DB::POST_CATEGORIES] = $post->getCategories();
-			}
-			if($p_old->isVisible() !== $post->isVisible())
-				$data[DB::POST_VISIBLE] = $post->isVisible() ? 1 : 0;
-			if($p_old->getPermalink() != $post->getPermalink()) {
-				if($this->permalinkExists($post->getPermalink())) throw new Exception("Il permalink inserito esiste già. Riprova.");
-				$data[DB::POST_PERMALINK] = $post->getPermalink();
-			}
-				
-			if(count($data) == 0) throw new Exception("Nessuna modifica da effettuare.");
-			$data[DB::POST_MODIFICATION_DATE] = date("Y/m/d G:i:s", $_SERVER["REQUEST_TIME"]); // se mi dicono di fare l'update, cambio modificationDate
-			
-			//TODO salvare $p_old nella storia e inserire previous version in $post.
-			
-			$rs = $this->db->execute($s = Query::generateUpdateStm($this->table_post,
-														 $data,
-														 array(new WhereConstraint($this->table_post->getColumn(DB::POST_ID),Operator::EQUAL,$this->getID()))),
-							  $this->table_post->getName(), $this);
-			//echo "<br />" . $s; //DEBUG
-			//echo "<br />" . mysql_affected_rows(); //DEBUG
-			if($this->db->affected_rows() == 1) {
-				//salvo i tag che non esistono
-				if(isset($data[DB::POST_TAGS]) && !is_null($data[DB::POST_TAGS]) && trim($data[DB::POST_TAGS]) != "")
-					TagManager::createTags(explode(",", $data[DB::POST_TAGS])); //TODO
-				
-				//echo "<br />" . $this; //DEBUG
-				return $post->getModificationDate();
-			}
+		if(is_null($p_old))
+			throw new Exception("L'oggetto da modificare non esiste.");
+		//cerco le differenze e le salvo.
+		if($p_old->getTitle() != $post->getTitle())
+			$data[DB::POST_TITLE] = $post->getTitle();
+		if($p_old->getSubtitle() != $post->getSubtitle())
+			$data[DB::POST_SUBTITLE] = $post->getSubtitle();
+		if($p_old->getHeadline() != $post->getHeadline())
+			$data[DB::POST_HEADLINE] = $post->getHeadline();
+		if($p_old->getContent() != $post->getContent()) {
+			if($post->type == Post::NEWS || $post->type == Post::VIDEOREP)
+				$data[DB::POST_CONTENT] = $post->getContent();
+			else
+				$data[DB::POST_CONTENT] = serialize($post->getContent());
 		}
-		throw new Exception("Si è verificato un errore aggiornando il dato. Riprovare.");
+		if($p_old->getPlace() != $post->getPlace())
+			$data[DB::POST_PLACE] = $post->getPlace();
+		if($p_old->getPlaceName() != $post->getPlaceName())
+			$data[DB::POST_PLACE_NAME] = $post->getPlaceName();
+		if($p_old->getTags() != $post->getTags())
+			$data[DB::POST_TAGS] = $post->getTags();
+		if($p_old->getCategories() != $post->getCategories()) {
+			// check sulle categorie, eliminazione di quelle che non esistono nel sistema, se vuoto inserimento di quella di default
+			$new_cat = CategoryManager::filterWrongCategories(explode(",", $post->getCategories())); //TODO
+			if(count($new_cat) == 0)
+				$new_cat[] = self::DEFAULT_CATEGORY;
+			$post->setCategories(Filter::arrayToText($new_cat));
+			$data[DB::POST_CATEGORIES] = $post->getCategories();
+		}
+		if($p_old->isVisible() !== $post->isVisible())
+			$data[DB::POST_VISIBLE] = $post->isVisible() ? 1 : 0;
+		if($p_old->getPermalink() != $post->getPermalink()) {
+			if($this->permalinkExists($post->getPermalink())) throw new Exception("Il permalink inserito esiste già. Riprova.");
+			$data[DB::POST_PERMALINK] = $post->getPermalink();
+		}
+			
+		if(count($data) == 0) throw new Exception("Nessuna modifica da effettuare.");
+		$modDate = $_SERVER["REQUEST_TIME"];
+		$data[DB::POST_MODIFICATION_DATE] = date("Y/m/d G:i:s", $modDate); // se mi dicono di fare l'update, cambio modificationDate
+		
+		//salvo la versione precedente e ne tengo traccia.
+		$history_id = $this->saveHistory($p_old, "UPDATED");
+		$post->setPreviousVersion($history_id);
+		$data[DB::POST_PREVIOUS_VERSION] = $post->getPreviousVersion();
+		
+		$rs = $this->db->execute($s = Query::generateUpdateStm($this->table, $data,
+									array(new WhereConstraint($this->table->getColumn(DB::POST_ID),Operator::EQUAL,$this->getID()))),
+									$this->table->getName(), $this);
+		if($this->db->affected_rows() != 1)
+			throw new Exception("Si è verificato un errore aggiornando il dato. Riprovare.");
+		//salvo i tag che non esistono
+		if(isset($data[DB::POST_TAGS]) && !is_null($data[DB::POST_TAGS]) && trim($data[DB::POST_TAGS]) != "")
+			TagManager::createTags(explode(",", $data[DB::POST_TAGS])); //TODO
+		
+		return $post->setModificationDate($modDate);
 	}
 	
 	function delete($post) {
-		if(!$post->isRemovable())
-			throw new Exception("Il post non può essere eliminato perché è stato iscritto ad un contest o è sotto revisione di un redattore.");
+		parent::delete($post, self::OBJECT_CLASS);
 		
-		if($this->db->connect_errno())
-			throw new Exception("Si è verificato un errore di connessione. Aggiornare la pagina e riprovare.");
-		$this->db->execute($s = Query::generateDeleteStm($this->table_post,
-													 	array(new WhereConstraint($this->table_post->getColumn(DB::POST_ID),Operator::EQUAL,$post->getID()))),
-						  $this->table_post->getName(), $this);
-						  
-		if($this->db->affected_rows() == 1)
-			return $post;
-		throw new Exception("Si è verificato un errore eliminando il dato. Riprovare.");
+		//carico il post completo dei suoi derivati (che andrebbero persi) esclusi i voti.
+		$loadC = $this->loadComments; $this->loadComments = true;
+		$loadR = $this->loadReports; $this->loadReports = true;
+		$p_complete = null;
+		try {
+			$p = $this->load($id);
+			$this->loadComments = $loadC;
+			$this->loadReports = $loadR;
+		} catch(Exception $e) {
+			$this->loadComments = $loadC;
+			$this->loadReports = $loadR;
+			throw $e;
+		}
+		
+		$this->db->execute($s = Query::generateDeleteStm($this->table,
+													 	array(new WhereConstraint($this->table->getColumn(DB::POST_ID),Operator::EQUAL,$post->getID()))),
+						  $this->table->getName(), $post);
+		
+		//salvo il post nella storia.
+		$this->saveHistory($p_complete, "DELETED");
+		
+		if($this->db->affected_rows() != 1)
+			throw new Exception("Si è verificato un errore eliminando il dato. Riprovare.");
+		return $post;
 	}
 	
 	private function generatePermalink($post) {
@@ -347,6 +333,15 @@ class PostDao implements Dao {
 		if(!is_null($u->getNickname()))
 			return $u->getNickname();
 		return $post->getAuthor();
+	}
+	
+	function updateState($post) {
+		//TODO
+		//check se lo stato è uguale:
+		// - isRemovable
+		// - contentColor
+		
+		//se lo stato è diverso si aggiornano sul db solo i campi di stato.
 	}
 }
 

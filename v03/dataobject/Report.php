@@ -1,21 +1,21 @@
 <?php
 class Report {
 	private $ID;
-	private $author;
-	private $post;
+	private $author_id;
+	private $object;
 	private $report;
 	
-	function __construct($author, $post, $report) {
-		$this->author = $author;
-		$this->post = $post;
+	function __construct($author_id, $object, $report) {
+		$this->author_id = $author_id;
+		$this->object = $object;
 		$this->report = $report;
 	}
 	
-	function getAuthor() {
-		return $this->author;
+	function getAuthorID() {
+		return $this->author_id;
 	}
-	function getPost() {
-		return $this->post;
+	function getObject() {
+		return $this->object;
 	}
 	function getReport() {
 		return $this->report;

@@ -487,7 +487,7 @@ class DBManager {
 		return self::fetch_result(MYSQL_NUM);
 	}
 	function fetch_field() {
-		if(is_a($this->result, "misqli_result"))
+		if(is_a($this->result, "mysqli_result"))
 			return $this->result->fetch_field;
 		return false;
 	}

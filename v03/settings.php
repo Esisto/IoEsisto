@@ -17,6 +17,7 @@ define("HIDE", "black");
 define("VM18", "red");
 define("OFFENSE", "yellow");
 define("GOOD", "green");
+define("MAXREPORTS", 50);
 
 // Google API settings
 define("MAPS_ENABLED", false);
