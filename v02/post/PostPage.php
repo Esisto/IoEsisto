@@ -5,6 +5,7 @@ require_once("file_manager.php");
 require_once("post/Post.php");
 require_once("post/PostManager.php");
 require_once("post/resourceManager.php");
+require_once("post/collection/CollectionManager.php");
 
 class PostPage {
 	const NO_DATE = "no_date";
@@ -184,7 +185,7 @@ class PostPage {
 				$error[] = "Scegliere il tipo di post da pubblicare.";
 				
 			
-			if($data["type"] == "News"){
+			if($data["type"] == "news"){
 				if(isset($_POST["content"]) && trim($_POST["content"]) != ""){
 					$data["content"] = $_POST["content"];
 				}else
@@ -195,9 +196,9 @@ class PostPage {
 				for($i=0,$numphoto=0;$i<10;$i++){
 					//se esiste e il nome non è nullo
 					//if(isset($_FILES["upfile$i"]) && trim($_FILES["upfile$i"]["name"]) != ""){
-						$photo[]= resourceManager::uploadPhoto(trim($_FILES["upfile$i"]["name"]),$_FILES["nomefile"]["type"],$user->getNickname);
+						$photo[]= resourceManager::uploadPhoto(trim($_FILES["upfile$i"]["name"]),$_FILES["upfile$i"]["type"],$user->getNickname());
 						$numphoto++;
-						/*DEBUG*/echo "caricamenta immagine upfile". $i ."</br> numphoto: " . $numphoto;
+						/*DEBUG*/echo "caricata immagine upfile". $i ."</br> numphoto: " . $numphoto;
 					//}
 				}
 				//se non sono state caricate foto do errore
@@ -231,16 +232,16 @@ class PostPage {
 			if(isset($_POST["tags"]) && trim($_POST["tags"]) != "")
 				$data["tags"] = $_POST["tags"];
 				
-			/*DEBUG*/echo "</br>controllo errori</br>";
+			/*DEBUG*/echo "</br>controllo errori";
 			if(is_null($error) || (is_array($error) && count($error) == 0)) {
-				/*DEBUG*/echo "</br>NO errori</br>";
+				/*DEBUG*/echo "</br>NO errori";
 				$data["author"] = $user->getID();
 				//se photoreportage creo una collection
-				if($data["type"]=="News" || $data["type"]=="videoreportage" ){
-					/*DEBUG*/echo "</br>PostManager::createPost". $data["type"] ."</br>";
+				if($data["type"]=="news" || $data["type"]=="videoreportage" ){
+					/*DEBUG*/echo "</br>PostManager::createPost ". $data["type"] ."</br></br>";
 					$post = PostManager::createPost($data);
 				}else if ($data["type"]=="photoreportage"){
-					/*DEBUG*/echo "</br>CollectionManager::createCollection". $data["type"] ."</br>";
+					/*DEBUG*/echo "</br>CollectionManager::createCollection ". $data["type"] ."</br>";
 					$post = CollectionManager::createCollection($data);
 				}
 				/*DEBUG*/ var_dump($post);
