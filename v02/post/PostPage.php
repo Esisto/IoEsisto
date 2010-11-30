@@ -4,7 +4,7 @@ require_once("strings/" . LANG . "strings.php");
 require_once("file_manager.php");
 require_once("post/Post.php");
 require_once("post/PostManager.php");
-
+require_once("post/resourceManager.php");
 
 class PostPage {
 	const NO_DATE = "no_date";
@@ -182,10 +182,36 @@ class PostPage {
 				/*DEBUG*/echo $data["type"];
 			}else
 				$error[] = "Scegliere il tipo di post da pubblicare.";
-			if(isset($_POST["content"]) && trim($_POST["content"]) != "")
-				$data["content"] = $_POST["content"];
-			else
-				$error[] = "Inserire un contenuto.";
+				
+			
+			if($data["type"] == "News"){
+				if(isset($_POST["content"]) && trim($_POST["content"]) != ""){
+					$data["content"] = $_POST["content"];
+				}else
+					$error[] = "Inserire un contenuto.";
+			} else if($data["type"] == "photoreportage"){
+				/*DEBUG*/echo "</br>caricamento immagini</br>";
+				$photo = array();
+				for($i=0,$numphoto=0;$i<10;$i++){
+					//se esiste e il nome non è nullo
+					//if(isset($_FILES["upfile$i"]) && trim($_FILES["upfile$i"]["name"]) != ""){
+						$photo[]= resourceManager::uploadPhoto(trim($_FILES["upfile$i"]["name"]),$_FILES["nomefile"]["type"],$user->getNickname);
+						$numphoto++;
+						/*DEBUG*/echo "caricamenta immagine upfile". $i ."</br> numphoto: " . $numphoto;
+					//}
+				}
+				//se non sono state caricate foto do errore
+				if($numphoto>0)
+					$data["content"] = $photo;
+				else
+					$error[]="Devi inserire almeno un'immagine";	
+				/*DEBUG*/echo "</br>FINE caricamento immagini</br> immagini caricate: ". count($photo);
+			} else if($data["type"] == "videoreportage"){
+				/*DEBUG*/echo "</br>caricamento video</br>";
+			}
+			
+	
+			
 			if(isset($_POST["cat"]) && is_array($_POST["cat"]) && count($_POST["cat"]) > 0) {
 				$cat = ""; $first = true;
 				foreach($_POST["cat"] as $k => $c) {
@@ -194,14 +220,6 @@ class PostPage {
 					$cat.= $c;
 				}
 				$data["categories"] = $cat;
-			}
-			//se sto creando photoreportage carico le foto
-			if($data["type"]=="photoreportage"){
-				/*DEBUG*/echo "</br>caricamento immagini</br>";
-			}
-			//se sto creando videoreportage carico i video
-			if($data["type"]=="videoreportage"){
-				/*DEBUG*/echo "</br>caricamento video</br>";
 			}
 			
 			if(isset($_POST["place"]) && trim($_POST["place"]) != "")
@@ -213,9 +231,19 @@ class PostPage {
 			if(isset($_POST["tags"]) && trim($_POST["tags"]) != "")
 				$data["tags"] = $_POST["tags"];
 				
+			/*DEBUG*/echo "</br>controllo errori</br>";
 			if(is_null($error) || (is_array($error) && count($error) == 0)) {
+				/*DEBUG*/echo "</br>NO errori</br>";
 				$data["author"] = $user->getID();
-				$post = PostManager::createPost($data);
+				//se photoreportage creo una collection
+				if($data["type"]=="News" || $data["type"]=="videoreportage" ){
+					/*DEBUG*/echo "</br>PostManager::createPost". $data["type"] ."</br>";
+					$post = PostManager::createPost($data);
+				}else if ($data["type"]=="photoreportage"){
+					/*DEBUG*/echo "</br>CollectionManager::createCollection". $data["type"] ."</br>";
+					$post = CollectionManager::createCollection($data);
+				}
+				/*DEBUG*/ var_dump($post);
 				if($post !== false) {
 					echo '
 			<div class="message">
@@ -223,6 +251,7 @@ class PostPage {
 			</div>';
 				}
 			} else {
+				/*DEBUG*/echo "</br>SI errori</br>";
 				self::showNewPostForm($data, $error);
 				return;
 			}
@@ -231,8 +260,8 @@ class PostPage {
 		if(isset($_GET["type"])) {
 			switch($_GET["type"]) {
 				case "Collection":
-				case "photoreportage":
-				case "videoreportage":
+				case "PhotoReportage":
+				case "VideoReportage":
 				case "Album":
 				case "Magazine":
 				case "Playlist":
@@ -327,6 +356,7 @@ class PostPage {
 			if(is_null($error) || (is_array($error) && count($error) == 0)) {
 				$data["author"] = $user->getID();
 				$post = PostManager::createPost($data);
+				/*DEBUG*/ echo $post;
 				if($post !== false) {
 					echo '
 			<div class="message">
@@ -342,8 +372,8 @@ class PostPage {
 		if(isset($_GET["type"])) {
 			switch($_GET["type"]) {
 				case "Collection":
-				case "photoreportage":
-				case "videoreportage":
+				case "PhotoReportage":
+				case "VideoReportage":
 				case "Album":
 				case "Magazine":
 				case "Playlist":
@@ -386,7 +416,7 @@ class PostPage {
 			<p class="post_subtitle"><label>Sottotilolo:</label><br />
 				<input class="post_subtitle" name="subtitle" value="<?php echo $post->getSubtitle(); ?>"/></p>
 			<p class="content"><label>Contenuto:</label><br/>
-				<textarea name="content" id="post_content"><?php echo $post->getContent(); ?></textarea>
+			<textarea name="content" id="post_content"><?php echo $post->getContent(); ?></textarea>
 				<!-- sostituisco textarea standard con ckeditor -->
 				<script type="text/javascript">
 					CKEDITOR.replace( 'post_content', { toolbar : 'edited'});
@@ -450,18 +480,12 @@ class PostPage {
 			<p class="post_subtitle"><label>Sottotilolo:</label><br />
 				<input class="post_subtitle" name="subtitle" value="<?php echo $post->getSubtitle(); ?>"/></p>
 			<p class="content"><label>Contenuto:</label><br/>
-				<textarea name="content" id="post_content"><?php echo $post->getContent(); ?></textarea>
-				<!-- sostituisco textarea standard con ckeditor -->
-				<script type="text/javascript">
-					CKEDITOR.replace( 'post_content', { toolbar : 'edited'});
-				</script>
+				<fieldset><legend>upload immagini</legend>
+				<?php for($i=0;$i<10;$i++){
+					echo "<input type=\"file\"name=\"upfile$i\"></br>";
+				}?>
+				</fieldset></p>
 			</p>
-			<!-- Inserimento immagini -->
-			<p class="uploadPhotos"><fieldset><legend>upload immagini</legend>
-			<?php for($i=0;$i<10;$i++){
-				echo "<input type=\"file\"name=\"upfile$i\"></br>";
-			}?>
-			</fieldset></p>
 			<p class="tags"><label>Tags:</label> 
 				<input class="tags" id="post_tags_input" name="tags" value="<?php echo $post->getTags(); ?>"/></p>
 			<p class="categories"><label>Categorie:</label><br/><?php
@@ -562,16 +586,8 @@ class PostPage {
 			<p class="post_subtitle"><label>Sottotilolo:</label><br />
 				<input class="post_subtitle" name="subtitle" value="<?php echo $post->getSubtitle(); ?>"/></p>
 			<p class="content"><label>Contenuto:</label><br/>
-				<textarea name="content" id="post_content"><?php echo $post->getContent(); ?></textarea>
-				<!-- sostituisco textarea standard con ckeditor -->
-				<script type="text/javascript">
-					CKEDITOR.replace( 'post_content', { toolbar : 'edited'});
-				</script>
+				<!-- TODO --> <fieldset><legend>upload video</legend>	</fieldset></p>
 			</p>
-			<!-- Inserimento video -->  
-			<p class="uploadVideos"><fieldset><legend>upload video</legend>
-			<!-- TODO -->
-			</fieldset></p>
 			<p class="tags"><label>Tags:</label> 
 				<input class="tags" id="post_tags_input" name="tags" value="<?php echo $post->getTags(); ?>"/></p>
 			<p class="categories"><label>Categorie:</label><br/><?php

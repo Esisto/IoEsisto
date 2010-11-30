@@ -29,6 +29,8 @@ class PostManager {
 		$data = Filter::filterArray($data);
 		
 		require_once("post/PostCommon.php");
+		require_once("post/collection/Collection.php");
+		
 		if(!isset($data["type"]))
 		   return false;
 		$p = false;
