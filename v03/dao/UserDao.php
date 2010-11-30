@@ -1,185 +1,169 @@
-<?php
+<?php //TODO
 require_once 'dao/Dao.php';
 require_once("db.php");
 require_once("query.php");
+require_once("dataobject/Post.php");
 
 class UserDao implements Dao {
-	private $db;
-	private $table_user;
+	const OBJECT_CLASS = "Post";
+	private $loadDependences = true;
+	private $loadReports = false;
 	
 	function __construct() {
-		$this->table_user = Query::getDBSchema()->getTable(DB::TABLE_USER);
-		
-		$this->db = new DBManager();
-		if($this->db->connect_errno())
-			$this->db->display_connect_error("UserDao::__construct()");
+		parent::__construct();
+		$this->setMainTable(DB::TABLE_USER);
 	}
 
-
-	static function loadFromDatabase($id, $loadDependences = true) {
-		// per fermare la ricorsività implicita di questa funzione, infatti loadFromDatabase chiama loadFollows che chiama loadFromDatabase.
-		
-		//DEBUG
-		if(!$loadDependences && DEBUG)
-			echo "<font color='blue'>NON carico le dipenzenze.</font>";
-		//END DEBUG
-		require_once("query.php");
-		$db = new DBManager();
-		if(!$db->connect_errno()) {
-			define_tables(); defineUserColumns();
-			$table = Query::getDBSchema()->getTable(TABLE_USER);
-			
-			$db->execute($s = Query::generateSelectStm(array($table), array(),
-												   array(new WhereConstraint($table->getColumn(USER_ID), Operator::EQUAL, $id)),
+	function setLoadReports($load) {
+		settype($load, "boolean");
+		$this->loadReports = $load;
+		return $this;
+	}
+	function setLoadDependences($load) {
+		settype($load, "boolean");
+		$this->loadDependences = $load;
+		return $this;
+	}
+	
+	function load($id) {
+		parent::load($id);
+		$this->db->execute($s = Query::generateSelectStm(array($this->table), array(),
+												   array(new WhereConstraint($this->table->getColumn(DB::USER_ID), Operator::EQUAL, intval($id))),
 												   array()));
 			
-			//echo "<p>" . $db->num_rows() . $s . "</p>"; //DEBUG
-			if($db->num_rows() == 1) {
-				$user = self::createFromDBManager($db);
-				if($loadDependences) {
-					$loadDependences = false;
-					$user->loadContacts()->loadFeedback()->loadFollows()->loadFollowers();
-					$loadDependences = true;
-				}
-				//echo "<p>" . $user . "</p>"; //DEBUG
-				return $user;
-			} else $db->display_error("User::loadFromDatabase()");
-		} else $db->display_connect_error("User::loadFromDatabase()");
-		return false;
-	}
-
-	static function loadByMail($mail, $loadDependences = true) {
-		require_once("query.php");
-		$db = new DBManager();
-		if(!$db->connect_errno()) {
-			define_tables(); defineUserColumns();
-			$table = Query::getDBSchema()->getTable(TABLE_USER);
-			
-			$db->execute($s = Query::generateSelectStm(array($table), array(),
-												   array(new WhereConstraint($table->getColumn(USER_NICKNAME), Operator::EQUAL, $nickname)),
-												   array()));
-			
-			if($db->num_rows() == 1) {
-				$u = self::createFromDBManager($db);
-				if($loadDependences) {
-					$loadDependences = false;
-					$u->loadContacts()->loadFeedback()->loadFollows()->loadFollowers();
-					$loadDependences = true;
-				}
-				return $u;
-			} else $db->display_error("User::loadByMail()");
-		} else $db->display_connect_error("User::loadByMail()");
-		return false;
-	}
-
-	private static function createFromDBManager($db) {
+		if($db->num_rows() != 1)
+			throw new Exception("L'oggetto cercato non è stato trovato. Riprovare.");
+		
 		$row = $db->fetch_result();
-		define_tables(); defineUserColumns();
-		$data = array(NICKNAME => $row[USER_NICKNAME],
-					  EMAIL => $row[USER_E_MAIL],
-					  PASSWORD => $row[USER_PASSWORD],
-					  NAME => $row[USER_NAME],
-					  SURNAME => $row[USER_SURNAME],
-					  GENDER => $row[USER_GENDER],
-					  BIRTHDAY => date_timestamp_get(date_create($row[USER_BIRTHDAY])),
-					  BIRTHPLACE => $row[USER_BIRTHPLACE],
-					  LIVING_PLACE => $row[USER_LIVINGPLACE],
-					  AVATAR => $row[USER_AVATAR],
-					  HOBBIES => $row[USER_HOBBIES],
-					  JOB => $row[USER_JOB],
-					  ROLE => $row[USER_ROLE],
-					  VISIBLE => $row[USER_VISIBLE]);
-		
-		$user = new User($data);
-		$user->setID(intval($row[USER_ID]))->
-			   setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[USER_CREATION_DATE])))->
-			   setVerified($row[USER_VERIFIED]);
-		
-		require_once("common.php");
-		$user->setAccessCount(LogManager::getAccessCount("User", $user->getID()));
-		
+		$user = $this->createFromDBRow($row);
 		return $user;
 	}
 
-	static function loadByNickname($nickname, $loadDependences = true) {
-		require_once("query.php");
-		$db = new DBManager();
-		if(!$db->connect_errno()) {
-			define_tables(); defineUserColumns();
-			$table = Query::getDBSchema()->getTable(TABLE_USER);
-			
-			$db->execute($s = Query::generateSelectStm(array($table), array(),
-												   array(new WhereConstraint($table->getColumn(USER_NICKNAME), Operator::EQUAL, $nickname)),
+	static function loadByMail($mail) {
+		parent::load($mail);
+		$this->db->execute($s = Query::generateSelectStm(array($this->table), array(),
+												   array(new WhereConstraint($this->table->getColumn(DB::USER_E_MAIL), Operator::EQUAL, $mail)),
 												   array()));
 			
-			if($db->num_rows() == 1) {
-				$u = self::createFromDBManager($db);
-				if($loadDependences) {
-					$loadDependences = false;
-					$u->loadContacts()->loadFeedback()->loadFollows()->loadFollowers();
-					$loadDependences = true;
-				}
-				return $u;
-			} else $db->display_error("User::loadByNickname()");
-		} else $db->display_connect_error("User::loadByNickname()");
-		return false;
+		if($db->num_rows() != 1)
+			throw new Exception("L'oggetto cercato non è stato trovato. Riprovare.");
+
+		$row = $db->fetch_result();
+		$user = $this->createFromDBRow($row);
+		return $user;
 	}
 
+	static function loadByNickname($nickname) {
+		parent::load($nickname);
+		$this->db->execute($s = Query::generateSelectStm(array($this->table), array(),
+												   array(new WhereConstraint($this->table->getColumn(DB::USER_NICKNAME), Operator::EQUAL, $nickname)),
+												   array()));
+			
+		if($db->num_rows() != 1)
+			throw new Exception("L'oggetto cercato non è stato trovato. Riprovare.");
 
-	function save() {
-		require_once("query.php");
-		$db = new DBManager();
-		if(!$db->connect_errno()) {
-			define_tables(); defineUserColumns();
-			$table = Query::getDBSchema()->getTable(TABLE_USER);
-			$data = array();
+		$row = $db->fetch_result();
+		$user = $this->createFromDBRow($row);
+		return $user;
+	}
+
+	private function createFromDBRow($row) {
+		$user = new User($row[DB::USER_NICKNAME], $row[DB::USER_E_MAIL], $row[DB::USER_PASSWORD]);
+		$user->setName($row[DB::USER_NAME])
+			 ->setSurname($row[DB::USER_SURNAME])
+			 ->setGender($row[DB::USER_GENDER])
+			 ->setBirthday(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[DB::USER_BIRTHDAY])))
+			 ->setBirthplace($row[DB::USER_BIRTHPLACE])
+			 ->setLivingPlace($row[DB::USER_LIVINGPLACE])
+			 ->setHobbies($row[DB::USER_HOBBIES])
+			 ->setJob($row[DB::USER_JOB])
+			 ->setRole($row[DB::USER_ROLE])
+			 ->setVisible($row[DB::USER_VISIBLE])
+			 ->setID(intval($row[DB::USER_ID]))
+			 ->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[DB::USER_CREATION_DATE])))
+			 ->setVerified($row[DB::USER_VERIFIED]);
+		try {
+			require_once("dao/ResourceDao.php");
+			$resourceDao = new ResourceDao();
+			$user->setAvatar($resourceDao->quickLoad($row[DB::USER_AVATAR]));
+		} catch(Exception $e) {
+			$user->setAvatar($resourceDao->quickLoad(EMPTY_AVATAR));
+		}
+		
+		if($this->loadDependences) {
+			require_once("dao/ContactDao.php");
+			$contactDao = new ContactDao();
+			$contactDao->loadAll($user);
+			require_once("dao/FollowDao.php");
+			$followDao = new FollowDao();
+			$followDao->loadAllFollowers($user);
+			$followDao->loadAllFollows($user);
+			require_once("dao/FeedbackDao.php");
+			$feedbackDao = new FeedbackDao();
+			$feedbackDao->loadAll($user);
+		}
+		$user = Session::getUser();
+		if($this->loadReports && $user->isUserManager()) { //FIXME usa authorizationManager o roleManager
+			require_once 'dao/ReportDao.php';
+			$reportDao = new ReportDao();
+			$reportDao->loadAll($p);
+		}
+		
+		//setto lo stato
+		$user->setEditable($row[DB::EDITABLE])
+			 ->setRemovable($row[DB::REMOVABLE]);
+		$user->setBlackContent($row[DB::BLACK_CONTENT])
+			 ->setRedContent($row[DB::RED_CONTENT])
+			 ->setYellowContent($row[DB::YELLOW_CONTENT])
+			 ->setAutoBlackContent($row[DB::AUTO_BLACK_CONTENT]);
+			 
+		$user->setAccessCount($this->getAccessCount($user));
+		return $user;
+	}
+
+	function save($user) {
+		parent::save($user, self::OBJECT_CLASS);
+		$data = array();
 			
-			if(isset($this->avatar))
-				$data[USER_AVATAR] = $this->getAvatar();
-			if(isset($this->birthday))
-				$data[USER_BIRTHDAY] = date("Y/m/d", $this->getBirthday());
-			if(isset($this->birthplace))
-				$data[USER_BIRTHPLACE] = $this->getBirthplace();
-			if(isset($this->email))
-				$data[USER_E_MAIL] = $this->getEMail();
-			if(isset($this->gender))
-				$data[USER_GENDER] = $this->getGender();
-			if(isset($this->hobbies))
-				$data[USER_HOBBIES] = $this->getHobbies();
-			if(isset($this->job))
-				$data[USER_JOB] = $this->getJob();
-			if(isset($this->livingPlace))
-				$data[USER_LIVINGPLACE] = $this->getLivingPlace();
-			if(isset($this->name))
-				$data[USER_NAME] = $this->getName();
-			if(isset($this->nickname))
-				$data[USER_NICKNAME] = $this->getNickname();
-			if(isset($this->password))
-				$data[USER_PASSWORD] = $this->getPassword();
-			if(isset($this->role))
-				$data[USER_ROLE] = $this->getRole();
-			if(isset($this->surname))
-				$data[USER_SURNAME] = $this->getSurname();
-			if(isset($this->visible))
-				$data[USER_VISIBLE] = $this->getVisible() ? 1 : 0;
+		if(isset($user->avatar))
+			$data[DB::USER_AVATAR] = $user->getAvatar();
+		if(isset($user->birthday))
+			$data[DB::USER_BIRTHDAY] = date("Y/m/d", $user->getBirthday());
+		if(isset($user->birthplace))
+			$data[DB::USER_BIRTHPLACE] = $user->getBirthplace();
+		if(isset($user->email))
+			$data[DB::USER_E_MAIL] = $user->getEMail();
+		if(isset($user->gender))
+			$data[DB::USER_GENDER] = $user->getGender();
+		if(isset($user->hobbies))
+			$data[DB::USER_HOBBIES] = $user->getHobbies();
+		if(isset($user->job))
+			$data[DB::USER_JOB] = $user->getJob();
+		if(isset($user->livingPlace))
+			$data[DB::USER_LIVINGPLACE] = $user->getLivingPlace();
+		if(isset($user->name))
+			$data[DB::USER_NAME] = $user->getName();
+		if(isset($user->nickname))
+			$data[DB::USER_NICKNAME] = $user->getNickname();
+		if(isset($user->password))
+			$data[DB::USER_PASSWORD] = $user->getPassword();
+		if(isset($user->role))
+			$data[DB::USER_ROLE] = $user->getRole();
+		if(isset($user->surname))
+			$data[DB::USER_SURNAME] = $user->getSurname();
+		if(isset($user->visible))
+			$data[DB::USER_VISIBLE] = $user->getVisible() ? 1 : 0;
+		$data[DB::USER_CREATION_DATE] = date("Y-m-d G:i:s", $_SERVER["REQUEST_TIME"]);
 			
-			$db->execute($s = Query::generateInsertStm($table, $data), $table->getName(), $this);
+		$this->db->execute($s = Query::generateInsertStm($this->table, $data), $this->table->getName(), $user);
 			
-			if($db->affected_rows() == 1) {
-				$this->setID($db->last_inserted_id());
-				$db->execute(Query::generateSelectStm(array($table),
-												  array(),
-												  array(new WhereConstraint($table->getColumn(USER_ID), Operator::EQUAL, $this->getID())),
-												  array()));
-				
-				if($db->num_rows() == 1) {
-					$row = $db->fetch_result();
-					$this->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[USER_CREATION_DATE])));
-					return $this;
-				} else $db->display_error("User::save()");
-			} else $db->display_error("User::save()");
-		} else $db->display_connect_error("User::save()");
-		return false;
+		if($this->db->affected_rows() != 1)
+			throw new Exception("Si è verificato un errore salvando l'oggetto. Riprovare.");
+		
+		$u = $this->load(intval($db->last_inserted_id()));
+		
+		//TODO salvo lo stato
+		return $u;
 	}
 	
 	function update() {

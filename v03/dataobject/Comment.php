@@ -9,14 +9,12 @@ class Comment extends Editable {
 	private $creationDate;
 	private $reports;
 	
-	private $removable = true;				// cancellabile dall'autore
-	private $blackContent = false;			// bollino nero: un redattore ha 'censurato' il commento
-	private $autoBlackContent = false;		// bollino nero automatico: il commento ha superato le TOT segnalazioni
-	
 	function __construct($comment, $post, $author) {
 		$this->author = $author;
 		$this->post = $post;
 		$this->comment = $comment;
+		
+		$this->setEditable(false);
 	}
 	
 	function getAuthor() {
@@ -84,7 +82,7 @@ class Comment extends Editable {
 	 * @Override
 	 */
 	function __toString() {
-		$s = "Comment (ID = " . $this->ID .
+		$s = "<font color='" . $this->getContentColor() . "'>Comment (ID = " . $this->ID .
 			 " | author = " . $this->author .
 			 " | post = " . $this->post .
 			 " | comment = " . $this->comment .
@@ -94,7 +92,7 @@ class Comment extends Editable {
 			if($i>0) $s.= ", ";
 			$s.= $this->reports[$i];
 		}
-		$s.= "))";
+		$s.= "))</font>";
 		return $s;
 	}
 }

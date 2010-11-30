@@ -1,5 +1,5 @@
 <?php
-
+//TODO
 class Contest {
 	protected $ID;
 	protected $title;

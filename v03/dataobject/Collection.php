@@ -41,7 +41,7 @@ class Collection extends Post {
 	 * @Override
 	 */
 	function __toString() {
-		$s = "Post (ID = " . $this->getID() .
+		$s = "<font color='" . $this->getContentColor() . "'>Post (ID = " . $this->getID() .
 			 " | postType = " . $this->getType() .
 			 " | title = " . $this->getTitle() .
 			 " | subtitle = " . $this->getSubtitle() .
@@ -73,7 +73,7 @@ class Collection extends Post {
 			if($i>0) $s.= ", ";
 			$s.= $this->reports[$i];
 		}
-		$s.= "))";
+		$s.= "))</font>";
 		return $s;
 	}
 }

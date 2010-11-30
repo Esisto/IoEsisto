@@ -73,8 +73,8 @@ class CommentDao implements Dao {
 				$comm[] = $com;
 			}
 		}
-		$post->setComments($comm);
-		return $post;
+		
+		return $post->setComments($comm);
 	}
 	
 	function save($comm) {

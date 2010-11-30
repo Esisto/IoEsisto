@@ -48,7 +48,8 @@ class ReportDao implements Dao {
 			$report->setID($row[REPORT_ID]);
 			$reports[] = $report;
 		}
-		return $reports;
+		
+		return $object->setReports($reports);
 	}
 	
 	function getCount($object) {

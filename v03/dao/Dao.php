@@ -47,14 +47,14 @@ abstract class Dao {
 		return null;
 	}
 	
-	function update($object, $objetcClass = null) {
+	function update($object, $editor, $objetcClass = null) {
 		if(is_null($object)) throw new Exception("Attenzione! Non hai inserito l'oggetto da modificare.");
 		
 		if(!is_null($objectClass) && is_string($objectClass))
 			if(!is_subclass_of($object, $objectClass))
-				throw new Exception("Attenzione! L'oggetto da modificare non è del tipo richiesto.");
+				throw new Exception("Attenzione! L'oggetto da modificare non è di tipo: " . $objectClass);
 				
-		if(is_subclass_of($object, "Editable"))
+		if(!$editor->isEditor() && is_subclass_of($object, "Editable"))
 			if(!$object->isEditable())
 				throw new Exception("L'oggetto non può essere modificato perché è stato iscritto ad un contest o è sotto revisione di un redattore.");
 				
@@ -62,7 +62,7 @@ abstract class Dao {
 		return null;
 	}
 	
-	function checkConnection() {
+	protected function checkConnection() {
 		if($this->db->connect_errno())
 			throw new Exception("Si è verificato un errore di connessione. Aggiornare la pagina e riprovare.");
 	}
@@ -77,11 +77,15 @@ abstract class Dao {
 	
 	function updateState($object);
 	
-	function saveHistory($object, $operation) { //FIXME controllare che vada bene che stia in questa classe e la sua implementazione.
+	function saveHistory($object, $editor, $operation) {
+		//FIXME controllare che vada bene che stia in questa classe e la sua implementazione.
 		$this->save($object);
 		
+		if(!is_a($editor, "User"))
+			throw new Exception("Non hai settato chi ha fatto la modifica.");
 		$data = array(DB::HISTORY_OBJECT => serialize($object),
 					  DB::HISTORY_DATE => time(),
+					  DB::HISTORY_EDITOR => $editor->getID(),
 					  DB::HISTORY_OPERATION => $operation);
 		
 		$this->db->execute(Query::generateInsertStm($this->historyTable, $data), $this->historyTable, $object);

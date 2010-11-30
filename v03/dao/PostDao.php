@@ -32,14 +32,13 @@ class PostDao extends Dao {
 		$rs = $db->execute($s = Query::generateSelectStm(array($this->table),
 														 array(),
 														 array(new WhereConstraint($this->table->getColumn(DB::POST_ID),Operator::EQUAL,intval($id))),
-														 array()),
-							$this->table->getName(), null);
+														 array()));
 		
 		if($db->num_rows() != 1)
 			throw new Exception("L'oggetto cercato non è stato trovato. Riprovare.");
 		
 		$row = $db->fetch_result();
-		$p = $this->createFromDBResult($row);
+		$p = $this->createFromDBRow($row);
 		return $p;
 	}
 	
@@ -71,11 +70,11 @@ class PostDao extends Dao {
 			throw new Exception("L'oggetto cercato non è stato trovato. Riprovare.");
 		
 		$row = $db->fetch_result();
-		$p = $this->createFromDBResult($row);
+		$p = $this->createFromDBRow($row);
 		return $p;
 	}
 	
-	function createFromDBResult($row) {
+	function createFromDBRow($row) {
 		$type = $row[DB::POST_TYPE];
 		if($type == Post::NEWS || $type == Post::VIDEOREP)
 			$content = $row[DB::POST_CONTENT];
@@ -125,20 +124,21 @@ class PostDao extends Dao {
 			$commentDao = new CommentDao();
 			$commentDao->loadAll($p);
 		}
-		$post->setVote(VoteDao::getVote($post));
+		$p->setPermalink($row[DB::POST_PERMALINK]);
+		$voteDao = new VoteDao();
+		$p->setVote($voteDao->getVote($p));
+		//setto lo stato
+		$p->setEditable($row[DB::EDITABLE])->setRemovable($row[DB::REMOVABLE]);
+		$p->setBlackContent($row[DB::BLACK_CONTENT])->setRedContent($row[DB::RED_CONTENT])
+				->setYellowContent($row[DB::YELLOW_CONTENT])->setAutoBlackContent($row[DB::AUTO_BLACK_CONTENT]);
 		
 		$user = Session::getUser();
-		if($this->loadReports && $user->getRole() == "admin") { //FIXME usa authorizationManager o roleManager
+		if($this->loadReports && $user->isEditor()) { //FIXME usa authorizationManager o roleManager
 			require_once 'dao/ReportDao.php';
 			$reportDao = new ReportDao();
 			$reportDao->loadAll($p);
 		}
-		
-		$p->setPermalink($row[DB::POST_PERMALINK]);
-		
-		require_once("common.php");
-		$p->setAccessCount(LogManager::getAccessCount(self::OBJECT_CLASS, $p->getID())); //TODO modificare LogManager
-		
+		$p->setAccessCount($this->getAccessCount($post));
 		return $p;
 	}
 
@@ -213,15 +213,19 @@ class PostDao extends Dao {
 		if($this->db->affected_rows() != 1)
 			throw new Exception("Si è verificato un errore salvando l'oggetto. Riprovare.");
 		//carico il post inserito.
-		$p = $this->quickLoad(intval($this->db->last_inserted_id()));
+		$p = $this->load(intval($this->db->last_inserted_id()));
 		//salvo i tag che non esistono
 		if(isset($data[DB::POST_TAGS]) && !is_null($data[DB::POST_TAGS]) && trim($data[DB::POST_TAGS]) != "")
 			TagManager::createTags(explode(",", $data[DB::POST_TAGS]));
+			
+		//TODO salvo lo stato
 		return $p;
 	}
 	
-	function update($post) {
-		parent::update($post, self::OBJECT_CLASS);
+	function update($post, $editor) {
+		parent::update($post, $editor, self::OBJECT_CLASS);
+		if(!is_a($editor, "User"))
+			throw new Exception("Non hai settato chi ha fatto la modifica.");
 		
 		$p_old = $this->quickLoad($post->getID());
 	
@@ -272,8 +276,16 @@ class PostDao extends Dao {
 		$data[DB::POST_PREVIOUS_VERSION] = $post->getPreviousVersion();
 		
 		$rs = $this->db->execute($s = Query::generateUpdateStm($this->table, $data,
-									array(new WhereConstraint($this->table->getColumn(DB::POST_ID),Operator::EQUAL,$this->getID()))),
-									$this->table->getName(), $this);
+									array(new WhereConstraint($this->table->getColumn(DB::POST_ID),Operator::EQUAL,$post->getID()))),
+									$this->table->getName(), $post);
+		//aggiorno lo stato del post (se chi l'ha modificato è un redattore).
+		if($editor->isEditor()) { //TODO usa authorization manager
+			//FIXME controlla che ci sia tutto
+			$post->setEditable(false);
+			$post->setRemovable(false);
+			$this->updateState($post);
+		}
+		
 		if($this->db->affected_rows() != 1)
 			throw new Exception("Si è verificato un errore aggiornando il dato. Riprovare.");
 		//salvo i tag che non esistono
@@ -286,12 +298,12 @@ class PostDao extends Dao {
 	function delete($post) {
 		parent::delete($post, self::OBJECT_CLASS);
 		
-		//carico il post completo dei suoi derivati (che andrebbero persi) esclusi i voti.
+		//carico il post, completo dei suoi derivati (che andrebbero persi) esclusi i voti.
 		$loadC = $this->loadComments; $this->loadComments = true;
 		$loadR = $this->loadReports; $this->loadReports = true;
 		$p_complete = null;
 		try {
-			$p = $this->load($id);
+			$p_complete = $this->load($post->getID());
 			$this->loadComments = $loadC;
 			$this->loadReports = $loadR;
 		} catch(Exception $e) {
@@ -301,8 +313,8 @@ class PostDao extends Dao {
 		}
 		
 		$this->db->execute($s = Query::generateDeleteStm($this->table,
-													 	array(new WhereConstraint($this->table->getColumn(DB::POST_ID),Operator::EQUAL,$post->getID()))),
-						  $this->table->getName(), $post);
+								array(new WhereConstraint($this->table->getColumn(DB::POST_ID),Operator::EQUAL,$post->getID()))),
+						  		$this->table->getName(), $post);
 		
 		//salvo il post nella storia.
 		$this->saveHistory($p_complete, "DELETED");
@@ -342,6 +354,13 @@ class PostDao extends Dao {
 		// - contentColor
 		
 		//se lo stato è diverso si aggiornano sul db solo i campi di stato.
+	}
+	
+	private function getAccessCount($post) {
+		//TODO
+		//aggiunge 1 all'accesscount e aggiorna il db.
+		//restituisce il conto.
+		//questo fino all'arrivo di googleanalitics
 	}
 }
 

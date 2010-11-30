@@ -1,53 +1,104 @@
-<?php //TODO
-define("ID", "ID");
-define("NICKNAME", "nickname");
-//EMAIL è già definito in questo file
-define("PASSWORD", "password");
-//NAME è già definito in questo file
-define("SURNAME", "surname");
-define("GENDER", "gender");
-define("BIRTHDAY", "birthday");
-define("BIRTHPLACE", "birthplace");
-define("LIVING_PLACE", "livingPlace");
-define("AVATAR", "avatar");
-define("HOBBIES", "hobbies");
-define("JOB", "job");
-define("ROLE", "role");
-define("CREATION_DATE", "creationDate");
-define("VISIBLE", "visible");
-define("VERIFIED", "verified");
+<?php
 
-define("CONTACTS", "contacts");
-define("FEEDBACK", "feedback");
-define("FOLLOWS", "follows");
-define("FOLLOWERS", "followers");
-define("REPORTS", "reports");
-
-class User {
-	protected $ID;				//
-	protected $nickname;		//**
-	protected $email;			//**
-	protected $password;		//**
-	protected $name;			//**
-	protected $surname;			//**
-	protected $gender;			//**
-	protected $birthday;		//** TIMESTAMP
-	protected $birthplace;		//**
-	protected $livingPlace;		//**
-	protected $avatar;			//**
-	protected $hobbies;			//**
-	protected $job;				//**
-	protected $role;			//**
-	protected $creationDate;	//
-	protected $visible;			//**
-	protected $verified;		// *
-	protected $accessCount;		// *
+class User extends Editable {
+	private $accessCount;		// *
+	private $avatar;			//**
+	private $birthday;			//**
+	private $birthplace;		//**
+	private $creationDate;		//
+	private $email;				//**
+	private $gender;			//**
+	private $hobbies;			//**
+	private $ID;				//
+	private $job;				//**
+	private $livingPlace;		//**
+	private $name;				//**
+	private $nickname;			//**
+	private $password;			//**
+	private $role;				//**
+	private $surname;			//**
+	private $verified;			// *
+	private $visible;			//**
 	
-	protected $contacts = array();		//
-	protected $feedback;				//valore totale feedback
-	protected $follows = array();		//chi segue
-	protected $followers = array();		//chi lo segue
-	protected $reports = array(); 		//TODO da implementare
+	private $contacts;		//
+	private $feedback;		//valore totale feedback
+	private $follows;		//chi segue
+	private $followers;		//chi lo segue
+	private $reports; 		//le segnalazioni
+
+	function __construct($nickname, $email, $password) {
+		$this->setNickname($nickname);
+		$this->setEMail($email);
+		$this->setPassword($password);
+		$this->setVerified(false);
+	}
+	
+	function getID() {
+		return $this->ID;
+	}
+	function getNickname() {
+		return $this->nickname;
+	}
+	function getEMail() {
+		return $this->email;
+	}
+	function getPassword() {
+		return $this->password;
+	}
+	function getName() {
+		return $this->name;
+	}
+	function getSurname() {
+		return $this->surname;
+	}
+	function getGender() {
+		return $this->gender;
+	}
+	function getBirthday() {
+		return $this->birthday;
+	}
+	function getBirthplace() {
+		return $this->birthplace;
+	}
+	function getLivingPlace() {
+		return $this->livingPlace;
+	}
+	function getAvatar() {
+		return $this->avatar;
+	}
+	function getHobbies() {
+		return $this->hobbies;
+	}
+	function getJob() {
+		return $this->job;
+	}
+	function getRole() {
+		return $this->role;
+	}
+	function getCreationDate() {
+		return $this->creationDate;
+	}
+	function getVisible() {
+		return $this->visible;
+	}
+	function getVerified() {
+		return $this->verified;
+	}
+	function getContacts() {
+		return $this->contacts;
+	}
+	function getFeedback() {
+		return $this->feedback;
+	}
+	function getFollows() {
+		return $this->follows;
+	}
+	function getFollowers() {
+		return $this->followers;
+	}
+	function getAccessCount() {
+		return $this->accessCount;
+	}
 	
 	function setID($id) {
 		$this->ID = $id;
@@ -136,136 +187,6 @@ class User {
 	function setAccessCount($ac) {
 		$this->accessCount = $ac;
 		return $this;
-	}
-	
-	function getID() {
-		return $this->ID;
-	}
-	function getNickname() {
-		return $this->nickname;
-	}
-	function getEMail() {
-		return $this->email;
-	}
-	function getPassword() {
-		return $this->password;
-	}
-	function getName() {
-		return $this->name;
-	}
-	function getSurname() {
-		return $this->surname;
-	}
-	function getGender() {
-		return $this->gender;
-	}
-	function getBirthday() {
-		return $this->birthday;
-	}
-	function getBirthplace() {
-		return $this->birthplace;
-	}
-	function getLivingPlace() {
-		return $this->livingPlace;
-	}
-	function getAvatar() {
-		return $this->avatar;
-	}
-	function getHobbies() {
-		return $this->hobbies;
-	}
-	function getJob() {
-		return $this->job;
-	}
-	function getRole() {
-		return $this->role;
-	}
-	function getCreationDate() {
-		return $this->creationDate;
-	}
-	function getVisible() {
-		return $this->visible;
-	}
-	function getVerified() {
-		return $this->verified;
-	}
-	function getContacts() {
-		return $this->contacts;
-	}
-	function getFeedback() {
-		if(!isset($this->feedback))
-			if(isset($this->ID))
-				$this->loadFeedback();
-		return $this->feedback;
-	}
-	function getFollows() {
-		return $this->follows;
-	}
-	function getFollowers() {
-		return $this->followers;
-	}
-	function getAccessCount() {
-		return $this->accessCount;
-	}
-
-	/**
-	 * @param $data: array associativo con le seguenti chiavi:
-	 * nickname			//
-	 * email			//
-	 * password			//
-	 * name				//
-	 * surname			//
-	 * gender			//
-	 * birthday			//
-	 * birthplace		//
-	 * livingPlace		//
-	 * avatar			//
-	 * hobbies			//
-	 * job				//
-	 * role				//
-	 * visible			//
-	 */
-	function __construct($data) {
-		$data[VERIFIED] = false;
-		$this->setValuesFromArray($data);
-	}
-	
-	private function setValuesFromArray($data) {
-		if(isset($data[NICKNAME]))
-			$this->setNickname($data[NICKNAME]);
-		if(isset($data[EMAIL]))
-			$this->setEMail($data[EMAIL]);
-		if(isset($data[PASSWORD]))
-			$this->setPassword($data[PASSWORD]);
-		if(isset($data[NAME]))
-			$this->setName($data[NAME]);
-		if(isset($data[SURNAME]))
-			$this->setSurname($data[SURNAME]);
-		if(isset($data[GENDER]))
-			$this->setGender($data[GENDER]);
-		if(isset($data[BIRTHDAY]))
-			$this->setBirthday(intval($data[BIRTHDAY]));
-		if(isset($data[BIRTHPLACE]))
-			$this->setBirthplace($data[BIRTHPLACE]);
-		if(isset($data[LIVING_PLACE]))
-			$this->setLivingPlace($data[LIVING_PLACE]);
-		if(isset($data[AVATAR]))
-			$this->setAvatar($data[AVATAR]);
-		if(isset($data[HOBBIES]))
-			$this->setHobbies($data[HOBBIES]);
-		if(isset($data[JOB]))
-			$this->setJob($data[JOB]);
-		if(isset($data[ROLE]))
-			$this->setRole($data[ROLE]);
-		if(isset($data[VISIBLE]))
-			$this->setVisible($data[VISIBLE]);
-		if(isset($data[VERIFIED]))
-			$this->setVerified($data[VERIFIED]);
-	}
-	
-	function edit($data) {
-		$this->setValuesFromArray($data);
-		return $this->update();
 	}
 	
 	function addContact($contact) {
