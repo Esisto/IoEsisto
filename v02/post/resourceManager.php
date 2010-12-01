@@ -10,13 +10,13 @@
 		* @return: un oggetto resource di tipo photo completo di ogni informazione.
 		*/
 	
-		function uploadPhoto($name,$owner,$tmp_name){
+		function uploadPhoto($fname,$owner,$tmp_name){
 			//salvo il file nella cartella upload/owner/date
-			$path=self::createUserDirectory($owner,$name);
+			$path=self::createUserDirectory($owner,$fname);
 			if(@is_uploaded_file($tmp_name)){
 			      @move_uploaded_file($tmp_name,$path)
-			      or die("Impossibile spostare il file $name con tmp_name: $tmp_name in: $path");
-			      echo "</br> L'upload del file $name con tmp_name $tmp_name è avvenuto correttamente nella posizione: $path</br>";
+			      or die("Impossibile spostare il file $fname con tmp_name: $tmp_name in: $path");
+			      echo "</br> L'upload del file $fname con tmp_name $tmp_name è avvenuto correttamente nella posizione: $path</br>";
 			 }
 			//restituisce un oggetto resource
 			$photo= new Resource($owner,$path,"photo");
@@ -28,28 +28,44 @@
 			//TODO
 		}
 		
-		function createUserDirectory($owner,$name){
+		function createUserDirectory($owner,$fname){
 			$UP_DIR = $_SERVER["DOCUMENT_ROOT"] . "/IoEsisto/v02/upload";
 			if(file_exists("$UP_DIR/$owner")){
 				/*DEBUG*/ echo "</br>la cartella $owner esiste</br>";
 				if(file_exists("$UP_DIR/$owner/" . date("dmy"))){
 					/*DEBUG*/ echo "</br>la cartella". date("dmy") . " esiste</br>";
-					$path= "$UP_DIR/$owner/". date("dmy") . "/$name";
-					return $path;
+					$path= self::generatePath($owner,$fname);
 				}else{
 					/*DEBUG*/ echo "</br>la cartella". date("dmy") . " NON esiste</br>";
 					Mkdir("$UP_DIR/$owner/". date("dmy"),0777);
-					$path= "$UP_DIR/$owner/". date("dmy") . "/$name";
-					return $path;     
+					$path= self::generatePath($owner,$fname);     
 				}
-			}else
+			}else{
 				/*DEBUG*/ echo "</br>la cartella $owner NON esiste</br>";
 				Mkdir("$UP_DIR/$owner",0777);
 				Mkdir("$UP_DIR/$owner/". date("dmy"),0777);
-				$path= "$UP_DIR/$owner/". date("dmy") . "/$name";
-				return $path;     
+				$path= self::generatePath($owner,$fname);
+			}
+			return $path;     
 		}
-	
+		
+		function generatePath($owner,$fname){
+			$UP_DIR = $_SERVER["DOCUMENT_ROOT"] . "/IoEsisto/v02/upload";
+			if(!file_exists("$UP_DIR/$owner/". date("dmy") . "/$fname")){
+				$path= "$UP_DIR/$owner/". date("dmy") . "/$fname";
+			}else{
+				//esiste già un file con quel nome
+				$i=1;
+				$string=explode(".", $fname);
+				//$string[0] = file name $string[1]= extension
+				do{
+					$editfname=$string[0]. "_" . $i . "." . $string[1];
+					$i++;
+				}while(file_exists("$UP_DIR/$owner/". date("dmy") . "/$editfname"));
+				$path= "$UP_DIR/$owner/". date("dmy") . "/$editfname";
+			}
+			return $path;
+		}
 	}
 
 ?>
