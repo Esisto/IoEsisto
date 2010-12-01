@@ -92,6 +92,7 @@ class Resource {
 	private $owner;
 	private $path;
 	private $type;
+	private $description;
 	
 	static $VIDEO = "video";
 	static $PHOTO = "photo";
@@ -100,6 +101,10 @@ class Resource {
 		$this->owner = $owner;
 		$this->path = $path;
 		$this->type = $type;
+	}
+	
+	function getDescription(){
+		return $this->description;
 	}
 	
 	function getOwner() {
@@ -116,6 +121,11 @@ class Resource {
 	
 	function getID() {
 		return $this->ID;
+	}
+	
+	function setDescritpion($desc){
+		$this->description = $desc;
+		return $this;
 	}
 	
 	function setID($id) {

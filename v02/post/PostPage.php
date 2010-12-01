@@ -5,6 +5,7 @@ require_once("file_manager.php");
 require_once("post/Post.php");
 require_once("post/PostManager.php");
 require_once("post/resourceManager.php");
+require_once("post/collection/CollectionManager.php");
 
 class PostPage {
 	const NO_DATE = "no_date";
@@ -184,7 +185,7 @@ class PostPage {
 				$error[] = "Scegliere il tipo di post da pubblicare.";
 				
 			
-			if($data["type"] == "News"){
+			if($data["type"] == "news"){
 				if(isset($_POST["content"]) && trim($_POST["content"]) != ""){
 					$data["content"] = $_POST["content"];
 				}else
@@ -192,20 +193,26 @@ class PostPage {
 			} else if($data["type"] == "photoreportage"){
 				/*DEBUG*/echo "</br>caricamento immagini</br>";
 				$photo = array();
-				for($i=0,$numphoto=0;$i<10;$i++){
-					//se esiste e il nome non è nullo
-					//if(isset($_FILES["upfile$i"]) && trim($_FILES["upfile$i"]["name"]) != ""){
-						$photo[]= resourceManager::uploadPhoto(trim($_FILES["upfile$i"]["name"]),$_FILES["nomefile"]["type"],$user->getNickname);
-						$numphoto++;
-						/*DEBUG*/echo "caricamenta immagine upfile". $i ."</br> numphoto: " . $numphoto;
-					//}
+				for($i=0,$numphoto=0,$notvalid=0;$i<10;$i++){
+					if(trim($_FILES["upfile$i"]["name"]) != ""){
+						if($_FILES["upfile$i"]["type"] == "image/gif" || $_FILES["upfile$i"]["type"] == "image/jpeg" || $_FILES["upfile$i"]["type"] == "image/tiff" || $_FILES["upfile$i"]["type"] == "image/png"){
+							$photo[]= resourceManager::uploadPhoto(trim($_FILES["upfile$i"]["name"]),$user->getNickname(),$_FILES["upfile$i"]["tmp_name"]);
+							$numphoto++;
+							/*DEBUG*/echo "caricata immagine upfile". $i ."</br> numphoto: " . $numphoto;
+						}else
+							$notvalid++;
+					}
 				}
+				//se ha caricato file in formato non valido do errore
+				if($notvalid!=0)
+					$error[]="Devi inserire un formato valido: .tiff .jpeg .jpg .gif oppure .png";
 				//se non sono state caricate foto do errore
 				if($numphoto>0)
 					$data["content"] = $photo;
 				else
 					$error[]="Devi inserire almeno un'immagine";	
 				/*DEBUG*/echo "</br>FINE caricamento immagini</br> immagini caricate: ". count($photo);
+				
 			} else if($data["type"] == "videoreportage"){
 				/*DEBUG*/echo "</br>caricamento video</br>";
 			}
@@ -231,16 +238,16 @@ class PostPage {
 			if(isset($_POST["tags"]) && trim($_POST["tags"]) != "")
 				$data["tags"] = $_POST["tags"];
 				
-			/*DEBUG*/echo "</br>controllo errori</br>";
+			/*DEBUG*/echo "</br>controllo errori";
 			if(is_null($error) || (is_array($error) && count($error) == 0)) {
-				/*DEBUG*/echo "</br>NO errori</br>";
+				/*DEBUG*/echo "</br>NO errori";
 				$data["author"] = $user->getID();
 				//se photoreportage creo una collection
-				if($data["type"]=="News" || $data["type"]=="videoreportage" ){
-					/*DEBUG*/echo "</br>PostManager::createPost". $data["type"] ."</br>";
+				if($data["type"]=="news" || $data["type"]=="videoreportage" ){
+					/*DEBUG*/echo "</br>PostManager::createPost ". $data["type"] ."</br></br>";
 					$post = PostManager::createPost($data);
 				}else if ($data["type"]=="photoreportage"){
-					/*DEBUG*/echo "</br>CollectionManager::createCollection". $data["type"] ."</br>";
+					/*DEBUG*/echo "</br>CollectionManager::createCollection ". $data["type"] ."</br>";
 					$post = CollectionManager::createCollection($data);
 				}
 				/*DEBUG*/ var_dump($post);
@@ -260,8 +267,8 @@ class PostPage {
 		if(isset($_GET["type"])) {
 			switch($_GET["type"]) {
 				case "Collection":
-				case "PhotoReportage":
-				case "VideoReportage":
+				case "photoreportage":
+				case "videoreportage":
 				case "Album":
 				case "Magazine":
 				case "Playlist":
@@ -372,8 +379,8 @@ class PostPage {
 		if(isset($_GET["type"])) {
 			switch($_GET["type"]) {
 				case "Collection":
-				case "PhotoReportage":
-				case "VideoReportage":
+				case "photoreportage":
+				case "videoreportage":
 				case "Album":
 				case "Magazine":
 				case "Playlist":
@@ -472,7 +479,7 @@ class PostPage {
 		<?php
 		}
 		?>
-		<form name="<?php echo $name; ?>Post" action="?type=photoreportage" method="post">
+		<form name="<?php echo $name; ?>Post" action="?type=photoreportage" method="post" enctype="multipart/form-data">
 			<p class="post_headline"><label>Occhiello:</label><br />
 				<input class="post_headline" name="headline" value="<?php echo $post->getHeadline(); ?>"/></p>
 			<p class="title"><label>Titolo:</label><br/>
