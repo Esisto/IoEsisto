@@ -196,7 +196,7 @@ class PostPage {
 				for($i=0,$numphoto=0,$notvalid=0;$i<10;$i++){
 					if(trim($_FILES["upfile$i"]["name"]) != ""){
 						if($_FILES["upfile$i"]["type"] == "image/gif" || $_FILES["upfile$i"]["type"] == "image/jpeg" || $_FILES["upfile$i"]["type"] == "image/tiff" || $_FILES["upfile$i"]["type"] == "image/png"){
-							$photo[]= resourceManager::uploadPhoto(trim($_FILES["upfile$i"]["name"]),$user->getNickname());
+							$photo[]= resourceManager::uploadPhoto(trim($_FILES["upfile$i"]["name"]),$user->getNickname(),$_FILES["upfile$i"]["tmp_name"]);
 							$numphoto++;
 							/*DEBUG*/echo "caricata immagine upfile". $i ."</br> numphoto: " . $numphoto;
 						}else
@@ -267,8 +267,8 @@ class PostPage {
 		if(isset($_GET["type"])) {
 			switch($_GET["type"]) {
 				case "Collection":
-				case "PhotoReportage":
-				case "VideoReportage":
+				case "photoreportage":
+				case "videoreportage":
 				case "Album":
 				case "Magazine":
 				case "Playlist":
@@ -379,8 +379,8 @@ class PostPage {
 		if(isset($_GET["type"])) {
 			switch($_GET["type"]) {
 				case "Collection":
-				case "PhotoReportage":
-				case "VideoReportage":
+				case "photoreportage":
+				case "videoreportage":
 				case "Album":
 				case "Magazine":
 				case "Playlist":
