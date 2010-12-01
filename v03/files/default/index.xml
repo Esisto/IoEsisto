@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<template name="index">
+	<head>
+		<stylesheet css="default/default" />
+		<js src="http://maps.google.com/maps/api/js?sensor=false" />
+		<js src="http://code.google.com/apis/gears/gears_init.js" />
+		<js src="default/map_utils.js" />
+	</head>
+	<header><ad/></header>
+	<content cols="1">
+		<col cols="2">
+			<col id="main" class="large">
+				PCMain
+				<div cols="2">
+					<col class="comments">PCComments</col>
+					<col class="seeAlso">PCRelated</col>
+					<div class="clear" />
+				</div>
+				<div class="clear" />
+			</col>
+			<col class="side right">
+				PCWho
+				PCSearch
+				<ad/>
+				<div class="clear" />
+			</col>
+			<div class="clear" />
+		</col>
+		<div class="clear largest" cols="1">
+			<div>PCCategories</div>
+			<col cols="2">
+				<col class="medium left">
+					PCCat1
+					PCCat3
+					<ad/>
+					PCCat5
+					PCCat7
+				</col>
+				<col class="medium right">
+					PCCat2
+					PCCat4
+					<ad/>
+					PCCat6
+					PCCat8
+				</col>
+				<div class="clear" />
+			</col>
+		</div>
+		<div class="clear largest" cols="1">
+			<ad/>
+			PCRandomPosts
+		</div>
+	</content>
+	<footer><ad/></footer>
+</template>
