@@ -193,20 +193,26 @@ class PostPage {
 			} else if($data["type"] == "photoreportage"){
 				/*DEBUG*/echo "</br>caricamento immagini</br>";
 				$photo = array();
-				for($i=0,$numphoto=0;$i<10;$i++){
-					//se esiste e il nome non è nullo
-					//if(isset($_FILES["upfile$i"]) && trim($_FILES["upfile$i"]["name"]) != ""){
-						$photo[]= resourceManager::uploadPhoto(trim($_FILES["upfile$i"]["name"]),$_FILES["upfile$i"]["type"],$user->getNickname());
-						$numphoto++;
-						/*DEBUG*/echo "caricata immagine upfile". $i ."</br> numphoto: " . $numphoto;
-					//}
+				for($i=0,$numphoto=0,$notvalid=0;$i<10;$i++){
+					if(trim($_FILES["upfile$i"]["name"]) != ""){
+						if($_FILES["upfile$i"]["type"] == "image/gif" || $_FILES["upfile$i"]["type"] == "image/jpeg" || $_FILES["upfile$i"]["type"] == "image/tiff" || $_FILES["upfile$i"]["type"] == "image/png"){
+							$photo[]= resourceManager::uploadPhoto(trim($_FILES["upfile$i"]["name"]),$user->getNickname());
+							$numphoto++;
+							/*DEBUG*/echo "caricata immagine upfile". $i ."</br> numphoto: " . $numphoto;
+						}else
+							$notvalid++;
+					}
 				}
+				//se ha caricato file in formato non valido do errore
+				if($notvalid!=0)
+					$error[]="Devi inserire un formato valido: .tiff .jpeg .jpg .gif oppure .png";
 				//se non sono state caricate foto do errore
 				if($numphoto>0)
 					$data["content"] = $photo;
 				else
 					$error[]="Devi inserire almeno un'immagine";	
 				/*DEBUG*/echo "</br>FINE caricamento immagini</br> immagini caricate: ". count($photo);
+				
 			} else if($data["type"] == "videoreportage"){
 				/*DEBUG*/echo "</br>caricamento video</br>";
 			}
@@ -473,7 +479,7 @@ class PostPage {
 		<?php
 		}
 		?>
-		<form name="<?php echo $name; ?>Post" action="?type=photoreportage" method="post">
+		<form name="<?php echo $name; ?>Post" action="?type=photoreportage" method="post" enctype="multipart/form-data">
 			<p class="post_headline"><label>Occhiello:</label><br />
 				<input class="post_headline" name="headline" value="<?php echo $post->getHeadline(); ?>"/></p>
 			<p class="title"><label>Titolo:</label><br/>
