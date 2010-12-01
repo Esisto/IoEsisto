@@ -24,17 +24,30 @@
 			return $photo;
 		}
 		
+		function addDescription($rsID, $description){
+			//TODO
+		}
+		
 		function createUserDirectory($owner,$name){
 			$UP_DIR = $_SERVER["DOCUMENT_ROOT"] . "/IoEsisto/v02/upload";
-			//IF già esiste NOMEUTENTE
-				//IF già esiste DATAOGGI
-					//return path
-				//ELSE
-					//crea DATAOGGI
-					//return path
-			//ELSE crea NOMEUTENTE/DATAOGGI
-				$path= "$UP_DIR/ioesisto/011210/$name";
-				return $path;
+			if(file_exists("$UP_DIR/$owner")){
+				/*DEBUG*/ echo "</br>la cartella $owner esiste</br>";
+				if(file_exists("$UP_DIR/$owner/" . date("dmy"))){
+					/*DEBUG*/ echo "</br>la cartella". date("dmy") . " esiste</br>";
+					$path= "$UP_DIR/$owner/". date("dmy") . "/$name";
+					return $path;
+				}else{
+					/*DEBUG*/ echo "</br>la cartella". date("dmy") . " NON esiste</br>";
+					Mkdir("$UP_DIR/$owner/". date("dmy"),0777);
+					$path= "$UP_DIR/$owner/". date("dmy") . "/$name";
+					return $path;     
+				}
+			}else
+				/*DEBUG*/ echo "</br>la cartella $owner NON esiste</br>";
+				Mkdir("$UP_DIR/$owner",0777);
+				Mkdir("$UP_DIR/$owner/". date("dmy"),0777);
+				$path= "$UP_DIR/$owner/". date("dmy") . "/$name";
+				return $path;     
 		}
 	
 	}
