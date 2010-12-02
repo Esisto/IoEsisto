@@ -96,8 +96,13 @@ class PostPage {
 				$first = true;
 				foreach($post->getContent() as $cont) {
 					if($first) $first = false;
-					else echo ", ";
-					echo Filter::decodeFilteredText($cont);
+					else echo " ";
+					//echo Filter::decodeFilteredText($cont);
+					//$photo=Filter::decodeFilteredText($cont);
+					//elimino dall'url la root del server
+					$serverRoot=explode($_SERVER["DOCUMENT_ROOT"],$cont->getPath());
+					//$serverRoot[1] è il link senza root
+					echo "<img src='" . $serverRoot[1] . "' width='100' height='50'>";
 				}
 			} else
 				echo Filter::decodeFilteredText($post->getContent());
@@ -278,7 +283,8 @@ class PostPage {
 				default:
 					self::showNewNewsForm($data, $error);
 			}
-		} else self::showNewNewsForm($data, $error);
+		} else
+			self::showNewNewsForm($data, $error);
 	}
 	
 	static function showCommentForm($user, $post, $error = null) {
