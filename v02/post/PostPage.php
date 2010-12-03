@@ -7,6 +7,7 @@ require_once("post/PostManager.php");
 require_once("post/resourceManager.php");
 require_once("post/collection/CollectionManager.php");
 
+
 class PostPage {
 	const NO_DATE = "no_date";
 	const SHORT = "short";
@@ -99,10 +100,8 @@ class PostPage {
 					else echo " ";
 					//echo Filter::decodeFilteredText($cont);
 					//$photo=Filter::decodeFilteredText($cont);
-					//elimino dall'url la root del server
-					$serverRoot=explode($_SERVER["DOCUMENT_ROOT"],$cont->getPath());
-					//$serverRoot[1] è il link senza root
-					echo "<img src='" . $serverRoot[1] . "' width='100' height='50'>";
+					$path ="/IoEsisto/v02/" . $cont->getPath();
+					echo "<img src='" . $path . "' width='100' height='50'>";
 				}
 			} else
 				echo Filter::decodeFilteredText($post->getContent());

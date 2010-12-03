@@ -11,7 +11,7 @@
 		*/
 	
 		function uploadPhoto($fname,$owner,$tmp_name){
-			//salvo il file nella cartella upload/owner/date
+			//salvo il file nella cartella uploads/owner/date
 			$path=self::createUserDirectory($owner,$fname);
 			if(@is_uploaded_file($tmp_name)){
 			      @move_uploaded_file($tmp_name,$path)
@@ -29,30 +29,36 @@
 		}
 		
 		function createUserDirectory($owner,$fname){
-			$UP_DIR = $_SERVER["DOCUMENT_ROOT"] . "/IoEsisto/v02/upload";
-			if(file_exists("$UP_DIR/$owner")){
+			$UP_DIR = $_SERVER["DOCUMENT_ROOT"] . "/IoEsisto/v02";
+			if(file_exists("$UP_DIR/uploads/$owner")){
 				/*DEBUG*/ echo "</br>la cartella $owner esiste</br>";
-				if(file_exists("$UP_DIR/$owner/" . date("dmy"))){
+				if(file_exists("$UP_DIR/uploads/$owner/" . date("dmy"))){
 					/*DEBUG*/ echo "</br>la cartella". date("dmy") . " esiste</br>";
 					$path= self::generatePath($owner,$fname);
 				}else{
 					/*DEBUG*/ echo "</br>la cartella". date("dmy") . " NON esiste</br>";
-					Mkdir("$UP_DIR/$owner/". date("dmy"),0777);
+					Mkdir("$UP_DIR/uploads/$owner/". date("dmy"),0777);
 					$path= self::generatePath($owner,$fname);     
 				}
 			}else{
 				/*DEBUG*/ echo "</br>la cartella $owner NON esiste</br>";
-				Mkdir("$UP_DIR/$owner",0777);
-				Mkdir("$UP_DIR/$owner/". date("dmy"),0777);
+				Mkdir("$UP_DIR/uploads/$owner",0777);
+				Mkdir("$UP_DIR/uploads/$owner/". date("dmy"),0777);
 				$path= self::generatePath($owner,$fname);
 			}
 			return $path;     
 		}
 		
+		/**
+		* @return Genera un path relativo: /uploads/nomeUtente/data/nomefile.jpg
+		* Se il file esiste già genera n nome casuale aggiungendo la stringa "_X" prima dell'estensione
+		* dove X è un indice che parte da 1 e viene incrementato ogni volta di 1 finchè non trova un nome libero
+		*/
+		
 		function generatePath($owner,$fname){
-			$UP_DIR = $_SERVER["DOCUMENT_ROOT"] . "/IoEsisto/v02/upload";
-			if(!file_exists("$UP_DIR/$owner/". date("dmy") . "/$fname")){
-				$path= "$UP_DIR/$owner/". date("dmy") . "/$fname";
+			$UP_DIR = $_SERVER["DOCUMENT_ROOT"] . "/IoEsisto/v02";
+			if(!file_exists("$UP_DIR/uploads/$owner/". date("dmy") . "/$fname")){
+				$path= "uploads/$owner/". date("dmy") . "/$fname";
 			}else{
 				//esiste già un file con quel nome
 				$i=1;
@@ -62,7 +68,7 @@
 					$editfname=$string[0]. "_" . $i . "." . $string[1];
 					$i++;
 				}while(file_exists("$UP_DIR/$owner/". date("dmy") . "/$editfname"));
-				$path= "$UP_DIR/$owner/". date("dmy") . "/$editfname";
+				$path= "uploads/$owner/". date("dmy") . "/$editfname";
 			}
 			return $path;
 		}
