@@ -1,167 +1,128 @@
-<?php //TODO
+<?php
 require_once 'dao/Dao.php';
 require_once("db.php");
 require_once("query.php");
+require_once("dataobject/Contact.php");
 
 class ContactDao implements Dao {
-	private $db;
-	private $table_contact;
-	private $table_contact_type;
-	
+	const OBJECT_CLASS = "Contact";
+	private $table_ct;
+
 	function __construct() {
-		$this->table_contact = Query::getDBSchema()->getTable(DB::TABLE_CONTACT);
-		$this->table_contact_type = Query::getDBSchema()->getTable(DB::TABLE_CONTACT_TYPE);
+		parent::__construct();
+		$this->setMainTable(DB::TABLE_CONTACT);
+		$this->table_ct = Query::getDBSchema()->getTable(DB::TABLE_CONTACT_TYPE);
+	}
+	
+	function load($id) {
+		parent::load($id);
 		
-		$this->db = new DBManager();
-		if($this->db->connect_errno())
-			$this->db->display_connect_error("ContactDao::__construct()");
+		$this->db->execute($s = Query::generateSelectStm(array($this->table, $this->table_ct),
+														 array(new JoinConstraint($this->table->getColumn(DB::CONTACT_NAME), $this->table_ct->getColumn(DB::CONTACT_TYPE_NAME))),
+														 array(new WhereConstraint($this->table->getColumn(DB::CONTACT_ID), Operator::EQUAL, intval($id))),
+														 array()));
+			
+		if($this->db->num_rows() != 1)
+			throw new Exception("L'oggetto cercato non è stato trovato. Riprovare.");
+		
+		$row = $this->db->fetch_result();
+		return $this->createFromDBRow($row);
+	}
+	
+	function loadAll($user) {
+		parent::load($id);
+		if(is_numeric($user)) {
+			$id = $user;
+		} else {
+			if(!is_subclass_of($post, "User"))
+				throw new Exception("Attenzione! Il parametro di ricerca non è un utente.");
+			$id = $user->getID();
+		}
+			
+		$this->db->execute(Query::generateSelectStm(array($this->table, $this->table_ct),
+													array(new JoinConstraint($this->table->getColumn(DB::CONTACT_NAME), $this->table_ct->getColumn(DB::CONTACT_TYPE_NAME))),
+													array(new WhereConstraint($this->table->getColumn(CONTACT_USER), Operator::EQUAL, intval($id))),
+													array()));
+			
+		$conts = array();
+		while($row = $this->db->fetch_result())
+			$conts[] = $this->createFromDBRow($row);
+		return $conts;
+	}
+	
+	private function createFromDBRow($row) {
+		$data = array(Contact::NAME => $row[DB::CONTACT_NAME],
+					  Contact::CONTACT => $row[DB::CONTACT_CONTACT],
+					  Contact::TYPE => $row[DB::CONTACT_TYPE_TYPE],
+					  Contact::USER => $row[DB::CONTACT_USER]);
+				
+		$c = new Contact($data);
+		return $c->setID(intval($row[DB::CONTACT_ID]));
 	}
 
-	function save() { //TODO
-		require_once("query.php");
-		$db = new DBManager();
-		if(!$db->connect_errno()) {
-			define_tables(); defineContactColumns();
-			$table = Query::getDBSchema()->getTable(TABLE_CONTACT);
-			$data = array(CONTACT_CONTACT => $this->getContact(),
-						  CONTACT_NAME => $this->getName(),
-						  CONTACT_USER => $this->getUser());
+	function save($contact) {
+		parent::save($contact, self::OBJECT_CLASS);
+		
+		$data = array(DB::CONTACT_CONTACT => $contact->getContact(),
+					  DB::CONTACT_NAME => $contact->getName(),
+					  DB::CONTACT_USER => $contact->getUserId());
 			
-			$db->execute($s = Query::generateInsertStm($table, $data), $table->getName(), $this);
+		$this->db->execute($s = Query::generateInsertStm($this->table, $data), $this->table->getName(), $contact);
 			
-			//echo "<p>" . $s . "</p>"; //DEBUG
-			if($db->affected_rows() == 1) {
-				$this->setID($db->last_inserted_id());
-				
-				return $this;
-			} else $db->display_error("Contact::save()");
-		} else $db->display_connect_error("Contact::save()");
-		return false;
+		if($this->db->affected_rows() != 1)
+			throw new Exception("Si è verificato un errore salvando l'oggetto. Riprovare.");
+
+		$c = $this->quickLoad($this->db->last_inserted_id());
+		return $c;
 	}
 	
-	function update() { //TODO
-		$old = self::loadFromDatabase($this->getID());
-		require_once("query.php");
-		$db = new DBManager();
-		if(!$db->connect_errno()) {
-			define_tables(); defineContactColumns();
-			$table = Query::getDBSchema()->getTable(TABLE_CONTACT);
+	function update($contact, $editor) {
+		parent::update($resource, $editor, self::OBJECT_CLASS);
+		
+		$old = $this->quickLoad($resource->getID());
+		if(is_null($r_old))
+			throw new Exception("L'oggetto da modificare non esiste.");
+		
+		$data = array();
+		if($contact->getContact() != $old->getContact())
+			$data[DB::CONTACT_CONTACT] = $contact->getContact();
+		if($contact->getName() != $old->getName())
+			$data[DB::CONTACT_NAME] = $contact->getName();
 			
-			$data = array();
-			if($this->getContact() != $old->getContact())
-				$data[CONTACT_CONTACT] = $this->getContact();
-			if($this->getName() != $old->getName())
-				$data[CONTACT_NAME] = $this->getName();
-				
-			$db->execute($s = Query::generateUpdateStm($table, $data, array(new WhereConstraint($table->getColumn(CONTACT_ID), Operator::EQUAL, $this->getID()))),
-						$table->getName(), $this);
+		$this->db->execute($s = Query::generateUpdateStm($this->table, $data, array(new WhereConstraint($this->table->getColumn(DB::CONTACT_ID), Operator::EQUAL, $contact->getID()))),
+							$this->table->getName(), $contact);
+		
+		if($this->db->affected_rows() != 1)
+			throw new Exception("Si è verificato un errore aggiornando il dato. Riprovare.");
 			
-			if($db->affected_rows() == 1) {
-				return $this;
-			} else $db->display_error("Contact::update()");
-		} else $db->display_connect_error("Contact::update()");
-		return false;
+		return $contact;
 	}
 	
-	function delete() { //TODO
-        require_once("query.php");
-		$db = new DBManager();
-		if(!$db->connect_errno()) {
-			define_tables(); defineContactColumns();
-			$table = Query::getDBSchema()->getTable(TABLE_CONTACT);
-			
-			$db->execute($s = Query::generateDeleteStm($table, array(new WhereConstraint($table->getColumn(CONTACT_ID), Operator::EQUAL, $this->getID()))),
-						$table->getName(), $this);
-			
-			//echo "<p>" . $s . "</p>"; //DEBUG
-			if($db->affected_rows() == 1) {
-				return $this;
-			} else $db->display_error("Contact::delete()");
-		} else $db->display_connect_error("Contact::delete()");
-		return false;
+	function delete($contact) {
+		parent::delete($contact, self::OBJECT_CLASS);
+		
+		$this->db->execute(Query::generateDeleteStm($this->table,
+													array(new WhereConstraint($this->table->getColumn(DB::CONTACT_ID),Operator::EQUAL,$contact->getID()))),
+							$this->table->getName(), $contact);
+		
+		//salvo la risorsa nella storia.
+		$this->saveHistory($contact, "DELETED");
+		
+		if($this->db->affected_rows() != 1)
+			throw new Exception("Si è verificato un errore eliminando il dato. Riprovare.");
+		return $contact;
 	}
 	
-	static function loadFromDatabase($id) { //TODO
-		require_once("query.php");
-		$db = new DBManager();
-		if(!$db->connect_errno()) {
-			define_tables(); defineContactColumns(); defineContactTypeColumns();
-			$table = Query::getDBSchema()->getTable(TABLE_CONTACT);
-			$table1 = Query::getDBSchema()->getTable(TABLE_CONTACT_TYPE);
+	function getContactsNames() {
+		$this->checkConnection();
+		
+		$this->db->execute($s = Query::generateSelectStm(array($this->table_ct), array(), array(), array()));
 			
-			$db->execute($s = Query::generateSelectStm(array($table, $table1),
-												   array(new JoinConstraint($table->getColumn(CONTACT_NAME), $table1->getColumn(CONTACT_TYPE_NAME))),
-												   array(new WhereConstraint($table->getColumn(CONTACT_ID), Operator::EQUAL, $id)),
-												   array()));
-			
-			if($db->num_rows() == 1) {
-				$row = $db->fetch_result();
-				$data = array(NAME => $row[CONTACT_NAME],
-							  CONTACT => $row[CONTACT_CONTACT],
-							  USER => $row[CONTACT_USER]);
-				
-				$c = new Contact($data);
-				$c->setType($row[CONTACT_TYPE_TYPE]);
-				return $c->setID(intval($row[CONTACT_ID]));
-			} else $db->display_error("Contact::loadFromDatabase()");
-		} else $db->display_connect_error("Contact::loadFromDatabase()");
-		return false;
-	}
-	
-	static function loadContactsForUser($userid) { //TODO
-		require_once("query.php");
-		$db = new DBManager();
-		if(!$db->connect_errno()) {
-			define_tables(); defineContactColumns(); defineContactTypeColumns();
-			$table = Query::getDBSchema()->getTable(TABLE_CONTACT);
-			$table1 = Query::getDBSchema()->getTable(TABLE_CONTACT_TYPE);
-			
-			$rs = $db->execute($s = Query::generateSelectStm(array($table, $table1),
-												   array(new JoinConstraint($table->getColumn(CONTACT_NAME), $table1->getColumn(CONTACT_TYPE_NAME))),
-												   array(new WhereConstraint($table->getColumn(CONTACT_USER), Operator::EQUAL, $userid)),
-												   array()));
-			
-			//echo "<p>" . mysql_affected_rows() . mysql_num_rows($rs) . $s . "</p>"; //DEBUG
-			$conts = array();
-			if($db->num_rows() > 0) {
-				while($row = $db->fetch_result()) {
-					$data = array(NAME => $row[CONTACT_NAME],
-								  CONTACT => $row[CONTACT_CONTACT],
-								  USER => $row[CONTACT_USER]);
-					
-					$c = new Contact($data);
-					$c->setType($row[CONTACT_TYPE_TYPE]);
-					$c->setID(intval($row[CONTACT_ID]));
-					$conts[] = $c;
-				}
-			} else  {
-				if($db->errno())
-					$db->display_error("Contact::loadContactsForUser()");
-			}
-			return $conts;
-		} else $db->display_connect_error("Contact::loadContactsForUser()");
-	}
-	
-	static function getContactsNames() { //TODO
-		require_once("query.php");
-		$db = new DBManager();
-		if(!$db->connect_errno()) {
-			define_tables(); defineContactTypeColumns();
-			$table = Query::getDBSchema()->getTable(TABLE_CONTACT_TYPE);
-			
-			$db->execute($s = Query::generateSelectStm(array($table), array(), array(), array()));
-			
-			$names = array();
-			if($db->num_rows() > 0) {
-				while($row = $db->fetch_result()) {
-					$names[$row[CONTACT_TYPE_NAME]] = $row[CONTACT_TYPE_TYPE];
-				}
-			} else  {
-				if($db->errno())
-					$db->display_error("Contact::getContactsNames()");
-			}
-			return $names;
-		} else $db->display_connect_error("Contact::getContactsNames()");
+		$names = array();
+		while($row = $this->db->fetch_result())
+			$names[$row[DB::CONTACT_TYPE_NAME]] = $row[DB::CONTACT_TYPE_TYPE];
+		
+		return $names;
 	}
 }
 ?>

@@ -49,9 +49,11 @@ class CommentDao implements Dao {
 		$row = $this->db->fetch_result();
 		$c = new Comment($row[DB::COMMENT_COMMENT], intval($row[DB::COMMENT_POST]), intval($row[DB::COMMENT_AUTHOR]));
 		$c->setID(intval($row[DB::COMMENT_ID]))->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[DB::COMMENT_CREATION_DATE])));
-		$u = Session::getUser();
-		if($this->loadReports && $u) //FIXME usa authorizationManager o roleManager
-			$c->loadReports();
+		if($this->loadReports && AuthorizationManager::canUserDo(AuthorizationManager::READ_REPORTS, $c)) {
+			require_once 'dao/ReportDao.php';
+			$redao = new ReportDao();
+			$redao->loadAll($c);
+		}
 		return $c;
 	}
 	
@@ -100,13 +102,17 @@ class CommentDao implements Dao {
 		return $comm;
 	}
 	
+	function exists($comment) {
+		try {
+			$c = $this->quickLoad($comment->getID());
+			return is_subclass_of($c, self::OBJECT_CLASS);
+		} catch(Exception $e) {
+			return false;
+		}
+	}
+	
 	function updateState($comment) {
-		//TODO
-		//check se lo stato è uguale:
-		// - isRemovable
-		// - contentColor
-		
-		//se lo stato è diverso si aggiornano sul db solo i campi di stato.
+		parent::updateState($comment, $this->table, DB::COMMENT_ID);
 	}
 }
 ?>

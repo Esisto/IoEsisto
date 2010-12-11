@@ -1,4 +1,4 @@
-<?php
+<?php //TODO implementare anche i dao e i dataobject
 require_once("mail/Mail.php");
 require_once("session.php");
 

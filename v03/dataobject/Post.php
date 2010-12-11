@@ -92,6 +92,10 @@ class Post extends Editable {
 			$this->setPlace($data[self::PLACE]);
 		if(isset($data[self::PLACE_NAME]))
 			$this->setPlace($data[self::PLACE_NAME]);
+		if(isset($data[Post::RED_CONTENT]))
+			$post->setContent($data[Post::RED_CONTENT]);
+		if(isset($data[Post::YELLOW_CONTENT]))
+			$post->setContent($data[Post::YELLOW_CONTENT]);
 	}
 	
 	function getID() {
@@ -238,6 +242,31 @@ class Post extends Editable {
 		if(!is_array($this->comments))
 			$this->comments = array();
 		$this->comments[] = $comment;
+		return $this;
+	}
+	
+	function edit($data) {
+		if(isset($data[Post::TITLE]))
+			$this->setTitle($data[Post::TITLE]);
+		if(isset($data[Post::SUBTITLE]))
+			$this->setSubtitle($data[Post::SUBTITLE]);
+		if(isset($data[Post::HEADLINE]))
+			$this->setHeadline($data[Post::HEADLINE]);
+		if(isset($data[Post::TAGS]))
+			$this->setTags($data[Post::TAGS]);
+		if(isset($data[Post::CATEGORIES]))
+			$this->setCategories($data[Post::CATEGORIES]);
+		if(isset($data[Post::CONTENT]))
+			$this->setContent($data[Post::CONTENT]);
+		if(isset($data[Post::RED_CONTENT]))
+			$this->setContent($data[Post::RED_CONTENT]);
+		if(isset($data[Post::YELLOW_CONTENT]))
+			$this->setContent($data[Post::YELLOW_CONTENT]);
+		if(isset($data[Post::BLACK_CONTENT]) && AuthorizationManager::canUserDo(AuthorizationManager::SET_BLACK, $this))
+			$this->setContent($data[Post::BLACK_CONTENT]);
+		if(isset($data[Post::VISIBLE]))
+			$this->setVisible($data[Post::VISIBLE]);
+
 		return $this;
 	}
 	

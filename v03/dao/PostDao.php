@@ -133,7 +133,7 @@ class PostDao extends Dao {
 				->setYellowContent($row[DB::YELLOW_CONTENT])->setAutoBlackContent($row[DB::AUTO_BLACK_CONTENT]);
 		
 		$user = Session::getUser();
-		if($this->loadReports && $user->isEditor()) { //FIXME usa authorizationManager o roleManager
+		if($this->loadReports && AuthorizationManager::canUserDo(AuthorizationManager::READ_REPORTS, $r)) {
 			require_once 'dao/ReportDao.php';
 			$reportDao = new ReportDao();
 			$reportDao->loadAll($p);
@@ -156,7 +156,7 @@ class PostDao extends Dao {
 	
 	function exists($post) {
 		try {
-			$p = $this->load($post->getID());
+			$p = $this->quickLoad($post->getID());
 			return is_subclass_of($p, self::OBJECT_CLASS);
 		} catch(Exception $e) {
 			return false;
@@ -217,15 +217,14 @@ class PostDao extends Dao {
 		//salvo i tag che non esistono
 		if(isset($data[DB::POST_TAGS]) && !is_null($data[DB::POST_TAGS]) && trim($data[DB::POST_TAGS]) != "")
 			TagManager::createTags(explode(",", $data[DB::POST_TAGS]));
-			
-		//TODO salvo lo stato
+
+		//salvo lo stato del post perché l'utente potrebbe aver già modificato il suo "colore".
+		$this->updateState($p);
 		return $p;
 	}
 	
 	function update($post, $editor) {
 		parent::update($post, $editor, self::OBJECT_CLASS);
-		if(!is_a($editor, "User"))
-			throw new Exception("Non hai settato chi ha fatto la modifica.");
 		
 		$p_old = $this->quickLoad($post->getID());
 	
@@ -279,8 +278,7 @@ class PostDao extends Dao {
 									array(new WhereConstraint($this->table->getColumn(DB::POST_ID),Operator::EQUAL,$post->getID()))),
 									$this->table->getName(), $post);
 		//aggiorno lo stato del post (se chi l'ha modificato è un redattore).
-		if($editor->isEditor()) { //TODO usa authorization manager
-			//FIXME controlla che ci sia tutto
+		if(AuthenticationManager::isEditor($editor)) {
 			$post->setEditable(false);
 			$post->setRemovable(false);
 			$this->updateState($post);
@@ -346,21 +344,14 @@ class PostDao extends Dao {
 			return $u->getNickname();
 		return $post->getAuthor();
 	}
-	
+
 	function updateState($post) {
-		//TODO
-		//check se lo stato è uguale:
-		// - isRemovable
-		// - contentColor
-		
-		//se lo stato è diverso si aggiornano sul db solo i campi di stato.
+		parent::updateState($post, $this->table, DB::POST_ID);
 	}
 	
+	
 	private function getAccessCount($post) {
-		//TODO
-		//aggiunge 1 all'accesscount e aggiorna il db.
-		//restituisce il conto.
-		//questo fino all'arrivo di googleanalitics
+		parent::getAccessCount($post, $this->table, DB::POST_ID);
 	}
 }
 

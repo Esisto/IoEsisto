@@ -1,4 +1,4 @@
-<?php //TODO
+<?php
 class Contact {
 	const PHONE = "phone";
 	const ADDRESS = "address";

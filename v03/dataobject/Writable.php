@@ -1,5 +1,9 @@
 <?php
 abstract class Writable {
+	const BLACK_CONTENT = "blackcontent";
+	const YELLOW_CONTENT = "yellowcontent";
+	const RED_CONTENT = "redcontent";
+	const AUTO_BLACK_CONTENT = "autoblackcontent";
 	protected $redContent = false;				// bollino rosso: contenuti non adatti ai minori
 	protected $yellowContent = false;			// bollino giallo: contenuti offensivi
 	protected $blackContent = false;			// bollino nero: un redattore ha 'censurato' la risorsa
@@ -7,6 +11,9 @@ abstract class Writable {
 	
 	function hasBlackContent() {
 		return $this->blackContent || $this->autoBlackContent;
+	}
+	function hasAutoBlackContent() {
+		return $this->autoBlackContent;
 	}
 	function hasYellowContent() {
 		return $this->yellowContent;

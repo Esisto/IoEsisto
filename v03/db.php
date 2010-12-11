@@ -24,10 +24,19 @@ class DB {
 	const TABLE_USER = "User";
 	const TABLE_VOTE = "Vote";
 	
+	const EDITABLE = "editable";
+	const REMOVABLE = "removable";
+	const BLACK_CONTENT = "black";
+	const RED_CONTENT = "red";
+	const YELLOW_CONTENT = "yellow";
+	const AUTO_BLACK_CONTENT = "auto_black";
+	const PREVIOUS_VERSION = "previous_version";
+	const ACCESS_COUNT = "access_count";
+	
 	const CATEGORY_NAME = "cat_name";
 	const CATEGORY_CREATION_DATE = "cat_creationDate";
 	const CATEGORY_AUTHOR = "cat_author";
-	const CATEGORY_ACCESS_COUNT = "cat_access_count"; //TODO implementare la cosa in CategoryManager
+//	const CATEGORY_ACCESS_COUNT = "cat_access_count"; //TODO implementare la cosa in CategoryManager
 	const CONTACT_ID = "ct_ID";
 	const CONTACT_CONTACT = "ct_contact";
 	const CONTACT_NAME = "ct_name";
@@ -42,7 +51,7 @@ class DB {
 	const CONTEST_PRIZES = "cs_prizes";
 	const CONTEST_START = "cs_start";
 	const CONTEST_END = "cs_end";
-	const CONTEST_ACCESS_COUNT = "cs_access_count"; //TODO implementare la cosa in ContestManager
+//	const CONTEST_ACCESS_COUNT = "cs_access_count"; //TODO implementare la cosa in ContestManager
 	const CONTEST_SUBSCRIBER_CONTEST = "css_contest";
 	const CONTEST_SUBSCRIBER_POST = "css_post";
 	const CONTEST_SUBSCRIBER_PLACEMENT = "css_placement";
@@ -86,10 +95,10 @@ class DB {
 	const POST_VISIBLE = "ps_visible";
 	const POST_AUTHOR = "ps_author";
 	const POST_PLACE = "ps_place";
-	const POST_ACCESS_COUNT = "ps_access_count"; //TODO implementare le cosa in PostManager
+//	const POST_ACCESS_COUNT = "ps_access_count"; //TODO implementare le cosa in PostManager
 	const REPORT_ID = "rp_ID";
-	const REPORT_SUBJECT = "rp_subject";
-	const REPORT_SUBJECT_TYPE = "rp_subjectType";
+	const REPORT_OBJECT_ID = "rp_subject";
+	const REPORT_OBJECT_CLASS = "rp_subjectType";
 	const REPORT_USER = "rp_user";
 	const REPORT_CREATION_DATE = "rp_creationDate";
 	const REPORT_TEXT = "rp_report";
@@ -97,7 +106,7 @@ class DB {
 	const RESOURCE_TYPE = "rs_type";
 	const RESOURCE_PATH = "rs_path";
 	const RESOURCE_OWNER = "rs_owner";
-	const RESOURCE_ACCESS_COUNT = "rs_access_count"; //TODO implementare la cosa in ResourceManager
+//	const RESOURCE_ACCESS_COUNT = "rs_access_count"; //TODO implementare la cosa in ResourceManager
 	const ROLE_NAME = "rl_name";
 	const SUB_CATEGORY_PARENT = "sc_parent";
 	const SUB_CATEGORY_CATEGORY = "sc_category";
@@ -122,7 +131,7 @@ class DB {
 	const USER_ROLE = "us_role";
 	const USER_LIVINGPLACE = "us_livingplace";
 	const USER_CREATION_DATE = "us_creationDate";
-	const USER_ACCESS_COUNT = "us_access_count"; //TODO implementare la cosa in UserManager
+//	const USER_ACCESS_COUNT = "us_access_count"; //TODO implementare la cosa in UserManager
 	const VOTE_CREATION_DATE = "vt_creationDate";
 	const VOTE_VOTE = "vt_vote";
 	const VOTE_AUTHOR = "vt_author";

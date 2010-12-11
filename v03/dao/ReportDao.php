@@ -23,8 +23,8 @@ class ReportDao implements Dao {
 			throw new Exception("L'oggetto cercato non è stato trovato.");
 		
 		$row = $this->db->fetch_result();
-		$objectClass = $row[DB::REPORT_OBJECT_CLASS]; //FIXME aggiungere colonna
-		$objectId = $row[DB::REPORT_OBJECT_ID]; //FIXME aggiungere colonna
+		$objectClass = $row[DB::REPORT_OBJECT_CLASS];
+		$objectId = $row[DB::REPORT_OBJECT_ID];
 		
 		$object = $this->getObject($objectId, $objectClass);
 		if(is_null($object))
@@ -34,6 +34,11 @@ class ReportDao implements Dao {
 		return $r;
 	}
 	
+	/**
+	 * Carica da database tutti i report per l'oggetto passato e li salva nell'oggetto.
+	 * @param Editable $object un oggetto di cui si possono caricare i report.
+	 * @return l'oggetto aggiornato 
+	 */
 	function loadAll($object) {
 		parent::load($object);
 		$objectClass = get_class($object);
@@ -159,10 +164,6 @@ class ReportDao implements Dao {
 		if(!is_null($objectDao))
 			$object = $objectDao->quickLoad($object_id);
 		return $object;
-	}
-	
-	function updateState($report) {
-		return null; //FIXME report ha stato? del tipo "risolto" quando il redattore l'ha visionato e preso provvedimenti??
 	}
 }
 ?>

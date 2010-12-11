@@ -45,8 +45,28 @@ class Contest {
 			$this->setEnd($data["end"]);
 		// DEBUG
 		if(isset($data["subscribers"]))
-			$this->setEnds($data["subscribers"]);
+			$this->setSubscribers($data["subscribers"]);
 		// END DEBUG
+	}
+	
+	function edit($data) { //TODO
+		if(isset($data["title"]))
+			$this->setTitle($data["title"]);
+		if(isset($data["description"]))
+			$this->setDescription($data["description"]);
+		if(isset($data["rules"]))
+			$this->setRules($data["rules"]);
+		if(isset($data["prizes"]))
+			$this->setPrizes($data["prizes"]);
+		if(isset($data["subscriberType"]))
+			$this->setSubscriberType($data["subscriberType"]);
+		if(isset($data["start"]))
+			$this->setStart($data["start"]);
+		if(isset($data["end"]))
+			$this->setEnd($data["end"]);
+		// DEBUG
+		if(isset($data["subscribers"]))
+			$this->setSubscribers($data["subscribers"]);
 	}
 	
 	function getID() {

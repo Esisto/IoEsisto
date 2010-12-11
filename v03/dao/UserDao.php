@@ -1,8 +1,8 @@
-<?php //TODO
+<?php
 require_once 'dao/Dao.php';
 require_once("db.php");
 require_once("query.php");
-require_once("dataobject/Post.php");
+require_once("dataobject/User.php");
 
 class UserDao implements Dao {
 	const OBJECT_CLASS = "Post";
@@ -39,7 +39,7 @@ class UserDao implements Dao {
 		return $user;
 	}
 
-	static function loadByMail($mail) {
+	function loadByMail($mail) {
 		parent::load($mail);
 		$this->db->execute($s = Query::generateSelectStm(array($this->table), array(),
 												   array(new WhereConstraint($this->table->getColumn(DB::USER_E_MAIL), Operator::EQUAL, $mail)),
@@ -53,7 +53,7 @@ class UserDao implements Dao {
 		return $user;
 	}
 
-	static function loadByNickname($nickname) {
+	function loadByNickname($nickname) {
 		parent::load($nickname);
 		$this->db->execute($s = Query::generateSelectStm(array($this->table), array(),
 												   array(new WhereConstraint($this->table->getColumn(DB::USER_NICKNAME), Operator::EQUAL, $nickname)),
@@ -102,11 +102,10 @@ class UserDao implements Dao {
 			$feedbackDao = new FeedbackDao();
 			$feedbackDao->loadAll($user);
 		}
-		$user = Session::getUser();
-		if($this->loadReports && $user->isUserManager()) { //FIXME usa authorizationManager o roleManager
+		if($this->loadReports && AuthorizationManager::canUserDo(AuthorizationManager::READ_REPORTS, $user)) {
 			require_once 'dao/ReportDao.php';
 			$reportDao = new ReportDao();
-			$reportDao->loadAll($p);
+			$reportDao->loadAll($user);
 		}
 		
 		//setto lo stato
@@ -162,7 +161,7 @@ class UserDao implements Dao {
 		
 		$u = $this->load(intval($db->last_inserted_id()));
 		
-		//TODO salvo lo stato
+		$this->updateState($u);
 		return $u;
 	}
 	
@@ -233,8 +232,21 @@ class UserDao implements Dao {
 		return false;
 	}
 	
-	static function exists($user) {
-		//TODO da implementare
+	function exists($user) {
+		try {
+			$u = $this->quickLoad($user->getID());
+			return is_subclass_of($u, self::OBJECT_CLASS);
+		} catch(Exception $e) {
+			return false;
+		}
+	}
+	
+	function updateState($user) {
+		parent::updateState($user, $this->table, DB::USER_ID);
+	}
+	
+	private function getAccessCount($user) {
+		parent::getAccessCount($user, $this->table, DB::USER_ID);
 	}
 }
 ?>

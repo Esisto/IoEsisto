@@ -38,6 +38,13 @@ class VoteDao implements Dao {
 		parent::save($author, "User");
 		settype($vote, "boolean");
 		
+		//elimino il vecchio voto
+		$this->db->execute(Query::generateDeleteStm($this->table, 
+													 array(new WhereConstraint($this->table->getColumn(DB::VOTE_AUTHOR),Operator::EQUAL,intval($author->getID()),
+														   new WhereConstraint($this->table->getColumn(DB::VOTE_POST),Operator::EQUAL,intval($post->getID()))))),
+							$this->table->getName(), $data);
+		//non controllo se è stato cancellato perché può non esserci
+		
 		$data = array(DB::VOTE_VOTE => ($vote ? 1 : 0),
 					  DB::VOTE_POST => intval($post->getID()),
 					  DB::VOTE_AUTHOR => intval($author->getID()));

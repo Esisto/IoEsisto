@@ -29,6 +29,8 @@ class ResourceDao implements Dao {
 	function loadList($ids) {
 		parent::load($ids);
 		if(!is_array($ids)) $ids = array($ids);
+		
+		require_once 'filter.php';
 		$s = "SELECT * FROM " . $this->table->getName() . " WHERE " . DB::RESOURCE_ID . " IN (" . Filter::arrayToText($ids, ", ") . ")";
 		$this->db->execute($s);
 		
@@ -41,10 +43,12 @@ class ResourceDao implements Dao {
 	}
 	
 	function loadForAuthor($author) {
-		parent::load($ids);
-		if(!is_array($ids)) $ids = array($ids);
+		parent::load($author);
+		if(!is_subclass_of($post, "User"))
+			throw new Exception("Attenzione! Il parametro di ricerca non è un utente.");
+		
 		$this->db->execute(Query::generateSelectStm(array($this->table), array(),
-									array(new WhereConstraint($this->table->getColumn(DB::RESOURCE_OWNER),Operator::EQUAL,intval($resource->getOwnerId()))),
+									array(new WhereConstraint($this->table->getColumn(DB::RESOURCE_OWNER),Operator::EQUAL,intval($author->getID()))),
 									array()));
 				
 		$resources = array();
@@ -53,7 +57,7 @@ class ResourceDao implements Dao {
 			$resources[] = $this->createFromDBRow($row);
 		}
 		return $resources;
-		}
+	}
 	
 	private function createFromDBRow($row) {
 		$r = new Resource($row[DB::RESOURCE_OWNER], $row[DB::RESOURCE_PATH], $row[DB::RESOURCE_TYPE]);
@@ -73,7 +77,7 @@ class ResourceDao implements Dao {
 				->setAutoBlackContent($row[DB::AUTO_BLACK_CONTENT]);
 		
 		$user = Session::getUser();
-		if($this->loadReports && $user->isEditor()) { //FIXME usa authorizationManager o roleManager
+		if($this->loadReports && AuthorizationManager::canUserDo(AuthorizationManager::READ_REPORTS, $r)) {
 			require_once 'dao/ReportDao.php';
 			$reportDao = new ReportDao();
 			$reportDao->loadAll($r);
@@ -103,6 +107,8 @@ class ResourceDao implements Dao {
 		if(!is_null($resource->getTags()) && trim($resource->getTags()) != "")
 			TagManager::createTags(explode(",", $resource->getTags()));
 		
+		//salvo lo stato della risorsa perché l'utente potrebbe aver già modificato il suo "colore".
+		$this->updateState($r);
 		return $r;
 	}
 	
@@ -134,11 +140,9 @@ class ResourceDao implements Dao {
 	
 	function update($resource, $editor) {
 		parent::update($resource, $editor, self::OBJECT_CLASS);
-		if(!is_a($editor, "User"))
-			throw new Exception("Non hai settato chi ha fatto la modifica.");
 		
 		$r_old = $this->quickLoad($resource->getID());
-		if(is_null($p_old))
+		if(is_null($r_old))
 			throw new Exception("L'oggetto da modificare non esiste.");
 		
 		$data = array();
@@ -159,7 +163,7 @@ class ResourceDao implements Dao {
 									array(new WhereConstraint($this->table->getColumn(DB::RESOURCE_ID),Operator::EQUAL,$resource->getID()))),
 									$this->table->getName(), $resource);
 		//aggiorno lo stato della risorsa (se chi l'ha modificata è un redattore).
-		if($editor->isEditor()) { //TODO usa authorization manager
+		if(AuthenticationManager::isEditor($editor)) {
 			$resource->setEditable(false);
 			$resource->setRemovable(false);
 			$this->updateState($resource);
@@ -175,7 +179,12 @@ class ResourceDao implements Dao {
 	}
 		
 	function exists($resource) {
-		//TODO
+		try {
+			$r = $this->quickLoad($resource->getID());
+			return is_subclass_of($r, self::OBJECT_CLASS);
+		} catch(Exception $e) {
+			return false;
+		}
 	}
 	
 	function quickLoad($id) {
@@ -190,22 +199,20 @@ class ResourceDao implements Dao {
 		}
 		return $r;
 	}
-	
+
 	function updateState($resource) {
-		//TODO
+		parent::updateState($resource, $this->table, DB::RESOURCE_ID);
 	}
 	
-	function setLoadReports($loadReports) {
+	function setLoadReports($load) {
 		settype($load, "boolean");
 		$this->loadReports = $load;
 		return $this;
 	}
 
-	private function getAccessCount($post) {
-		//TODO
-		//aggiunge 1 all'accesscount e aggiorna il db.
-		//restituisce il conto.
-		//questo fino all'arrivo di googleanalitics
+	
+	private function getAccessCount($resource) {
+		parent::getAccessCount($resource, $this->table, DB::RESOURCE_ID);
 	}
 }
 ?>

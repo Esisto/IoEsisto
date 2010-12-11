@@ -1,6 +1,20 @@
 <?php
 
 class User extends Editable {
+	const NICKNAME = "nickname";
+	const EMAIL = "email";
+	const PASSWORD = "password";
+	const NAME = "name";
+	const SURNAME = "surname";
+	const GENDER = "gender";
+	const BIRTHDAY = "birthday";
+	const BIRTHPLACE = "birthplace";
+	const LIVING_PLACE = "livingplace";
+	const AVATAR = "avatar";
+	const HOBBIES = "hobbies";
+	const JOB = "job";
+	const ROLE = "role";
+	const VISIBLE = "visible";
 	private $accessCount;		// *
 	private $avatar;			//**
 	private $birthday;			//**
@@ -31,6 +45,37 @@ class User extends Editable {
 		$this->setEMail($email);
 		$this->setPassword($password);
 		$this->setVerified(false);
+	}
+	
+	function edit($data) {
+		if(isset($data[self::NICKNAME]))
+			$this->setNickname($data[self::NICKNAME]);
+		if(isset($data[self::EMAIL]))
+			$this->setEMail($data[self::EMAIL]);
+		if(isset($data[self::PASSWORD]))
+			$this->setPassword($data[self::PASSWORD]);
+		if(isset($data[self::NAME]))
+			$this->setName($data[self::NAME]);
+		if(isset($data[self::SURNAME]))
+			$this->setSurname($data[self::SURNAME]);
+		if(isset($data[self::GENDER]))
+			$this->setGender($data[self::GENDER]);
+		if(isset($data[self::BIRTHDAY]))
+			$this->setBirthday(intval($data[self::BIRTHDAY]));
+		if(isset($data[self::BIRTHPLACE]))
+			$this->setBirthplace($data[self::BIRTHPLACE]);
+		if(isset($data[self::LIVING_PLACE]))
+			$this->setLivingPlace($data[self::LIVING_PLACE]);
+		if(isset($data[self::AVATAR]))
+			$this->setAvatar($data[self::AVATAR]);
+		if(isset($data[self::HOBBIES]))
+			$this->setHobbies($data[self::HOBBIES]);
+		if(isset($data[self::JOB]))
+			$this->setJob($data[self::JOB]);
+		if(isset($data[self::ROLE]))
+			$this->setRole($data[self::ROLE]);
+		if(isset($data[self::VISIBLE]))
+			$this->setVisible($data[self::VISIBLE]);
 	}
 	
 	function getID() {

@@ -1,11 +1,16 @@
 <?php
-require_once("post/Post.php");
+require_once("dataobject/Post.php");
+require_once("dataobject/VideoReportage.php");
+require_once("dataobject/News.php");
+require_once("manager/CollectionManager.php");
+require_once("dao/PostDao.php");
+require_once("filter.php");
 
 /**
  * Gestisce i post di ogni tipo (non le Collection).
  *
  */
-class PostManager {
+class PostManager { 
 	/**
 	 * Aggiunge un post "semplice" al sistema.
 	 *
@@ -24,24 +29,29 @@ class PostManager {
 	 * @return: l'articolo creato.
 	 */
 	static function createPost($data) {
-		require_once("common.php");
 		if(isset($data["ID"])) unset($data["ID"]);
 		$data = Filter::filterArray($data);
 		
-		require_once("post/PostCommon.php");
-		if(!isset($data["type"]))
-		   return false;
+		if(!isset($data[Post::TYPE]))
+		   throw new Exception("Il post da creare è di un tipo sconosciuto.");
 		$p = false;
-		if($data["type"] == PostType::NEWS) {
-			$p = new News($data);
-		} else if($data["type"]  == PostType::VIDEOREPORTAGE) {
-			$p = new VideoReportage($data);
-		} else
-			return false;
-		
-		$p->save();
-		
-		return $p;
+		switch ($data[Post::TYPE]) {
+			case Post::NEWS:
+				$p = new News($data);
+			case Post::VIDEOREP:
+				if(!$p)
+					$p = new VideoReportage($data);
+
+				$postdao = new PostDao();
+				$post = $postdao->save($p);
+				return $post;
+			case Post::COLLECTION:
+			case Post::ALBUM:
+			case Post::MAGAZINE:
+			case Post::PHOTOREP:
+				return CollectionManager::createCollection($data);
+		}
+		throw new Exception("Il post da creare è di un tipo sconosciuto.");
 	}
 	
 	/**
@@ -60,27 +70,12 @@ class PostManager {
 	 * @return: l'articolo modificato.
 	 */
 	static function editPost($post, $data) {
-		require_once("common.php");
 		if(isset($data["ID"])) unset($data["ID"]);
 		$data = Filter::filterArray($data);
 		
-		if(isset($data["title"]))
-			$post->setTitle($data["title"]);
-		if(isset($data["subtitle"]))
-			$post->setSubtitle($data["subtitle"]);
-		if(isset($data["headline"]))
-			$post->setHeadline($data["headline"]);
-		if(isset($data["tags"]))
-			$post->setTags($data["tags"]);
-		if(isset($data["categories"]))
-			$post->setCategories($data["categories"]);
-		if(isset($data["content"]))
-			$post->setContent($data["content"]);
-		if(isset($data["visible"]))
-			$post->setVisible($data["visible"]);
-			
-		$post->update();
-		
+		$p->edit($data);
+		$postdao = new PostDao();
+		$post = $postdao->update($p, Session::getUser());
 		return $post;
 	}
 	
@@ -91,7 +86,8 @@ class PostManager {
 	 * @return: il post eliminato.
 	 */
 	static function deletePost($post) {
-		return $post->delete();
+		$postdao = new PostDao();
+		return $postdao->delete($post);
 	}
 	
 	/**
@@ -103,14 +99,13 @@ class PostManager {
 	 * @return: post aggiornato.
 	 */
 	static function reportPost($author, $post, $report) {
-		require_once("common.php");
 		$report = Filter::filterText($report);
 		
-		require_once("post/PostCommon.php");
-		$r = new Report($author, $post->getID(), $report);
-		$r->save();
-		
-		return $post->addReport($r);
+		require_once("dao/ReportDao.php");
+		require_once("dataobject/Report.php");
+		$r = new Report($author, $post, $report);
+		$reportDao = new ReportDao();
+		return $reportDao->save($r);
 	}
 	
 	/**
@@ -122,8 +117,13 @@ class PostManager {
 	 * @return: commento aggiornato.
 	 */
 	static function reportComment($author, $comment, $report) {
-		//TODO da implementare
-		return false;
+		$report = Filter::filterText($report);
+		
+		require_once("dao/ReportDao.php");
+		require_once("dataobject/Report.php");
+		$r = new Report($author, $comment, $report);
+		$reportDao = new ReportDao();
+		return $reportDao->save($r);
 	}
 	
 	/**
@@ -135,17 +135,12 @@ class PostManager {
 	 * @return: post aggiornato.
 	 */
 	static function votePost($author, $post, $vote) {
-		require_once("post/PostCommon.php");
-		$v = self::loadVote($author, $post->getID());
-		if($v !== false)
-			self::removeVote($v);
-		//else
-		//	echo $author . "-" . $post->getID();
-			
-		$v = new Vote($author, $post->getID(), $vote);
-		$v->save();
-		$post->addVote($v);
-		return $post;
+		require_once("dao/VoteDao.php");
+		$votedao = new VoteDao();
+		
+		$votedao->save($post, $author, $vote);
+		$v = $votedao->getVote($post);
+		return $post->setVote($v);
 	}
 	
 	/**
@@ -157,14 +152,15 @@ class PostManager {
 	 * @return post: aggiornato.
 	 */
 	static function commentPost($post, $author, $comment) {
-		require_once("common.php");
 		$comment = Filter::filterText($comment);
 		
-		require_once("post/PostCommon.php");
+		require_once("dataobject/Comment.php");
+		require_once("dao/CommentDao.php");
 		$c = new Comment(array("author" => $author, "post" => $post->getID(), "comment" => $comment));
-		$c->save();
+		$commentdao = new CommentDao();
+		$comm = $commentdao->save($c);
 		
-		$post->addComment($c);
+		$post->addComment($comm);
 		return $post;
 	}
 	
@@ -175,11 +171,14 @@ class PostManager {
 	 * @return: il commento eliminato.
 	 */
 	static function removeComment($comment) {
-		require_once("post/PostCommon.php");
-		return $comment->delete();
+		require_once("dao/CommentDao.php");
+		$commentdao = new CommentDao();
+		$comm = $commentdao->delete($comment);
+		return $comm;
 	}
 	
 	static function searchForLikelihood($post) {
+		require_once 'manager/SearchManager.php';
 		return SearchManager::searchForLikelihood($post);
 	}
 	
@@ -191,44 +190,39 @@ class PostManager {
 	 * @return: il contest aggiornato.
 	 */
 	static function subscribePostToContest($post, $contest) {
-		require_once("post/contest/ContestManager.php");
+		require_once("manager/ContestManager.php");
 		return ContestManager::subscribePostToContest($post, $contest);
 	}
 	
-	static function removeVote($vote) {
-		require_once("post/PostCommon.php");
-		return $vote->delete();
-	}
-	
 	static function loadComment($id) {
-		require_once("post/PostCommon.php");
-		return Comment::loadFromDatabase($id);
+		require_once("dao/CommentDao.php");
+		$commentdao = new CommentDao();
 		
-	}
-	
-	static function loadVote($author, $post) {
-		require_once("post/PostCommon.php");
-		return Vote::loadFromDatabase($author, $post);
+		return $commentdao->load($id);
 	}
 	
 	static function loadPost($id) {
-		return Post::loadFromDatabase($id);
-	}
-	
-	/**
-	 * Aggiorna il permalink. È un'azione da non eseguire in automatico ma solo se l'utente lo richiede.
-	 * Perché se qualcuno ha usato il suo permalink precedente, i link non funzioneranno più.
-	 */
-	static function updatePermalinkForPost($post) {
-		return $post->setPermalink($post->getPermalink(true), true);
+		$postdao = new PostDao();
+		
+		return $postdao->load($id);
 	}
 	
 	static function loadPostByPermalink($permalink) {
 		return Post::loadByPermalink($permalink);
 	}
 	
+	/**
+	 * Aggiorna il permalink. È un'azione da non eseguire in automatico ma solo se l'utente lo richiede.
+	 * Perché se qualcuno ha usato il suo permalink precedente, i link non funzioneranno più.
+	 * @deprecated
+	 */
+	static function updatePermalinkForPost($post) {
+		return $post->setPermalink($post->getPermalink(true), true);
+	}
+	
 	static function postExists($post) {
-		return Post::exists($post);
+		$postdao = new PostDao();
+		return $postdao->exists($post);
 	}
 }
 ?>

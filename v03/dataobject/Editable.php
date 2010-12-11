@@ -1,6 +1,9 @@
 <?php
 require_once 'dataobject/Writable.php';
 abstract class Editable extends Writable {
+	const PREVIOUS_VERSION = "previousversion";
+	const EDITABLE = "editable";
+	const REMOVABLE = "removable";
 	protected $previousVersion = null;			// id versione precedente
 	protected $editable = true;					// modificabile dall'autore
 	protected $removable = true;					// cancellabile dall'autore

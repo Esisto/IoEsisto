@@ -1,5 +1,11 @@
 <?php
-require_once("post/collection/Collection.php");
+require_once("dataobject/Collection.php");
+require_once("dataobject/PhotoReportage.php");
+require_once("dataobject/Album.php");
+require_once("dataobject/Magazine.php");
+require_once("manager/PostManager.php");
+require_once("dao/PostDao.php");
+require_once("filter.php");
 
 /**
  * A differenza dello studio, CollectionManager non è sottoclasse di PostManager. ma è ancora in dubbio…
@@ -25,27 +31,36 @@ class CollectionManager {
 	 * @return: la collection creata o FALSE se c'è un errose
 	 */
 	static function createCollection($data) {
-		require_once("common.php");
+		if(isset($data["ID"])) unset($data["ID"]);
 		$data = Filter::filterArray($data);
 		
-		require_once("post/PostCommon.php");
-		if(!isset($data["type"]))
-		   return false;
-		$c = false;
-		if($data["type"] == PostType::ALBUM) {
-			$c = new Album($data);
-		} else if($data["type"] == PostType::MAGAZINE) {
-			$c = new Magazine($data);
-		} else if($data["type"] == PostType::PLAYLIST) {
-			$c = new Playlist($data);
-		} else if($data["type"] == PostType::PHOTOREPORTAGE) {
-			$c = new PhotoReportage($data);
-		} else
-			return false;
-		
-		$c->save();
-		
-		return $c;
+		if(!isset($data[Post::TYPE]))
+		   throw new Exception("Il post da creare è di un tipo sconosciuto.");
+		$p = false;
+		switch ($data[Post::TYPE]) {
+			case Post::NEWS:
+			case Post::VIDEOREP:
+				return PostManager::createPost($data);
+				break;
+				
+			case Post::COLLECTION:
+				if(!$p)
+					$p = new Collection($data);
+			case Post::ALBUM:
+				if(!$p)
+					$p = new Album($data);
+			case Post::MAGAZINE:
+				if(!$p)
+					$p = new Magazine($data);
+			case Post::PHOTOREP:
+				if(!$p)
+					$p = new PhotoReportage($data);
+
+				$postdao = new PostDao();
+				$post = $postdao->save($p);
+				return $post;
+		}
+		throw new Exception("Il post da creare è di un tipo sconosciuto.");
 	}
 	
 	/**
@@ -64,27 +79,7 @@ class CollectionManager {
 	 * @return: la collection modificata.
 	 */
 	static function editCollection($collection, $data) {
-		require_once("common.php");
-		$data = Filter::filterArray($data);
-		
-		if(isset($data["title"]))
-			$collection->setTitle($data["title"]);
-		if(isset($data["subtitle"]))
-			$collection->setSubtitle($data["subtitle"]);
-		if(isset($data["headline"]))
-			$collection->setHeadline($data["headline"]);
-		if(isset($data["tags"]))
-			$collection->setTags($data["tags"]);
-		if(isset($data["categories"]))
-			$collection->setCategories($data["categories"]);
-		if(isset($data["content"]))
-			$collection->setContent($data["content"]);
-		if(isset($data["visible"]))
-			$collection->setVisible($data["visible"]);
-			
-		$collection->update();
-		
-		return $collection;
+		return PostManager::editPost($collection, $data);
 	}
 	
 	/**
@@ -94,7 +89,6 @@ class CollectionManager {
 	 * @return: la collection eliminata.
 	 */
 	static function deleteCollection($collection) {
-		require_once("post/PostManager.php");
 		return PostManager::deletePost($collection);
 	}
 	
@@ -107,7 +101,6 @@ class CollectionManager {
 	 * @return: post aggiornato.
 	 */
 	static function reportCollection($author, $collection, $report) {
-		require_once("post/PostManager.php");
 		return PostManager::reportPost($author, $collection, $report);
 	}
 	
@@ -120,20 +113,7 @@ class CollectionManager {
 	 * @return: la collezione aggiornata.
 	 */
 	static function voteCollection($author, $collection, $vote) {
-		require_once("post/PostManager.php");
 		return PostManager::votePost($author,$collection,$vote);
-	}
-	
-	/**
-	 * Rimuove un voto dal sistema.
-	 * 
-	 * @param vote: il voto da rimuovere.
-	 * @return: il voto rimosso.
-	 */
-	static function removeVote($vote) {
-		$vote->delete();
-		
-		return $vote;
 	}
 	
 	/**
@@ -145,7 +125,6 @@ class CollectionManager {
 	 * @return: la collezione aggiornata.
 	 */
 	static function commentCollection($author, $collection, $comment) {
-		require_once("post/PostManager.php");
 		return PostManager::commentPost($collection,$author,$comment);
 	}
 	
@@ -156,9 +135,7 @@ class CollectionManager {
 	 * @return: il commento rimosso.
 	 */
 	static function removeComment($comment) {
-		$comment->delete();
-		
-		return $comment;
+		return PostManager::removeComment($comment);
 	}
 	
 	/**
@@ -169,18 +146,18 @@ class CollectionManager {
 	 * @return: la collezione aggiornata.
 	 */
 	static function addPostToCollection($post, $collection) {
-		return $collection->addPost($post);
+		$collection->addPost($post);
+		$postdao = new PostDao();
+		return $postdao->update($post, Session::getUser());
 	}
 	
-	/**
-	 *
-	 *
-	 */
 	static function loadCollection($id) {
-		require_once("post/PostManager.php");
-		return Collection::loadFromDatabase($id);
+		return PostManager::loadPost($id);
 	}
 
+	static function loadCollectionByPermalink($permalink) {
+		return PostManager::loadPostByPermalink($permalink);
+	}
 }
 
 ?>
