@@ -3,7 +3,7 @@ require_once 'dao/Dao.php';
 require_once("db.php");
 require_once("query.php");
 
-class VoteDao implements Dao {
+class VoteDao extends Dao {
 	const DEFAULT_VOTE = 0;
 	
 	function __construct() {
@@ -16,21 +16,41 @@ class VoteDao implements Dao {
 		if(!is_subclass_of($post, "Post"))
 			throw new Exception("Attenzione! Il parametro di ricerca non è un post.");
 		
-		$rs = $this->db->execute($s = Query::generateSelectStm(array($table),
+		$rs = $this->db->execute($s = Query::generateSelectStm(array($this->table),
 														 array(),
 														 array(new WhereConstraint($this->table->getColumn(DB::VOTE_POST),Operator::EQUAL,intval($post->getID()))),
-														 array("avg" => $this->table->getColumn(VOTE_VOTE))));
+														 array("avg" => $this->table->getColumn(DB::VOTE_VOTE))));
 		
-		if($db->num_rows() != 1)
+		if($this->db->num_rows() != 1)
 			return self::DEFAULT_VOTE;
 				
-		$row = $db->fetch_row();
+		$row = $this->db->fetch_row();
 		$this->avgVote = floatval($row[0]);
 		return $this->avgVote;
 	}
 	
 	function quickLoad($post) {
 		return $this->getVote($post);
+	}
+	
+	function exists($vote) {
+		parent::load($vote);
+		$post = $vote["post"];
+		$author = $vote["author"];
+		parent::load($post);
+		if(!is_subclass_of($post, "Post"))
+			throw new Exception("Attenzione! Il parametro di ricerca non è un post.");
+		parent::load($author);
+		if(!is_a($post, "User"))
+			throw new Exception("Attenzione! Il parametro di ricerca non è un utente.");
+		
+		$this->db->execute(Query::generateSelectStm(array($this->table),
+													array(),
+													array(new WhereConstraint($this->table->getColumn(DB::VOTE_POST),Operator::EQUAL,intval($post->getID())),
+														  new WhereConstraint($this->table->getColumn(DB::VOTE_AUTHOR),Operator::EQUAL,intval($author->getID()))),
+													array()));
+		
+		return $this->db->num_rows() > 0;
 	}
 	
 	function save($post, $author, $vote) {
@@ -42,7 +62,7 @@ class VoteDao implements Dao {
 		$this->db->execute(Query::generateDeleteStm($this->table, 
 													 array(new WhereConstraint($this->table->getColumn(DB::VOTE_AUTHOR),Operator::EQUAL,intval($author->getID()),
 														   new WhereConstraint($this->table->getColumn(DB::VOTE_POST),Operator::EQUAL,intval($post->getID()))))),
-							$this->table->getName(), $data);
+							$this->table->getName(), array($author->getID(), $post->getID()));
 		//non controllo se è stato cancellato perché può non esserci
 		
 		$data = array(DB::VOTE_VOTE => ($vote ? 1 : 0),
@@ -61,7 +81,7 @@ class VoteDao implements Dao {
 														   new WhereConstraint($this->table->getColumn(DB::VOTE_POST),Operator::EQUAL,intval($post->getID())))),
 													 array()), $this->table->getName(), $data);
 		
-		if($db->num_rows() != 1)
+		if($this->db->num_rows() != 1)
 			throw new Exception("Si è verificato un errore salvando l'oggetto. Riprovare.");
 		return true;
 	}
@@ -75,7 +95,7 @@ class VoteDao implements Dao {
 								 		new WhereConstraint($this->table->getColumn(DB::VOTE_POST),Operator::EQUAL,intval($post->getID())))),
 							  	 $this->table->getName(), array("Vote", intval($author->getID()), intval($post->getID())));
 		
-		if($db->affected_rows() != 1)
+		if($this->db->affected_rows() != 1)
 			throw new Exception("Si è verificato un errore eliminando l'oggetto. Riprovare.");
 		return true;
 	}

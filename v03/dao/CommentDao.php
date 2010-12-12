@@ -4,17 +4,14 @@ require_once("db.php");
 require_once("query.php");
 require_once("dataobject/Comment.php");
 
-class CommentDao implements Dao {
+class CommentDao extends Dao {
 	const OBJECT_CLASS = "Comment";
 	
 	private $loadReports = false;
 	
 	function __construct() {
-		$this->table_comment = Query::getDBSchema()->getTable(DB::TABLE_COMMENT);
-		
-		$this->db = new DBManager();
-		if($this->db->connect_errno())
-			$this->db->display_connect_error("CommentDao::__construct()");
+		parent::__construct();
+		$this->setMainTable(DB::TABLE_COMMENT);
 	}
 
 	function setLoadReports($load) {
@@ -38,9 +35,9 @@ class CommentDao implements Dao {
 	
 	function load($id) {
 		parent::load($id);
-		$rs = $this->db->execute($s = Query::generateSelectStm(array($this->table_comment),
+		$rs = $this->db->execute($s = Query::generateSelectStm(array($this->table),
 														 array(),
-														 array(new WhereConstraint($this->table_comment->getColumn(DB::COMMENT_ID),Operator::EQUAL,intval($id))),
+														 array(new WhereConstraint($this->table->getColumn(DB::COMMENT_ID),Operator::EQUAL,intval($id))),
 														 array()));
 		
 		if($this->db->num_rows() != 1)
@@ -62,14 +59,14 @@ class CommentDao implements Dao {
 		if(!is_subclass_of($post, "Post"))
 			throw new Exception("Attenzione! Il parametro di ricerca non è un post.");
 		
-		$rs = $db->execute($s = Query::generateSelectStm(array($this->table_comment),
+		$rs = $this->db->execute($s = Query::generateSelectStm(array($this->table),
 														 array(),
-														 array(new WhereConstraint($this->table_comment->getColumn(DB::COMMENT_POST),Operator::EQUAL,intval($post->getID()))),
-														 array()), $this->table_comment->getName(), $this);
+														 array(new WhereConstraint($this->table->getColumn(DB::COMMENT_POST),Operator::EQUAL,intval($post->getID()))),
+														 array()), $this->table->getName(), $this);
 		
 		$comm = array();
-		if($db->num_rows() > 0) {
-			while($row = $db->fetch_result()) {
+		if($this->db->num_rows() > 0) {
+			while($row = $this->db->fetch_result()) {
 				$c = new Comment($row[DB::COMMENT_COMMENT], intval($row[DB::COMMENT_POST]), intval($row[DB::COMMENT_AUTHOR]));
 				$com->setID($row[DB::COMMENT_ID])->setCreationDate(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[DB::COMMENT_CREATION_DATE])));
 				$comm[] = $com;
@@ -84,7 +81,7 @@ class CommentDao implements Dao {
 		$data = array(DB::COMMENT_COMMENT => $comm->getComment(),
 					  DB::COMMENT_POST => $comm->getPost(),
 					  DB::COMMENT_AUTHOR => $comm->getAuthor());
-		$rs = $this->db->execute($s = Query::generateInsertStm($this->table_comment, $data), $this->table_comment->getName(), $comm);
+		$rs = $this->db->execute($s = Query::generateInsertStm($this->table, $data), $this->table->getName(), $comm);
 
 		if($this->db->affected_rows() != 1)
 			throw new Exception("Errore durante l'inserimento dell'oggetto.");
@@ -95,8 +92,8 @@ class CommentDao implements Dao {
 	
 	function delete($comm) {
 		parent::delete($comm, self::OBJECT_CLASS);
-		$rs = $db->execute($s = Query::generateDeleteStm($this->table_comment,
-														 array(new WhereConstraint($this->table_comment->getColumn(DB::COMMENT_ID),Operator::EQUAL,$comm->getID()))), $this->table_comment->getName(), $comm);
+		$rs = $this->db->execute($s = Query::generateDeleteStm($this->table,
+														 array(new WhereConstraint($this->table->getColumn(DB::COMMENT_ID),Operator::EQUAL,$comm->getID()))), $this->table->getName(), $comm);
 		if($this->db->affected_rows() != 1)
 			throw new Exception("Errore durante l'eliminazione dell'oggetto.");
 		return $comm;

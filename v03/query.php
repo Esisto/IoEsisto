@@ -429,12 +429,14 @@ class DBManager {
 		
 		$this->result = mysql_query($query, $this->dblink);
 		require_once 'session.php';
-		Session::incrementQueryCounter(substr($query, 0, 6));
+		if(isset($_SESSION["query"][substr($query, 0, 6)]))
+			Session::incrementQueryCounter(substr($query, 0, 6));
 		$this->info = mysql_info($this->dblink);
 		$this->errno = mysql_errno($this->dblink);
 		$this->error = mysql_error($this->dblink);
 		if($this->errno())
 			$this->display_error("DBManager::execute() - query " . $query);
+			
 		if($object == LOGMANAGER) return;
 		
 		$this->query_type = substr($query, 0, 6);
@@ -463,8 +465,10 @@ class DBManager {
 		//END DEBUG
 		if($this->affected_rows() > 0) {
 			require_once("session.php");
-			require_once("common.php");
-			LogManager::addLogEntry(Session::getUser()->getID(), substr($query, 0, 6), $tablename, $object);
+			require_once("manager/LogManager.php");
+			$user = Session::getUser();
+			if(is_subclass_of($user, "User"))
+				LogManager::addLogEntry($user->getID(), substr($query, 0, 6), $tablename, $object);
 		}
 		return $this->result;
 	}
@@ -482,6 +486,12 @@ class DBManager {
 	}
 	function fetch_result($mode = MYSQL_ASSOC) {
 		return mysql_fetch_array($this->result, $mode);
+	}
+	function fetch_all_results($mode = MYSQL_ASSOC) {
+		$res = array();
+		while($row = $this->fetch_result($mode))
+			$res[] = $row;
+		return $res;
 	}
 	function fetch_row() {
 		return self::fetch_result(MYSQL_NUM);

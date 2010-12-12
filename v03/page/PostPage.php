@@ -1,9 +1,10 @@
 <?php
 require_once("settings.php");
 require_once("strings/" . LANG . "strings.php");
-require_once("file_manager.php");
-require_once("post/Post.php");
-require_once("post/PostManager.php");
+require_once("manager/FileManager.php");
+require_once("dataobject/Post.php");
+require_once("dao/PostDao.php");
+require_once("manager/PostManager.php");
 
 
 class PostPage {
@@ -46,10 +47,11 @@ class PostPage {
 			} else
 				echo substr(Filter::decodeFilteredText($post->getContent()), 0, 200) . (strlen(Filter::decodeFilteredText($post->getContent())) < 200 ? "" : "...");
 			if(!is_null($post->getPlace())) {
-				require_once("maps/geolocate.php");
+				require_once("manager/MapManager.php");
 				MapManager::printInfoInElement($post->getPlace(), "post_place_" . $post->getID());
 			}
-			?><div class="post_authorname"><a href="<?php echo FileManager::appendToRootPath("User/" . $post->getAuthorName()); ?>"><?php echo $post->getAuthorName(); ?></a></div>	
+			$postdao = new PostDao();
+			?><div class="post_authorname"><a href="<?php echo FileManager::appendToRootPath("User/" . $postdao->getAuthorName($post)); ?>"><?php echo $postdao->getAuthorName($post); ?></a></div>	
 		</div>
 	</div>
 <?php
@@ -101,17 +103,18 @@ class PostPage {
 			} else
 				echo Filter::decodeFilteredText($post->getContent());
 			if(!is_null($post->getPlace())) {
-				require_once("maps/geolocate.php");
+				require_once("manager/MapManager.php");
 				MapManager::printInfoInElement($post->getPlace(), "post_place_" . $post->getID());
 			}
+			$postdao = new PostDao();
 			?>
-		<div class="post_authorname"><a href="<?php echo FileManager::appendToRootPath("User/" . $post->getAuthorName()); ?>"><?php echo $post->getAuthorName(); ?></a></div>	
+			<div class="post_authorname"><a href="<?php echo FileManager::appendToRootPath("User/" . $postdao->getAuthorName($post)); ?>"><?php echo $postdao->getAuthorName($post); ?></a></div>	
 		</div>
 		<div class="post_footer clear">
 			<div class="post_vote">
-				<div class="vote_image"><a href="<?php echo $post->getFullPermalink() . "/Vote?vote=yes"; ?>">s&igrave;</a></div>
-				<div class="vote_image"><a href="<?php echo $post->getFullPermalink() . "/Vote?vote=no"; ?>">no</a></div>
-				Voto: <?php echo $post->getAvgVote(); ?>
+				<div class="vote_image"><a href="<?php echo FileManager::appendToRootPath($post->getPermalink() . "/Vote?vote=yes"); ?>">s&igrave;</a></div>
+				<div class="vote_image"><a href="<?php echo FileManager::appendToRootPath($post->getPermalink() . "/Vote?vote=no"); ?>">no</a></div>
+				Voto: <?php echo $post->getVote(); ?>
 			</div>
 			<?php 
 			if(!isset($options[self::NO_TAGS]) || !$options[self::NO_TAGS]) {
@@ -165,8 +168,12 @@ class PostPage {
 	
 	static function showNewPostForm($data = null, $error = null) {
 		$user = Session::getUser();
-		require_once 'page.php';
-		if(!Page::canUserDo($user)) return; //TODO redirect verso pagina di errore.
+		require_once 'manager/AuthorizationManager.php';
+		if(!isset($_GET["type"]))
+			$_GET["type"] = Post::NEWS;
+		if(!AuthorizationManager::canUserDo(AuthorizationManager::CREATE, $_GET["type"]))
+			return; //TODO redirect verso pagina di errore.
+		
 		if(is_null($error) && count($_POST) > 0) {
 			$data = array();
 			if(isset($_POST["title"]) && trim($_POST["title"]) != "")
@@ -205,7 +212,7 @@ class PostPage {
 				if($post !== false) {
 					echo '
 			<div class="message">
-				Notizia salvata: <a href="' . $post->getFullPermalink() . '">Visualizza</a>
+				Notizia salvata: <a href="' . FileManager::appendToRootPath($post->getPermalink()) . '">Visualizza</a>
 			</div>';
 				}
 			} else {
@@ -214,21 +221,19 @@ class PostPage {
 			}
 		}
 		//echo serialize(isset($_GET["type"])) . "<br/>"; //DEBUG
-		if(isset($_GET["type"])) {
-			switch($_GET["type"]) {
-				case "Collection":
-				case "PhotoReportage":
-				case "VideoReportage":
-				case "Album":
-				case "Magazine":
-				case "Playlist":
-					call_user_func(array("PostPage","showNew" . $_GET["type"] . "Form"), $data, $error);
-					break;
-				case "News":
-				default:
-					self::showNewNewsForm($data, $error);
-			}
-		} else self::showNewNewsForm($data, $error);
+		switch($_GET["type"]) {
+			case Post::COLLECTION:
+			case Post::PHOTOREP:
+			case Post::VIDEOREP:
+			case Post::ALBUM:
+			case Post::MAGAZINE:
+			case Post::PLAYLIST:
+				call_user_func(array("PostPage","showNew" . $_GET["type"] . "Form"), $data, $error);
+				break;
+			case Post::NEWS:
+			default:
+				self::showNewNewsForm($data, $error);
+		}
 	}
 	
 	static function showCommentForm($user, $post, $error = null) {
@@ -305,7 +310,7 @@ class PostPage {
 				if($post !== false) {
 					echo '
 			<div class="message">
-				Notizia salvata: <a href="' . $post->getFullPermalink() . '">Visualizza</a>
+				Notizia salvata: <a href="' . FileManager::appendToRootPath($post->getPermalink()) . '">Visualizza</a>
 			</div>';
 				}
 			} else {
@@ -388,7 +393,7 @@ class PostPage {
             	}
             </script>
 		<?php 
-		require_once 'maps/geolocate.php';
+		require_once 'manager/MapManager.php';
 		MapManager::setCenterToMap($post->getPlace(), "map_canvas");
 		?>
         </form>
@@ -484,8 +489,8 @@ class PostPage {
 		?>
 				<div class="category_tree">
 				<?php
-				require_once 'post/PostCommon.php';
-				$cat = CategoryManager::getCategories();
+				require_once 'manager/CategoryManager.php';
+				$cat = CategoryManager::loadAllCategories();
 				$i = 0; ?>
 					<ul class="category_tree_level_0"><?php
 				foreach($cat as $valore)
@@ -500,10 +505,10 @@ class PostPage {
 	private static function writeCategoryNode($node, $counter, $level, $checked = array()) {
 		$check = false;
 		if(count($checked) > 0) {
-			$check = array_search($node->name, $checked) !== false;
-			if($check) array_diff($checked, array($node->name));
+			$check = array_search($node->getName(), $checked) !== false;
+			if($check) array_diff($checked, array($node->getName()));
 		}
-		echo '<li><input type="checkbox" name="cat[' . ++$counter . ']" value="' . $node->name .'" ' . ($check ? "checked " : "") . '/> <label>' . $node->name . '</label></li>';
+		echo '<li><input type="checkbox" name="cat[' . ++$counter . ']" value="' . $node->getName() .'" ' . ($check ? "checked " : "") . '/> <label>' . $node->getName() . '</label></li>';
 		if(is_array($children = $node->getChildren())) { ?>
 					<ul class="category_tree_level_<?php echo $level++; ?>"><?php
 			foreach($children as $child) {
@@ -513,6 +518,25 @@ class PostPage {
 					</ul><?php
 		}
 		return $counter;
+	}
+	
+	static function showNoPostWarning() {
+		?>
+	<div class="post nopost" id="nopost">
+		<div class="post_header">
+			<div class="post_headline clear">What are you waiting?</div>
+			<div class="post_title">No Post in this site yet!</div>
+			<div class="post_subtitle">Write a new post right now!</div>
+		</div>
+		<div class="post_content clear">
+			<p><span id="post_place_publichi" class="post_place">PUBLICHI</span> -
+			Wait! PubliChi is empty? What happened?</p>
+			<p>You just installed it? So, what are you waiting? Write a <a href="<?php echo FileManager::appendToRootPath("Post/New"); ?>">new post</a> and start a brand new site!!</p>
+			<p>Come on! This screen is soo boring!!!</p>
+			<div class="post_authorname"><a href="<?php echo FileManager::appendToRootPath("User/ioesisto"); ?>">IoEsisto</a></div>	
+		</div>
+	</div>
+		<?php
 	}
 }
 

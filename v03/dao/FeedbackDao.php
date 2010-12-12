@@ -1,6 +1,6 @@
 <?php //TODO
 
-class FeedbackDao implements Dao {
+class FeedbackDao extends Dao {
 
 	
 	function loadFeedback() {

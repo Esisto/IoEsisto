@@ -208,7 +208,8 @@ class PostManager {
 	}
 	
 	static function loadPostByPermalink($permalink) {
-		return Post::loadByPermalink($permalink);
+		$postdao = new PostDao();
+		return $postdao->loadByPermalink($permalink);
 	}
 	
 	/**

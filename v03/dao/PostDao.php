@@ -29,15 +29,15 @@ class PostDao extends Dao {
 	
 	function load($id) {
 		parent::load($id);
-		$rs = $db->execute($s = Query::generateSelectStm(array($this->table),
+		$rs = $this->db->execute($s = Query::generateSelectStm(array($this->table),
 														 array(),
 														 array(new WhereConstraint($this->table->getColumn(DB::POST_ID),Operator::EQUAL,intval($id))),
 														 array()));
 		
-		if($db->num_rows() != 1)
+		if($this->db->num_rows() != 1)
 			throw new Exception("L'oggetto cercato non è stato trovato. Riprovare.");
 		
-		$row = $db->fetch_result();
+		$row = $this->db->fetch_result();
 		$p = $this->createFromDBRow($row);
 		return $p;
 	}
@@ -60,16 +60,16 @@ class PostDao extends Dao {
 	
 	function loadByPermalink($permalink) {
 		parent::load($permalink);
-		$rs = $db->execute($s = Query::generateSelectStm(array($this->table),
+		$rs = $this->db->execute($s = Query::generateSelectStm(array($this->table),
 														 array(),
 														 array(new WhereConstraint($this->table->getColumn(DB::POST_PERMALINK),Operator::EQUAL,$permalink)),
 														 array()),
 							$this->table->getName(), null);
 		
-		if($db->num_rows() != 1)
+		if($this->db->num_rows() != 1)
 			throw new Exception("L'oggetto cercato non è stato trovato. Riprovare.");
 		
-		$row = $db->fetch_result();
+		$row = $this->db->fetch_result();
 		$p = $this->createFromDBRow($row);
 		return $p;
 	}
@@ -90,8 +90,8 @@ class PostDao extends Dao {
 					  "visible" => $row[DB::POST_VISIBLE] > 0,
 					  "type" => $type,
 					  "place" => $row[DB::POST_PLACE]);
-		if($type == PostType::NEWS) {
-			require_once("dataobject/News");
+		if($type == Post::NEWS) {
+			require_once("dataobject/News.php");
 			$p = new News($data);
 		} else if($type == Post::VIDEOREP) {
 			require_once("dataobject/VideoReportage.php");
@@ -125,6 +125,7 @@ class PostDao extends Dao {
 			$commentDao->loadAll($p);
 		}
 		$p->setPermalink($row[DB::POST_PERMALINK]);
+		require_once 'dao/VoteDao.php';
 		$voteDao = new VoteDao();
 		$p->setVote($voteDao->getVote($p));
 		//setto lo stato
@@ -138,19 +139,19 @@ class PostDao extends Dao {
 			$reportDao = new ReportDao();
 			$reportDao->loadAll($p);
 		}
-		$p->setAccessCount($this->getAccessCount($post));
+		$p->setAccessCount($this->getAccessCount($p));
 		return $p;
 	}
 
 	function permalinkExists($permalink) {
 		parent::load($permalink);
-		$rs = $db->execute($s = Query::generateSelectStm(array($this->table), array(),
+		$rs = $this->db->execute($s = Query::generateSelectStm(array($this->table), array(),
 														 array(new WhereConstraint($this->table->getColumn(DB::POST_PERMALINK),Operator::EQUAL,$permalink)),
 														 array("count" => 2)));
-		if($db->num_rows() != 1)
+		if($this->db->num_rows() != 1)
 			throw new Exception("Si è verificato un errore. Riprovare.");
 		
-		$row = $db->fetch_row();
+		$row = $this->db->fetch_row();
 		return $row[0] > 0;
 	}
 	
@@ -177,14 +178,15 @@ class PostDao extends Dao {
 			$data[DB::POST_TAGS] = $post->getTags();
 		if(!is_null($post->getCategories())) {
 			// check sulle categorie, eliminazione di quelle che non esistono nel sistema, se vuoto inserimento di quella di default
+			require_once 'manager/CategoryManager.php';
 			$new_cat = CategoryManager::filterWrongCategories(explode(",", $post->getCategories()));
 			if(is_null($post->getCategories()) || count($new_cat) == 0)
 				$new_cat[] = self::DEFAULT_CATEGORY;
 			$post->setCategories(Filter::arrayToText($new_cat));
 			$data[DB::POST_CATEGORIES] = $post->getCategories();
 		}
-		if(isset($post->content) && !is_null($post->getContent())) {
-			if($post->type == Post::NEWS || $post->type == Post::VIDEOREP)
+		if(!is_null($post->getContent())) {
+			if($post->getType() == Post::NEWS || $post->getType() == Post::VIDEOREP)
 				$data[DB::POST_CONTENT] = $post->getContent();
 			else
 				$data[DB::POST_CONTENT] = serialize($post->getContent());
@@ -195,29 +197,34 @@ class PostDao extends Dao {
 			$data[DB::POST_AUTHOR] = $post->getAuthor();
 		if(!is_null($post->getPlace()))
 			$data[DB::POST_PLACE] = $post->getPlace();
+		$post->setCreationDate($_SERVER["REQUEST_TIME"]);
 		if(is_null($post->getPermalink()));
 			$post->setPermalink($this->generatePermalink($post));
 		$data[DB::POST_PERMALINK] = $post->getPermalink();
 		$rand = ""; $count = 0;
-		while(!$this->permalinkExists($post->getPermalink() . $rand)) {
+		while($this->permalinkExists($post->getPermalink() . $rand)) {
 			if($count >= 1000) throw new Exception("Attenzione! Hai troppi atricol che si chiamano in questo modo. Prova a cambiare titolo.");
 			//finché esiste già un permalink del genere, ne genero uno random.
 			$rand = "(" . rand(65535, $_SERVER["REQUEST_TIME"]) . ")";
 			$data[DB::POST_PERMALINK] = $post->getPermalink() . $rand;
 			$count++;
 		}
-		$data[DB::POST_CREATION_DATE] = date("Y-m-d G:i:s", $_SERVER["REQUEST_TIME"]);
+		$data[DB::POST_CREATION_DATE] = date("Y-m-d G:i:s", $post->getCreationDate());
 		
 		$rs = $this->db->execute($s = Query::generateInsertStm($this->table,$data), $this->table->getName(), $this);
 		
 		if($this->db->affected_rows() != 1)
 			throw new Exception("Si è verificato un errore salvando l'oggetto. Riprovare.");
+		
 		//carico il post inserito.
 		$p = $this->load(intval($this->db->last_inserted_id()));
+		
 		//salvo i tag che non esistono
-		if(isset($data[DB::POST_TAGS]) && !is_null($data[DB::POST_TAGS]) && trim($data[DB::POST_TAGS]) != "")
+		if(isset($data[DB::POST_TAGS]) && !is_null($data[DB::POST_TAGS]) && trim($data[DB::POST_TAGS]) != "") {
+			require_once 'manager/TagManager.php';
 			TagManager::createTags(explode(",", $data[DB::POST_TAGS]));
-
+		}
+		
 		//salvo lo stato del post perché l'utente potrebbe aver già modificato il suo "colore".
 		$this->updateState($p);
 		return $p;
@@ -252,7 +259,8 @@ class PostDao extends Dao {
 			$data[DB::POST_TAGS] = $post->getTags();
 		if($p_old->getCategories() != $post->getCategories()) {
 			// check sulle categorie, eliminazione di quelle che non esistono nel sistema, se vuoto inserimento di quella di default
-			$new_cat = CategoryManager::filterWrongCategories(explode(",", $post->getCategories())); //TODO
+			require_once 'manager/CategoryManager.php';
+			$new_cat = CategoryManager::filterWrongCategories(explode(",", $post->getCategories()));
 			if(count($new_cat) == 0)
 				$new_cat[] = self::DEFAULT_CATEGORY;
 			$post->setCategories(Filter::arrayToText($new_cat));
@@ -286,9 +294,12 @@ class PostDao extends Dao {
 		
 		if($this->db->affected_rows() != 1)
 			throw new Exception("Si è verificato un errore aggiornando il dato. Riprovare.");
+		
 		//salvo i tag che non esistono
-		if(isset($data[DB::POST_TAGS]) && !is_null($data[DB::POST_TAGS]) && trim($data[DB::POST_TAGS]) != "")
+		if(isset($data[DB::POST_TAGS]) && !is_null($data[DB::POST_TAGS]) && trim($data[DB::POST_TAGS]) != "") {
+			require_once 'manager/TagManager.php';
 			TagManager::createTags(explode(",", $data[DB::POST_TAGS])); //TODO
+		}
 		
 		return $post->setModificationDate($modDate);
 	}
@@ -323,23 +334,24 @@ class PostDao extends Dao {
 	}
 	
 	private function generatePermalink($post) {
-		require_once("common.php");
+		require_once("filter.php");
 		$s = "Post/";
 		$s.= Filter::textToPermalink($this->getAuthorName($post));
 		$s.= "/";
-		if(isset($post->creationDate)) {
-			$s.= date("Y-m-d", $post->getCreationDate());
-			$s.= "/";
-		}
+		$s.= date("Y-m-d", $post->getCreationDate());
+		$s.= "/";
 		$s.= Filter::textToPermalink($post->getTitle());
 		return $s;
 	}
 	
 	function getAuthorName($post) {
-		require_once("user/UserManager.php");
+		require_once("dao/UserDao.php");
 		if(is_null($post->getAuthor()))
 			return "Anonimous";
-		$u = UserManager::loadUser($post->getAuthor(), false); //TODO
+		$userdao = new UserDao();
+		$userdao->setLoadDependences(false);
+		$userdao->setLoadAccessCount(false);
+		$u = $userdao->load($post->getAuthor());
 		if(!is_null($u->getNickname()))
 			return $u->getNickname();
 		return $post->getAuthor();
@@ -350,7 +362,7 @@ class PostDao extends Dao {
 	}
 	
 	
-	private function getAccessCount($post) {
+	protected function getAccessCount($post) {
 		parent::getAccessCount($post, $this->table, DB::POST_ID);
 	}
 }

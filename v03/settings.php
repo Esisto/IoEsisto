@@ -12,12 +12,15 @@ define("ROOT_LINK", "ioesisto/v03/");
 // Language settings.
 define("LANG", "en"); // selezionare il linguaggio voluto.
 
+//default values
+define("MAXREPORTS", 50);
+define("EMPTY_AVATAR", 1);
+
 // Content coloring
 define("HIDE", "black");
 define("VM18", "red");
 define("OFFENSE", "yellow");
 define("GOOD", "green");
-define("MAXREPORTS", 50);
 
 // Google API settings
 define("MAPS_ENABLED", false);

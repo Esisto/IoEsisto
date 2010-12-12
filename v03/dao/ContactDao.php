@@ -4,7 +4,7 @@ require_once("db.php");
 require_once("query.php");
 require_once("dataobject/Contact.php");
 
-class ContactDao implements Dao {
+class ContactDao extends Dao {
 	const OBJECT_CLASS = "Contact";
 	private $table_ct;
 
@@ -123,6 +123,19 @@ class ContactDao implements Dao {
 			$names[$row[DB::CONTACT_TYPE_NAME]] = $row[DB::CONTACT_TYPE_TYPE];
 		
 		return $names;
+	}
+	
+	function quickLoad($id) {
+		return $this->load($id);
+	}
+	
+	function exists($contact) {
+		try {
+			$c = $this->quickLoad($contact->getID());
+			return is_subclass_of($c, self::OBJECT_CLASS);
+		} catch(Exception $e) {
+			return false;
+		}
 	}
 }
 ?>

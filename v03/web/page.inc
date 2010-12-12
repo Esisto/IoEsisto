@@ -12,7 +12,7 @@ function writePageHeader($user, $ad) {
 			<div id="login_place">
 	<?php 
 	if($user === false) {
-		require_once 'user/UserPage.php';
+		require_once 'page/UserPage.php';
 		UserPage::showLoginForm();
 	} else {
 	?>
@@ -124,7 +124,7 @@ function writePageFooter($class, $ad) {
 ?>
 		<p id="license">
 			This site is under GNU-License<br/>
-			You can find the code on <a href="http::/github.com" target="_blank">github.com</a><br/>
+			You can find the code on <a href="http://github.com" target="_blank">github.com</a><br/>
 			under the codename: <a href="http://github.com/Esisto/IoEsisto" target="_blank">IoEsisto</a>
 		</p>
 		<div class="clear"></div>

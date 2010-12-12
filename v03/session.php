@@ -1,5 +1,7 @@
 <?php
-require_once("user/User.php");
+require_once("dataobject/User.php");
+require_once 'manager/UserManager.php';
+require_once 'dao/UserDao.php';
 
 session_start();
 
@@ -25,16 +27,15 @@ class Session {
 			if(is_a($u, "User"))
 				$_SESSION["iduser"] = $u->getID();
 			else {
- 
-				$user = User::loadFromDatabase($u->getID(),false);	// Mi assicura che user sia presente nel database
+ 				try {
+					$userdao = new UserDao();
+					$user = $userdao->quickLoad($u->getID());	// Mi assicura che user sia presente nel database
 									   	// prima di avviare una sessione	
-				if ( $user != false ) {
-					//$_SESSION = array(); //NON necessaria
 					$_SESSION["iduser"] = $user->getID();
 					return true;
-				}
-				else
+ 				} catch (Exception $e) {
 					return false;
+ 				}
 			}
 			return true;
 		}	
@@ -45,13 +46,10 @@ class Session {
 	 * restituisce un oggetto user che ha avviato la sessione		
 	 */
 	static function getUser($who_asks = "Anonimous") {
-		/*if( !session_start() )
-			return false;*/
-		//require_once 'user/UserManager.php';
-		//return UserManager::loadUser(1);
 		
 		if ( isset($_SESSION["iduser"]) ) {
-			$user = User::loadFromDatabase($_SESSION["iduser"], false);
+			$userdao = new UserDao();
+			$user = $userdao->quickLoad($_SESSION["iduser"]);
 			
 			if(!isset($_SESSION["getUser"]))
 				$_SESSION["getUser"] = 1;

@@ -1,4 +1,6 @@
 <?php
+require_once 'db.php';
+
 class SearchRule {
 	var $what;
 	var $keys;
@@ -49,20 +51,19 @@ class SearchManager {
 	private static function searchPostsBy($keys, $options, $echo_query = false /*DEBUG*/) {
 		require_once("query.php");
 		require_once("strings/strings.php");
-		define_tables(); definePostColumns();
-		$table = Query::getDBSchema()->getTable(TABLE_POST);
+		$table = Query::getDBSchema()->getTable(DB::TABLE_POST);
 		
 		$loadComments = true;
 		$wheres = array();
 		foreach($keys as $key => $value) {
 			if($key == "name" || $key == "title")
-				$wheres[] = new WhereConstraint($table->getColumn(POST_TITLE), Operator::LIKE, "%" . Filter::filterText($value) . "%");
+				$wheres[] = new WhereConstraint($table->getColumn(DB::POST_TITLE), Operator::LIKE, "%" . Filter::filterText($value) . "%");
 			if($key == "permalink")
-				$wheres[] = new WhereConstraint($table->getColumn(POST_PERMALINK), Operator::EQUAL, intval($value));
+				$wheres[] = new WhereConstraint($table->getColumn(DB::POST_PERMALINK), Operator::EQUAL, intval($value));
 			if($key == "id")
-				$wheres[] = new WhereConstraint($table->getColumn(POST_ID), Operator::EQUAL, intval($value));
+				$wheres[] = new WhereConstraint($table->getColumn(DB::POST_ID), Operator::EQUAL, intval($value));
 			if($key == "tag")
-				$wheres[] = new WhereConstraint($table->getColumn(POST_TAGS), Operator::LIKE, "%" . Filter::filterText($value) . "%");
+				$wheres[] = new WhereConstraint($table->getColumn(DB::POST_TAGS), Operator::LIKE, "%" . Filter::filterText($value) . "%");
 			if($key == "day") {
 				if(!is_numeric($value))
 					$value = date_timestamp_get(date_create_from_format("Y-m-d", $value));
@@ -70,19 +71,19 @@ class SearchManager {
 				$dayend = date("Y-m-d", $value + 24*60*60);
 				
 				//echo "<br />" . $daystart . "-" . $dayend; //DEBUG
-				$wheres[] = new WhereConstraint($table->getColumn(POST_CREATION_DATE), Operator::GREATEROREQUAL, $daystart);
-				$wheres[] = new WhereConstraint($table->getColumn(POST_CREATION_DATE), Operator::LESSER, $dayend);
+				$wheres[] = new WhereConstraint($table->getColumn(DB::POST_CREATION_DATE), Operator::GREATEROREQUAL, $daystart);
+				$wheres[] = new WhereConstraint($table->getColumn(DB::POST_CREATION_DATE), Operator::LESSER, $dayend);
 			}
 			if($key == "category")
-				$wheres[] = new WhereConstraint($table->getColumn(POST_CATEGORIES), Operator::LIKE, "%" . Filter::filterText($value) . "%");
+				$wheres[] = new WhereConstraint($table->getColumn(DB::POST_CATEGORIES), Operator::LIKE, "%" . Filter::filterText($value) . "%");
 			if($key == "title")
-				$wheres[] = new WhereConstraint($table->getColumn(POST_TITLE), Operator::LIKE, "%" . Filter::filterText($value) . "%");
+				$wheres[] = new WhereConstraint($table->getColumn(DB::POST_TITLE), Operator::LIKE, "%" . Filter::filterText($value) . "%");
 			if($key == "content")
-				$wheres[] = new WhereConstraint($table->getColumn(POST_CONTENT), Operator::LIKE, "%" . Filter::filterText($value) . "%");
+				$wheres[] = new WhereConstraint($table->getColumn(DB::POST_CONTENT), Operator::LIKE, "%" . Filter::filterText($value) . "%");
 			if($key == "author")
-				$wheres[] = new WhereConstraint($table->getColumn(POST_AUTHOR), Operator::EQUAL, intval($value));
+				$wheres[] = new WhereConstraint($table->getColumn(DB::POST_AUTHOR), Operator::EQUAL, intval($value));
 			if($key == "no_id")
-				$wheres[] = new WhereConstraint($table->getColumn(POST_ID), Operator::NOTEQUAL, intval($value));
+				$wheres[] = new WhereConstraint($table->getColumn(DB::POST_ID), Operator::NOTEQUAL, intval($value));
 			if($key == "loadComments")
 				$loadComments = $value == true;
 		}
@@ -109,8 +110,10 @@ class SearchManager {
 		if($echo_query) echo "<font color='red'>" . $s . "</font>"; //DEBUG
 		$posts = array();
 		while($row = $db->fetch_result()) {
-			require_once("post/Post.php");
-			$posts[] = Post::createFromDBResult($row, $loadComments);
+			require_once("dao/PostDao.php");
+			$postdao = new PostDao();
+			$postdao->setLoadComments($loadComments);
+			$posts[] = $postdao->createFromDBRow($row);
 		}
 		
 		return $posts;

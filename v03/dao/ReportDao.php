@@ -4,7 +4,7 @@ require_once("db.php");
 require_once("query.php");
 require_once("dataobject/Report.php");
 
-class ReportDao implements Dao {
+class ReportDao extends Dao {
 	const OBJECT_CLASS = "Report";
 	
 	function __construct() {

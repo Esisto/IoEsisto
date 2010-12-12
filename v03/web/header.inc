@@ -1,7 +1,7 @@
 <?php 
 
 function writeHeader($title, $stylesheets = array(), $js = array()) {
-	require_once 'file_manager.php';
+	require_once 'manager/FileManager.php';
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>

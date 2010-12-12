@@ -1,4 +1,5 @@
 <?php
+require_once 'dataobject/Editable.php';
 
 class User extends Editable {
 	const NICKNAME = "nickname";

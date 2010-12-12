@@ -22,7 +22,7 @@ class Post extends Editable {
 	const ALBUM = "album";
 	const MAGAZINE = "magazine";
 	const PLAYLIST = "playlist";
-	const TYPES = array(self::NEWS, self::VIDEOREP, self::PHOTOREP, self::COLLECTION, self::ALBUM, self::MAGAZINE, self::PLAYLIST);
+	static $TYPES = array(self::NEWS, self::VIDEOREP, self::PHOTOREP, self::COLLECTION, self::ALBUM, self::MAGAZINE, self::PLAYLIST);
 	
 	protected $ID;						// id recuperato dal database
 	protected $permalink;				// permalink generato automaticamente dal titolo ecc…
@@ -85,7 +85,7 @@ class Post extends Editable {
 			$this->setContent($data[self::CONTENT]);
 		if(isset($data[self::VISIBLE]))
 			$this->setVisible($data[self::VISIBLE]);
-		if(!isset($data[self::TYPE]) || array_search($data[self::TYPE], self::TYPES) === false);
+		if(!isset($data[self::TYPE]) || array_search($data[self::TYPE], self::$TYPES) === false);
 			$data[self::TYPE] = self::NEWS;
 		$this->setType($data[self::TYPE]);
 		if(MAPS_ENABLED && isset($data[self::PLACE]))

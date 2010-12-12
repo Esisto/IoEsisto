@@ -1,19 +1,19 @@
-<?php //TODO
+<?php
 class Category {
 	private $name;
 	private $children;
-	private $parent;
-	private $author;
+	private $parent_name;
+	private $author_id;
 	private $creationDate;
 	private $accessCount = 1;			// numero di accessi
 	
-	function __construct($name, $parent = null) {
+	function __construct($name, $parent_name = null) {
 		$this->name = $name;
-		$this->setParent($parent);
+		$this->setParentName($parent_name);
 	}
 
-	function getParent() {
-		return $this->parent;
+	function getParentName() {
+		return $this->parent_name;
 	}
 	function getName() {
 		return $this->name;
@@ -23,8 +23,8 @@ class Category {
 			return array();
 		return $this->children;
 	}
-	function getAuthor() {
-		return $this->author;
+	function getAuthorId() {
+		return $this->author_id;
 	}
 	function getCreationDate() {
 		return $this->creationDate;
@@ -33,8 +33,8 @@ class Category {
 		return $this->accessoCount;
 	}
 	
-	function setParent($parent) {
-		$this->parent = $parent;
+	function setParentName($parent_name) {
+		$this->parent_name = $parent_name;
 		return $this;
 	}
 	function setChildren($children) {
@@ -45,8 +45,8 @@ class Category {
 		$this->children = $children;
 		return $this;
 	}
-	function setAuthor($author) {
-		$this->author = $author;
+	function setAuthorId($author_id) {
+		$this->author_id = $author_id;
 		return $this;
 	}
 	function setCreationDate($date) {

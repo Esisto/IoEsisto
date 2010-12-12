@@ -4,7 +4,7 @@ require_once("db.php");
 require_once("query.php");
 require_once("dataobject/Contest.php");
 
-class ContestDao implements Dao {
+class ContestDao extends Dao {
 	const OBJECT_CLASS = "Contest";
 	private $table_cs;
 	private $loadSubscribers = true;

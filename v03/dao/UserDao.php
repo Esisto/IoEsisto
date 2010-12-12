@@ -4,10 +4,11 @@ require_once("db.php");
 require_once("query.php");
 require_once("dataobject/User.php");
 
-class UserDao implements Dao {
+class UserDao extends Dao {
 	const OBJECT_CLASS = "Post";
 	private $loadDependences = true;
 	private $loadReports = false;
+	private $loadAccessCount = true;
 	
 	function __construct() {
 		parent::__construct();
@@ -17,6 +18,11 @@ class UserDao implements Dao {
 	function setLoadReports($load) {
 		settype($load, "boolean");
 		$this->loadReports = $load;
+		return $this;
+	}
+	function setLoadAccessCount($load) {
+		settype($load, "boolean");
+		$this->loadAccessCount = $load;
 		return $this;
 	}
 	function setLoadDependences($load) {
@@ -31,10 +37,10 @@ class UserDao implements Dao {
 												   array(new WhereConstraint($this->table->getColumn(DB::USER_ID), Operator::EQUAL, intval($id))),
 												   array()));
 			
-		if($db->num_rows() != 1)
+		if($this->db->num_rows() != 1)
 			throw new Exception("L'oggetto cercato non è stato trovato. Riprovare.");
 		
-		$row = $db->fetch_result();
+		$row = $this->db->fetch_result();
 		$user = $this->createFromDBRow($row);
 		return $user;
 	}
@@ -45,10 +51,10 @@ class UserDao implements Dao {
 												   array(new WhereConstraint($this->table->getColumn(DB::USER_E_MAIL), Operator::EQUAL, $mail)),
 												   array()));
 			
-		if($db->num_rows() != 1)
+		if($this->db->num_rows() != 1)
 			throw new Exception("L'oggetto cercato non è stato trovato. Riprovare.");
 
-		$row = $db->fetch_result();
+		$row = $this->db->fetch_result();
 		$user = $this->createFromDBRow($row);
 		return $user;
 	}
@@ -59,21 +65,41 @@ class UserDao implements Dao {
 												   array(new WhereConstraint($this->table->getColumn(DB::USER_NICKNAME), Operator::EQUAL, $nickname)),
 												   array()));
 			
-		if($db->num_rows() != 1)
+		if($this->db->num_rows() != 1)
 			throw new Exception("L'oggetto cercato non è stato trovato. Riprovare.");
 
-		$row = $db->fetch_result();
+		$row = $this->db->fetch_result();
 		$user = $this->createFromDBRow($row);
 		return $user;
+	}
+	
+	function quickLoad($id) {
+		$loadD = $this->loadDependences; $this->setLoadDependences(false);
+		$loadR = $this->loadReports; $this->setLoadReports(false);
+		$this->loadAccessCount = false;
+		try {
+			$u = $this->load($id);
+			$this->setLoadDependences($loadD);
+			$this->setLoadReports($loadR);
+			$this->loadAccessCount = true;
+			return $u;
+		} catch (Exception $e) {
+			$this->setLoadDependences($loadD);
+			$this->setLoadReports($loadR);
+			$this->loadAccessCount = true;
+			throw $e;
+		}
 	}
 
 	private function createFromDBRow($row) {
 		$user = new User($row[DB::USER_NICKNAME], $row[DB::USER_E_MAIL], $row[DB::USER_PASSWORD]);
+		
 		$user->setName($row[DB::USER_NAME])
 			 ->setSurname($row[DB::USER_SURNAME])
-			 ->setGender($row[DB::USER_GENDER])
-			 ->setBirthday(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[DB::USER_BIRTHDAY])))
-			 ->setBirthplace($row[DB::USER_BIRTHPLACE])
+			 ->setGender($row[DB::USER_GENDER]);
+		if(!is_null($row[DB::USER_BIRTHDAY]))
+			$user->setBirthday(date_timestamp_get(date_create_from_format("Y-m-d G:i:s", $row[DB::USER_BIRTHDAY])));
+		$user->setBirthplace($row[DB::USER_BIRTHPLACE])
 			 ->setLivingPlace($row[DB::USER_LIVINGPLACE])
 			 ->setHobbies($row[DB::USER_HOBBIES])
 			 ->setJob($row[DB::USER_JOB])
@@ -87,7 +113,11 @@ class UserDao implements Dao {
 			$resourceDao = new ResourceDao();
 			$user->setAvatar($resourceDao->quickLoad($row[DB::USER_AVATAR]));
 		} catch(Exception $e) {
-			$user->setAvatar($resourceDao->quickLoad(EMPTY_AVATAR));
+			try {
+				$user->setAvatar($resourceDao->quickLoad(EMPTY_AVATAR));
+			} catch (Exception $e1) {
+				//DEBUG da togliere più avanti, quando ci saranno le immagini.
+			}
 		}
 		
 		if($this->loadDependences) {
@@ -116,41 +146,42 @@ class UserDao implements Dao {
 			 ->setYellowContent($row[DB::YELLOW_CONTENT])
 			 ->setAutoBlackContent($row[DB::AUTO_BLACK_CONTENT]);
 			 
-		$user->setAccessCount($this->getAccessCount($user));
+		if($this->loadAccessCount)
+			$user->setAccessCount($this->getAccessCount($user));
 		return $user;
 	}
 
 	function save($user) {
 		parent::save($user, self::OBJECT_CLASS);
-		$data = array();
-			
-		if(isset($user->avatar))
+		
+		$data = array();	
+		if(!is_null($user->getAvatar()))
 			$data[DB::USER_AVATAR] = $user->getAvatar();
-		if(isset($user->birthday))
+		if(!is_null($user->getBirthday()))
 			$data[DB::USER_BIRTHDAY] = date("Y/m/d", $user->getBirthday());
-		if(isset($user->birthplace))
+		if(!is_null($user->getBirthplace()))
 			$data[DB::USER_BIRTHPLACE] = $user->getBirthplace();
-		if(isset($user->email))
+		if(!is_null($user->getEMail()))
 			$data[DB::USER_E_MAIL] = $user->getEMail();
-		if(isset($user->gender))
+		if(!is_null($user->getGender()))
 			$data[DB::USER_GENDER] = $user->getGender();
-		if(isset($user->hobbies))
+		if(!is_null($user->getHobbies()))
 			$data[DB::USER_HOBBIES] = $user->getHobbies();
-		if(isset($user->job))
+		if(!is_null($user->getJob()))
 			$data[DB::USER_JOB] = $user->getJob();
-		if(isset($user->livingPlace))
+		if(!is_null($user->getLivingPlace()))
 			$data[DB::USER_LIVINGPLACE] = $user->getLivingPlace();
-		if(isset($user->name))
+		if(!is_null($user->getName()))
 			$data[DB::USER_NAME] = $user->getName();
-		if(isset($user->nickname))
+		if(!is_null($user->getNickname()))
 			$data[DB::USER_NICKNAME] = $user->getNickname();
-		if(isset($user->password))
+		if(!is_null($user->getPassword()))
 			$data[DB::USER_PASSWORD] = $user->getPassword();
-		if(isset($user->role))
+		if(!is_null($user->getRole()))
 			$data[DB::USER_ROLE] = $user->getRole();
-		if(isset($user->surname))
+		if(!is_null($user->getSurname()))
 			$data[DB::USER_SURNAME] = $user->getSurname();
-		if(isset($user->visible))
+		if(!is_null($user->getVisible()))
 			$data[DB::USER_VISIBLE] = $user->getVisible() ? 1 : 0;
 		$data[DB::USER_CREATION_DATE] = date("Y-m-d G:i:s", $_SERVER["REQUEST_TIME"]);
 			
@@ -159,77 +190,90 @@ class UserDao implements Dao {
 		if($this->db->affected_rows() != 1)
 			throw new Exception("Si è verificato un errore salvando l'oggetto. Riprovare.");
 		
-		$u = $this->load(intval($db->last_inserted_id()));
+		$u = $this->load(intval($this->db->last_inserted_id()));
 		
 		$this->updateState($u);
 		return $u;
 	}
 	
-	function update() {
-		$old = self::loadFromDatabase($this->getID());
-		require_once("query.php");
-		$db = new DBManager();
-		if(!$db->connect_errno()) {
-			define_tables(); defineUserColumns();
-			$table = Query::getDBSchema()->getTable(TABLE_USER);
-			$data = array();
+	function update($user, $editor) {
+		parent::update($resource, $editor, self::OBJECT_CLASS);
+		
+		$old = $this->quickLoad($this->getID());
+		if(is_null($r_old))
+			throw new Exception("L'oggetto da modificare non esiste.");
+		
+		$data = array();
+		if($user->getAvatar() != $old->getAvatar())
+			$data[DB::USER_AVATAR] = $user->getAvatar();
+		if($user->getBirthday() != $old->getBirthday())
+			$data[DB::USER_BIRTHDAY] = $user->getBirthday();
+		if($user->getBirthplace() != $old->getBirthplace())
+			$data[DB::USER_BIRTHPLACE] = $user->getBirthplace();
+		if($user->getEMail() != $old->getEMail())
+			$data[DB::USER_E_MAIL] = $user->getEMail();
+		if($user->getGender() != $old->getGender())
+			$data[DB::USER_GENDER] = $user->getGender();
+		if($user->getHobbies() != $old->getHobbies())
+			$data[DB::USER_HOBBIES] = $user->getHobbies();
+		if($user->getJob() != $old->getJob())
+			$data[DB::USER_JOB] = $user->getJob();
+		if($user->getLivingPlace() != $old->getLivingPlace())
+			$data[DB::USER_LIVINGPLACE] = $user->getLivingPlace();
+		if($user->getName() != $old->getName())
+			$data[DB::USER_NAME] = $user->getName();
+		if($user->getNickname() != $old->getNickname())
+			$data[DB::USER_NICKNAME] = $user->getNickname();
+		if($user->getPassword() != $old->getPassword())
+			$data[DB::USER_PASSWORD] = $user->getPassword();
+		if($user->getRole() != $old->getRole())
+			$data[DB::USER_ROLE] = $user->getRole();
+		if($user->getSurname() != $old->getSurname())
+			$data[DB::USER_SURNAME] = $user->getSurname();
+		if($user->getVisible() != $old->getVisible())
+			$data[DB::USER_VISIBLE] = $user->getVisible() ? 1 : 0;
 			
-			if($this->getAvatar() != $old->getAvatar())
-				$data[USER_AVATAR] = $this->getAvatar();
-			if($this->getBirthday() != $old->getBirthday())
-				$data[USER_BIRTHDAY] = $this->getBirthday();
-			if($this->getBirthplace() != $old->getBirthplace())
-				$data[USER_BIRTHPLACE] = $this->getBirthplace();
-			if($this->getEMail() != $old->getEMail())
-				$data[USER_E_MAIL] = $this->getEMail();
-			if($this->getGender() != $old->getGender())
-				$data[USER_GENDER] = $this->getGender();
-			if($this->getHobbies() != $old->getHobbies())
-				$data[USER_HOBBIES] = $this->getHobbies();
-			if($this->getJob() != $old->getJob())
-				$data[USER_JOB] = $this->getJob();
-			if($this->getLivingPlace() != $old->getLivingPlace())
-				$data[USER_LIVINGPLACE] = $this->getLivingPlace();
-			if($this->getName() != $old->getName())
-				$data[USER_NAME] = $this->getName();
-			if($this->getNickname() != $old->getNickname())
-				$data[USER_NICKNAME] = $this->getNickname();
-			if($this->getPassword() != $old->getPassword())
-				$data[USER_PASSWORD] = $this->getPassword();
-			if($this->getRole() != $old->getRole())
-				$data[USER_ROLE] = $this->getRole();
-			if($this->getSurname() != $old->getSurname())
-				$data[USER_SURNAME] = $this->getSurname();
-			if($this->getVisible() != $old->getVisible())
-				$data[USER_VISIBLE] = $this->getVisible() ? 1 : 0;
-			
-			$db->execute($s = Query::generateUpdateStm($table, $data,
-												   array(new WhereConstraint($table->getColumn(USER_ID), Operator::EQUAL, $this->getID()))),
-						$table->getName(), $this);
-			
-			//echo "<p>" . $db->affected_rows() . $s . "</p>"; // DEBUG
-			if($db->affected_rows() == 1) {
-				return $this;
-			} else $db->display_error("User::update()");
-		} else $db->display_connect_error("User::update()");
-		return false;
+		$this->db->execute($s = Query::generateUpdateStm($this->table, $data,
+														 array(new WhereConstraint($this->table->getColumn(DB::USER_ID), Operator::EQUAL, $user->getID()))),
+							$this->table->getName(), $user);
+		//aggiorno lo stato della risorsa (se chi l'ha modificata è un redattore).
+		if(AuthenticationManager::isUserManager($editor)) {
+			$resource->setEditable(false);
+			$resource->setRemovable(false);
+			$this->updateState($resource);
+		}
+		
+		if($this->db->affected_rows() != 1)
+			throw new Exception("Si è verificato un errore aggiornando il dato. Riprovare.");
+		return $user;
 	}
 	
-	function delete() {
-		require_once("query.php");
-		$db = new DBManager();
-		if(!$db->connect_errno()) {
-			define_tables(); defineUserColumns();
-			$table = Query::getDBSchema()->getTable(TABLE_USER);
-			$rs = $db->execute($s = Query::generateDeleteStm($table,
-														 array(new WhereConstraint($table->getColumn(USER_ID),Operator::EQUAL,$this->getID()))),
-							  $table->getName(), $this);
-			//echo "<br />" . serialize($db->affected_rows()) . $s; //DEBUG
-			if($db->affected_rows() == 1) {
-				return $this;
-			} else $db->display_error("User::delete()");
-		} else $db->display_connect_error("User::delete()");
-		return false;
+	function delete($user) {
+		parent::delete($user, self::OBJECT_CLASS);
+		
+		//carico la risorsa, completa dei suoi derivati (che andrebbero persi).
+		$loadR = $this->loadReports; $this->loadReports = true;
+		$loadD = $this->loadDependences; $this->loadDependences = true;
+		$u_complete = null;
+		try {
+			$u_complete = $this->load($user->getID());
+			$this->loadReports = $loadR;
+			$this->loadDependences = $loadD;
+		} catch(Exception $e) {
+			$this->loadReports = $loadR;
+			$this->loadDependences = $loadD;
+			throw $e;
+		}
+		$this->db->execute(Query::generateDeleteStm($this->table,
+													array(new WhereConstraint($this->table->getColumn(DB::USER_ID),Operator::EQUAL,$user->getID()))),
+						  $this->table->getName(), $user);
+		
+		//salvo la risorsa nella storia.
+		$this->saveHistory($u_complete, "DELETED");
+		
+		if($this->db->affected_rows() != 1)
+			throw new Exception("Si è verificato un errore eliminando il dato. Riprovare.");
+		return $user;
 	}
 	
 	function exists($user) {
@@ -245,7 +289,7 @@ class UserDao implements Dao {
 		parent::updateState($user, $this->table, DB::USER_ID);
 	}
 	
-	private function getAccessCount($user) {
+	protected function getAccessCount($user) {
 		parent::getAccessCount($user, $this->table, DB::USER_ID);
 	}
 }

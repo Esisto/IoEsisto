@@ -12,7 +12,7 @@ abstract class Dao {
 		if($this->db->connect_errno())
 			$this->db->display_connect_error("Dao::__construct()");
 		
-		$this->historyTable = Query::getDBSchema()->getTable(TABLE_HISTORY);
+		$this->historyTable = Query::getDBSchema()->getTable(DB::TABLE_HISTORY);
 	}
 	
 	protected function load($id) {
@@ -21,22 +21,22 @@ abstract class Dao {
 		return null;
 	}
 	
-	protected function save($object, $objetcClass = null) {
+	protected function save($object, $objectClass = null) {
 		if(is_null($object)) throw new Exception("Attenzione! Non hai inserito l'oggetto da salvare.");
 		
 		if(!is_null($objectClass) && is_string($objectClass))
-			if(!is_subclass_of($object, $objectClass))
+			if(!is_a($object, $objectClass) && !is_subclass_of($object, $objectClass))
 				throw new Exception("Attenzione! L'oggetto da salvare non è del tipo richiesto.");
 				
 		$this->checkConnection();
 		return null;
 	}
 	
-	protected function delete($object, $objetcClass = null) {
+	protected function delete($object, $objectClass = null) {
 		if(is_null($object)) throw new Exception("Attenzione! Non hai inserito l'oggetto da eliminare.");
 
 		if(!is_null($objectClass) && is_string($objectClass))
-			if(!is_subclass_of($object, $objectClass))
+			if(!is_a($object, $objectClass) && !is_subclass_of($object, $objectClass))
 				throw new Exception("Attenzione! L'oggetto da eliminare non è del tipo richiesto.");
 		
 		if(is_subclass_of($object, "Editable"))
@@ -47,14 +47,14 @@ abstract class Dao {
 		return null;
 	}
 	
-	protected function update($object, $editor, $objetcClass = null) {
+	protected function update($object, $editor, $objectClass = null) {
 		if(is_null($object)) throw new Exception("Attenzione! Non hai inserito l'oggetto da modificare.");
 		
 		if(!is_null($objectClass) && is_string($objectClass))
-			if(!is_subclass_of($object, $objectClass))
+			if(!is_a($object, $objectClass) && !is_subclass_of($object, $objectClass))
 				throw new Exception("Attenzione! L'oggetto da modificare non è di tipo: " . $objectClass);
 				
-		if(!AuthenticationManager::isEditor($editor) && is_subclass_of($object, "Editable"))
+		if(!AuthorizationManager::canUserDo(AuthorizationManager::EDIT, $object) && is_subclass_of($object, "Editable"))
 			if(!$object->isEditable())
 				throw new Exception("L'oggetto non può essere modificato perché è stato iscritto ad un contest o è sotto revisione di un redattore.");
 				
@@ -71,9 +71,9 @@ abstract class Dao {
 		$this->table = Query::getDBSchema()->getTable($tablename);
 	}
 	
-	function exists($object);
+	abstract function exists($object);
 	
-	function quickLoad($id);
+	abstract function quickLoad($id);
 	
 	protected function updateState($object, $table, $id_column_name) {
 		if(is_null($object)) throw new Exception("Attenzione! Non hai inserito l'oggetto da modificare.");		
@@ -84,7 +84,7 @@ abstract class Dao {
 			throw new Exception("L'oggetto da modificare non esiste.");
 		
 		$data = array();
-		if(is_subclass_of($object,"Writable")) {
+		if(is_a($object, "Writable") || is_subclass_of($object,"Writable")) {
 			if($object->hasAutoBlackContent() != $old->hasAutoBlackContent())
 				$data[DB::AUTO_BLACK_CONTENT] = $object->hasAutoBlackContent();
 			if($object->hasBlackContent() != $old->hasBlackContent())
@@ -94,7 +94,7 @@ abstract class Dao {
 			if($object->hasRedContent() != $old->hasRedContent())
 				$data[DB::RED_CONTENT] = $object->hasRedContent();
 		}
-		if(is_subclass_of($object, "Editable")) {
+		if(is_a($object, "Editable") || is_subclass_of($object, "Editable")) {
 			if($object->getPreviousVersion() > $old->getPreviousVersion())
 				$data[DB::PREVIOUS_VERSION] = $object->getPreviousVersion();
 			if($object->isEditable() != $old->isEditable())
@@ -117,13 +117,13 @@ abstract class Dao {
 		$this->checkConnection();
 		
 		$s = "SELECT " . DB::ACCESS_COUNT . " FROM " . $table->getName() . " WHERE " . $id_column_name . " = " . $object->getID();
-		$this->db->execute($s);
+		$this->db->execute($s, LOGMANAGER, null);
 		if($this->db->num_rows() != 1)
 			throw new Exception("L'oggetto cercato non è stato trovato. Riprovare.");
-		$row = $this->db->fetch_row();
+		$row = $this->db->fetch_result();
 		$n = intval($row[DB::ACCESS_COUNT]);
-		$u = "UPDATE " . $table->getName() . " SET " . DB::ACCESS_COUNT . " = " . ++$n . " WHERE " . $id_column_name . " = " . $object->getID();
-		$this->db->execute($s);
+		$s = "UPDATE " . $table->getName() . " SET " . DB::ACCESS_COUNT . " = " . ++$n . " WHERE " . $id_column_name . " = " . $object->getID();
+		$this->db->execute($s, LOGMANAGER, null);
 		if($this->db->affected_rows() != 1)
 			throw new Exception("Si è verificato un errore aggiornando il dato. Riprovare.");
 		return $object;

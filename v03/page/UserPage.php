@@ -1,8 +1,8 @@
 <?php
-require_once("user/UserManager.php");
+require_once("manager/UserManager.php");
 require_once("settings.php");
 require_once("strings/" . LANG . "strings.php");
-require_once("file_manager.php");
+require_once("manager/FileManager.php");
 
 class UserPage {
 

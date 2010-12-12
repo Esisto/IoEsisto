@@ -1,5 +1,6 @@
 <?php
-require_once("user/UserManager.php");
+require_once("manager/UserManager.php");
+require_once("manager/AuthorizationManager.php");
 
 class Page {
 	private static $requestedObject;
@@ -27,7 +28,7 @@ class Page {
 	 * il parametro potrà ancora essere recuperato attraverso $_GET[%nome parametro%].
 	 */
 	private static function elaborateRequest($request) {
-		require_once("file_manager.php");
+		require_once("manager/FileManager.php");
 		//echo "<br />" . $request; //DEBUG
 		$param_index = strpos($request,"?");
 		//echo "<br />" . $param_index; //DEBUG
@@ -367,11 +368,15 @@ class Page {
 					require_once 'errors/errors.php';
 					showError($_GET["e"]);
 				}
-				require_once 'search/SearchManager.php';
+				require_once 'manager/SearchManager.php';
 				$posts = SearchManager::searchBy(array("Post"), array(), array("limit" => 1, "order" => "DESC", "by" => array("ps_creationDate")));
-				require_once("post/PostPage.php");
-				PostPage::showPost(self::$currentObject = $posts[0], self::$post_options);
-				self::$currentID = self::$currentObject->getPermalink();
+				require_once("page/PostPage.php");
+				if(count($posts) > 0) {
+					PostPage::showPost(self::$currentObject = $posts[0], self::$post_options);
+					self::$currentID = self::$currentObject->getPermalink();
+				} else {
+					PostPage::showNoPostWarning();
+				}
 				break;
 		}
 	}
@@ -396,7 +401,7 @@ class Page {
 				if(is_null($user) || $user === false)
 					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non &egrave; stata trovata."));
 				
-				require_once 'user/UserPage.php';
+				require_once 'page/UserPage.php';
 				UserPage::showEditProfileForm($user);
 				break;
 			case "Follow":
@@ -410,14 +415,14 @@ class Page {
 				if(is_null($user) || $user === false)
 					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non &egrave; stata trovata."));
 				
-				require_once 'user/UserPage.php';
+				require_once 'page/UserPage.php';
 				UserPage::showFeedbackForm($user);
 				break;
 			case "AddContact":
 				if(is_null($user) || $user === false)
 					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non &egrave; stata trovata."));
 				
-				require_once 'user/UserPage.php';
+				require_once 'page/UserPage.php';
 				UserPage::showNewContactForm($user);
 				break;
 			case "StopFollow":
@@ -438,16 +443,16 @@ class Page {
 				if(is_null($user) || $user === false)
 					header("location: " . FileManager::appendToRootPath("error?e=Oops la pagina non &egrave; stata trovata."));
 				
-				require_once 'search/SearchManager.php';
+				require_once 'manager/SearchManager.php';
 				$posts = SearchManager::searchBy("Post", array("ps_author" => $user->getID()), array("order" => -1, "by" => "ps_creationDate"));
-				require_once 'post/PostPage.php';
+				require_once 'page/PostPage.php';
 				foreach($posts as $p)
 					PostPage::showPost($p, self::$post_options);
 				break;
 			case "Mails":
-				require_once 'mail/MailManager.php';
+				require_once 'manager/MailManager.php';
 				$mails = MailManager::loadDirectoryFromName(MAILBOX, self::$user);
-				require_once 'mail/MailPage.php';
+				require_once 'page/MailPage.php';
 				foreach($mails as $mail)
 					MailPage::showShortMail($mail);
 				break;
@@ -459,19 +464,19 @@ class Page {
 				header("location: " . FileManager::appendToRootPath(""));
 				break;
 			case "New":
-				require_once 'user/UserPage.php';
+				require_once 'page/UserPage.php';
 				UserPage::showSignInForm();
 				break;
 			case "Read":
 				if(is_null($user) || $user === false)
 					header("location: " . FileManager::appendToRootPath("error.php?e=Oops la pagina non &egrave; stata trovata."));
 				
-				require_once 'user/UserPage.php';
+				require_once 'page/UserPage.php';
 				UserPage::showProfile($user);
 				break;
 			case "Search":
 			default:
-				require_once("search/SearchPage.php");
+				require_once("manager/SearchPage.php");
 				SearchPage::showUserSearchForm($p);
 				break;
 		}
@@ -480,13 +485,13 @@ class Page {
 	private static function doContactAction($request) {
 		switch (self::$requestedAction) {
 			case "Edit":
-				require_once 'user/User.php';
+				require_once 'dataobject/User.php';
 				$contact = Contact::loadFromDatabase(self::$currentID);
 				require_once 'user/UserPage.php';
 				UserPage::showEditContactForm($contact);
 				break;
 			case "Delete":
-				require_once 'user/User.php';
+				require_once 'dataobject/User.php';
 				$contact = Contact::loadFromDatabase(self::$currentID);
 				$user = UserManager::loadUser($contact->getUser(), false);
 				UserManager::deleteContact($contact, $user);
@@ -495,7 +500,7 @@ class Page {
 				break;
 			case "Search":
 			default:
-				require_once 'search/SearchPage.php';
+				require_once 'manager/SearchPage.php';
 				SearchPage::showContactSearchForm();
 				break;
 		}
@@ -509,9 +514,9 @@ class Page {
 				ContestPage::showEditContestForm($contest);
 				break;
 			case "Posts":
-				require_once 'post/contest/ContestManager.php';
+				require_once 'manager/ContestManager.php';
 				$contest = ContestManager::loadFormDatabase(self::$currentID);
-				require_once("post/PostPage.php");
+				require_once("page/PostPage.php");
 				foreach($contest->getSubscribers() as $p)
 					PostPage::showPost($p, self::$post_options);
 				break;
@@ -526,14 +531,14 @@ class Page {
 				ContestPage::showNewContestForm();
 				break;
 			case "Read":
-				require_once 'post/contest/ContestManager.php';
+				require_once 'manager/ContestManager.php';
 				$contest = ContestManager::loadFormDatabase(self::$currentID);
-				require_once 'post/PostPage.php';
+				require_once 'page/PostPage.php';
 				PostPage::showContestDetails($contest);
 				break;
 			case "Search":
 			default:
-				require_once 'search/SearchPage.php';
+				require_once 'manager/SearchPage.php';
 				SearchPage::showContactSearchForm();
 				break;
 		}
@@ -547,9 +552,9 @@ class Page {
 				break;
 			case "Posts":
 				//echo "<p><font color='green'>REQUEST TO LOAD post which category is " . $request["categoryname"] . ".</font></p>"; //DEBUG
-				require_once 'search/SearchManager.php';
+				require_once 'manager/SearchManager.php';
 				$posts = SearchManager::searchBy(array("Post"), array("category" => self::$currentID), array("limit" => 4, "order" => "DESC", "by" => array("ps_creationDate")), true);
-				require_once("post/PostPage.php");
+				require_once("page/PostPage.php");
 				foreach($posts as $p)
 					PostPage::showPost($p, self::$post_options);
 				break;
@@ -564,25 +569,25 @@ class Page {
 				break;
 			case "Search":
 			default:
-				require_once 'search/SearchPage.php';
+				require_once 'manager/SearchPage.php';
 				SearchPage::showCategorySearchForm();
 				break;
 		}
 	}
 	
 	private static function doCommentAction($request) {
-		require_once 'post/PostCommon.php';
-		self::$currentObject = Comment::loadFromDatabase(self::$currentID);
+		require_once 'manager/PostManager.php';
+		self::$currentObject = PostManager::loadComment(self::$currentID);
 		switch (self::$requestedAction) {
 			case "Delete":
 				$c->delete();
-				require_once 'post/PostManager.php';
+				require_once 'manager/PostManager.php';
 				$p = PostManager::loadPostByPermalink(self::$currentObject->getPost());
 				header("location: " . $p->getFullPermalink());
 				break;
 			case "Read":
 			default:
-				require_once 'post/PostManager.php';
+				require_once 'manager/PostManager.php';
 				$p = PostManager::loadPostByPermalink(self::$currentObject->getPost());
 				header("location: " . $p->getFullPermalink() . "#comment" . self::$currentObject->getID());
 				break;
@@ -605,14 +610,14 @@ class Page {
 	}
 	
 	private static function doMailAction($request) {
-		require_once 'mail/MailManager.php';
+		require_once 'manager/MailManager.php';
 		if(isset(self::$currentID) && self::$currentID != null)
 			self::$currentObject = MailManager::loadMail(self::$currentID);
 		switch (self::$requestedAction) {
 			case "Edit": //una mail non si può modificare...
 				break;
 			case "Move":
-				require_once 'mail/MailPage.php';
+				require_once 'page/MailPage.php';
 				MailPage::showMoveToForm(self::$currentObject);
 				break;
 			case "Delete":
@@ -629,7 +634,7 @@ class Page {
 				self::$currentObject = MailManager::loadMail(self::$currentID);
 			case "New":
 				if(!isset(self::$currentObject)) self::$currentObject = null;
-				require_once 'mail/MailPage.php';
+				require_once 'page/MailPage.php';
 				MailPage::showNewForm(self::$currentObject);
 				break;
 			case "EmptyTrash":
@@ -637,28 +642,28 @@ class Page {
 				header("location: " . FileManager::appendToRootPath("User/" . self::$user->getID() . "/Mails"));
 				break;
 			case "Read":
-				require_once 'mail/MailPage.php';
+				require_once 'page/MailPage.php';
 				MailPage::showMail(self::$currentObject);
 				break;
 			case "Search":
 			default:
-				require_once 'search/SearchPage.php';
+				require_once 'manager/SearchPage.php';
 				SearchPage::showMailSearchForm();
 				break;
 		}
 	}
 	
 	private static function doDirectoryAction($request) {
-		require_once 'mail/MailManager.php';
+		require_once 'manager/MailManager.php';
 		if(isset(self::$currentID) && self::$currentID != null)
 			self::$currentObject = MailManager::loadDirectory(self::$currentID);
 		switch (self::$requestedAction) {
 			case "Edit":
-				require_once 'mail/MailPage.php';
+				require_once 'page/MailPage.php';
 				MailPage::showEditDirectoryForm(self::$currentObject);
 				break;
 			case "Mails":
-				require_once 'mail/MailPage.php';
+				require_once 'page/MailPage.php';
 				foreach(self::$currentObject->getMails() as $mail)
 					MailPage::showShortMail($mail);
 				break;
@@ -673,12 +678,12 @@ class Page {
 					MailPage::showShortMail($mail);
 				break;
 			case "New":
-				require_once 'mail/MailPage.php';
+				require_once 'page/MailPage.php';
 				MailPage::showNewDirectoryForm();
 				break;
 			case "Search":
 			default:
-				require_once 'search/SearchPage.php';
+				require_once 'manager/SearchPage.php';
 				SearchPage::showMailSearchForm();
 				break;
 		}
@@ -687,7 +692,7 @@ class Page {
 	private static function doVoteAction($request) {
 		switch (self::$requestedAction) {
 			case "Delete":
-				require_once 'post/PostManager.php';
+				require_once 'manager/PostManager.php';
 				$vote = PostManager::loadVote(self::$user, self::$currentID);
 				PostManager::removeVote($vote);
 				header("location: " . FileManager::appendToRootPath("Post/" . self::$currentID));
@@ -710,20 +715,20 @@ class Page {
 			case "Posts":
 				//echo "<p><font color='green'>REQUEST TO LOAD post which tag is " . $request["tagname"] . ".</font></p>"; //DEBUG
 				$posts = SearchManager::searchBy(array("Post"), array("tag" => self::$currentID), array("limit" => 4, "order" => "DESC", "by" => array("ps_creationDate")));
-				require_once("post/PostPage.php");
+				require_once("page/PostPage.php");
 				foreach($posts as $p)
 					PostPage::showPost($p, self::$post_options);
 				break;
 			case "Search":
 			default:
-				require_once 'search/SearchPage.php';
+				require_once 'manager/SearchPage.php';
 				SearchPage::showTagSearchForm();
 				break;
 		}
 	}
 	
 	private static function doPostAction($request) {
-		require_once 'post/PostManager.php';
+		require_once 'manager/PostManager.php';
 		if(isset(self::$currentID) && self::$currentID != null)
 			self::$currentObject = PostManager::loadPostByPermalink(self::$currentID);
 		//echo "<p>" . $request["action"] . "</p>"; //DEBUG
@@ -731,17 +736,17 @@ class Page {
 			//modifica, vota, commenta, elimina, subscribe o aggiungi a una collezione il post
 			case "Read":
 				//echo "<p><font color='green'>" . $request["permalink"] . "</font></p>"; //DEBUG
-				require_once("post/PostPage.php");
+				require_once("page/PostPage.php");
 				PostPage::showPost(self::$currentObject, self::$post_options);
 				break;
 			case "Edit":
 				//echo "<p><font color='green'>REQUEST TO LOAD " . $request["script"] . " by: " . $author->getNickname() . ", with the title of: " . $request["posttitle"] . ", created the day: " . date("d/m/Y", $request["postday"]) . "</font></p>"; //DEBUG
-				require_once("post/PostPage.php");
+				require_once("page/PostPage.php");
 				PostPage::showEditPostForm(self::$currentObject);
 				break;
 			case "Vote":
 				//echo "<p><font color='green'>REQUEST TO LOAD " . $request["script"] . " by: " . $author->getNickname() . ", with the title of: " . $request["posttitle"] . ", created the day: " . date("d/m/Y", $request["postday"]) . "</font></p>"; //DEBUG
-				require_once("post/PostPage.php");
+				require_once("page/PostPage.php");
 				//controllo su vote.
 				if(isset($_GET["vote"])) {
 					if($_GET["vote"] == "y" || $_GET["vote"] == "yes")
@@ -749,45 +754,41 @@ class Page {
 					if($_GET["vote"] == "n" || $_GET["vote"] == "no")
 						$vote = false;
 					if(!isset($_GET["vote"])) header("location: " . FileManager::appendToRootPath("error.php?error=Oops, il voto da te inserito non &egrave; valido."));
-					PostManager::votePost(self::$user->getID(), self::$currentObject, $vote);
+					PostManager::votePost(self::$user, self::$currentObject, $vote);
 				}
 				PostPage::showPost(self::$currentObject, self::$post_options);
 				break;
 			case "Comment":
 				//echo "<p><font color='green'>REQUEST TO LOAD " . $request["script"] . " by: " . $author->getNickname() . ", with the title of: " . $request["posttitle"] . ", created the day: " . date("d/m/Y", $request["postday"]) . "</font></p>"; //DEBUG
-				require_once("post/PostPage.php");
+				require_once("page/PostPage.php");
 				PostPage::showComments(self::$currentObject);
 				break;
 			case "Delete":
 				//echo "<p><font color='green'>REQUEST TO LOAD " . $request["script"] . " by: " . $author->getNickname() . ", with the title of: " . $request["posttitle"] . ", created the day: " . date("d/m/Y", $request["postday"]) . "</font></p>"; //DEBUG
-				require_once("post/PostPage.php");
+				require_once("page/PostPage.php");
 				PostManager::deletePost(self::$currentObject);
 				header("location: " . FileManager::getServerPath());
 				break;
 			case "Subscribe":
 				//echo "<p><font color='green'>REQUEST TO LOAD " . $request["script"] . " by: " . $author->getNickname() . ", with the title of: " . $request["posttitle"] . ", created the day: " . date("d/m/Y", $request["postday"]) . "</font></p>"; //DEBUG
-				require_once("post/PostPage.php");
+				require_once("page/PostPage.php");
 				PostPage::showContestForm(self::$currentObject);
 				break;
 			case "AddToCollection":
 				//echo "<p><font color='green'>REQUEST TO LOAD " . $request["script"] . " by: " . $author->getNickname() . ", with the title of: " . $request["posttitle"] . ", created the day: " . date("d/m/Y", $request["postday"]) . "</font></p>"; //DEBUG
-				require_once("post/PostPage.php");
+				require_once("page/PostPage.php");
 				PostPage::showCollectionForm(self::$currentObject);
 				break;
 			case "New":
-				require_once("post/PostPage.php");
+				require_once("page/PostPage.php");
 				PostPage::showNewPostForm();
 				break;
 			case "Search":
 			default:
-				require_once("search/SearchPage.php");
+				require_once("manager/SearchPage.php");
 				SearchPage::showPostSearchForm();
 			break;
 		}
-	}
-	
-	public static function canUserDo($object, $objectType, $action) {
-		return true; //TODO deve leggere le autorizzazioni per il tipo di utente.
 	}
 	
 	public static function titleForRequest($request) {
@@ -798,7 +799,7 @@ class Page {
 		require_once 'web/header.inc';
 		require_once 'web/page.inc';
 		require_once 'web/footer.inc';
-		require_once 'template/TemplateManager.php';
+		require_once 'manager/TemplateManager.php';
 		
 		//inizio il conteggio delle query
 		require_once 'session.php';
@@ -936,7 +937,7 @@ class Page {
 	
 	private static $post_options = array();
 	private static function PCMain($data) {
-		require_once 'post/PostPage.php';
+		require_once 'page/PostPage.php';
 		if(self::$requestedObject == "index") {
 			self::$post_options[PostPage::NO_DATE] = true;
 			self::$post_options[PostPage::NO_COMMENTS] = true;
@@ -949,13 +950,16 @@ class Page {
 	}
 	
 	private static function PCComments($data) {
-		require_once 'post/PostPage.php';
-		PostPage::showComments(self::$currentObject, 2, false);
+		require_once 'page/PostPage.php';
+		if(isset(self::$currentObject) && !is_null(self::$currentObject))
+			PostPage::showComments(self::$currentObject, 2, false);
 	}
 	
 	private static function PCRelated($data) {
+		if(!isset(self::$currentObject) || is_null(self::$currentObject))
+			return;
 		echo "Vedi anche";
-		require_once 'search/SearchManager.php';
+		require_once 'manager/SearchManager.php';
 		$posts = SearchManager::searchBy(array("Post"),
 										array("author" => self::$currentObject->getAuthor(), "no_id" => self::$WHO_POST, "loadComments" => false),
 										array("limit" => 3, "order" => "DESC", "by" => array("ps_creationDate")));
@@ -966,7 +970,7 @@ class Page {
 			array_merge($posts, $posts2);
 		foreach($posts as $post) {
 			if($post->getID() != self::$currentObject->getID()) {
-				require_once 'post/PostPage.php';
+				require_once 'page/PostPage.php';
 				self::$post_options[PostPage::SHORTEST] = true;
 				PostPage::showPost($post, self::$post_options);
 				self::$post_options[PostPage::SHORTEST] = false;
@@ -977,25 +981,29 @@ class Page {
 	private static $WHO_POST = 1;
 	private static function PCWho($data) {
 //		echo "Chi Siamo";
-		require_once 'post/PostManager.php';
-		$p = PostManager::loadPost(self::$WHO_POST, false);
-		if($p !== false) {
-			require_once 'post/PostPage.php';
-			self::$post_options[PostPage::SHORT] = true;
-			self::$post_options[PostPage::NO_COMMENTS] = true;
-			self::$post_options[PostPage::NO_CATEGORIES] = true;
-			self::$post_options[PostPage::NO_TAGS] = true;
-			self::$post_options[PostPage::NO_MODIF_DATE] = true;
-			PostPage::showPost($p, self::$post_options);
-			self::$post_options[PostPage::SHORT] = false;
-			self::$post_options[PostPage::NO_COMMENTS] = false;
-			self::$post_options[PostPage::NO_TAGS] = false;
-			self::$post_options[PostPage::NO_MODIF_DATE] = false;
+		require_once 'manager/PostManager.php';
+		try {
+			$p = PostManager::loadPost(self::$WHO_POST, false);
+			if($p !== false) {
+				require_once 'page/PostPage.php';
+				self::$post_options[PostPage::SHORT] = true;
+				self::$post_options[PostPage::NO_COMMENTS] = true;
+				self::$post_options[PostPage::NO_CATEGORIES] = true;
+				self::$post_options[PostPage::NO_TAGS] = true;
+				self::$post_options[PostPage::NO_MODIF_DATE] = true;
+				PostPage::showPost($p, self::$post_options);
+				self::$post_options[PostPage::SHORT] = false;
+				self::$post_options[PostPage::NO_COMMENTS] = false;
+				self::$post_options[PostPage::NO_TAGS] = false;
+				self::$post_options[PostPage::NO_MODIF_DATE] = false;
+			}
+		} catch (Exception $e) {
+			//DO NOTHING
 		}
 	}
 	
 	private static function PCSearch($data) {
-		require_once 'search/SearchPage.php';
+		require_once 'page/SearchPage.php';
 		SearchPage::showDefaultSearchForm();
 		//echo "Cerca";
 	}
@@ -1034,11 +1042,11 @@ class Page {
 	
 	private static function PCAuthor($data) {
 		if(isset(self::$currentObject) && !is_null(self::$currentObject) && self::$currentObject !== false) {
-			require_once 'user/UserManager.php';
+			require_once 'manager/UserManager.php';
 			$user = UserManager::loadUser(self::$currentObject->getAuthor(), false);
 			if(true) { //FIXME se l'autore vuole
 				echo "<p>L'autore</p>";
-				require_once 'user/UserPage.php';
+				require_once 'page/UserPage.php';
 				UserPage::showProfile($user);
 			}
 		}
@@ -1046,18 +1054,18 @@ class Page {
 	
 	private static function PCSameAuthor($data) {
 		if(isset(self::$currentObject) && !is_null(self::$currentObject) && self::$currentObject !== false) {
-			require_once 'user/UserManager.php';
+			require_once 'manager/UserManager.php';
 			$user = UserManager::loadUser(self::$currentObject->getAuthor(), false);
 			if(true) { //FIXME se l'autore vuole
 				echo "<p>Dello stesso autore</p>";
-				require_once 'search/SearchManager.php';
+				require_once 'manager/SearchManager.php';
 				$posts = SearchManager::searchBy("Post", array("author" => $user->getID(), "no_id" => self::$currentObject->getID(), "loadComments" => false), array("order" => -1, "by" => "ps_creationDate"));
 				
 				self::$post_options[PostPage::SHORT] = true;
 				self::$post_options[PostPage::NO_COMMENTS] = true;
 				self::$post_options[PostPage::NO_MODIF_DATE] = true;
 				
-				require_once 'post/PostPage.php';
+				require_once 'page/PostPage.php';
 				foreach($posts as $p)
 					PostPage::showPost($p, self::$post_options);
 					
@@ -1081,7 +1089,7 @@ class Page {
 		?>
 		<div id="map_post">
 		<?php 
-		require_once 'maps/geolocate.php';
+		require_once 'manager/MapManager.php';
 		MapManager::showPostMap($place, "place", $class);	
 		?>
 			<p><input type="button" value="Mappa questa notizia" onclick="javascript:savePosition(post_place, place_label)"/></p>
@@ -1098,7 +1106,7 @@ class Page {
 		?>
 		<div id="map_post">
 		<?php 
-		require_once 'maps/geolocate.php';
+		require_once 'manager/MapManager.php';
 		MapManager::showPostMap($place, "place", $class);	
 		?>
 		</div>
@@ -1118,7 +1126,7 @@ class Page {
 	}
 	
 	private static function createLinkPath($where = "") {
-		require_once 'file_manager.php';
+		require_once 'manager/FileManager.php';
 		return FileManager::appendToRootPath($where);
 	}
 }

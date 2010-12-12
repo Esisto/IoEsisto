@@ -1,6 +1,6 @@
 <?php //TODO
 
-class FollowDao implements Dao {
+class FollowDao extends Dao {
 	
 
 	

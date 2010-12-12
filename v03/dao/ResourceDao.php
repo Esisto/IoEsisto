@@ -4,7 +4,7 @@ require_once("db.php");
 require_once("query.php");
 require_once("dataobject/Resource.php");
 
-class ResourceDao implements Dao {
+class ResourceDao extends Dao {
 	const OBJECT_CLASS = "Resource";
 	private $loadReports = false;
 	
@@ -16,7 +16,7 @@ class ResourceDao implements Dao {
 	function load($id) {
 		parent::load($id);
 		$this->db->execute(Query::generateSelectStm(array($this->table), array(),
-									array(new WhereConstraint($this->table->getColumn(DB::RESOURCE_ID),Operator::EQUAL,intval($resource->getID()))),
+									array(new WhereConstraint($this->table->getColumn(DB::RESOURCE_ID),Operator::EQUAL,intval($id))),
 									array()));
 		
 		if($this->db->num_rows() != 1)
@@ -211,7 +211,7 @@ class ResourceDao implements Dao {
 	}
 
 	
-	private function getAccessCount($resource) {
+	protected function getAccessCount($resource) {
 		parent::getAccessCount($resource, $this->table, DB::RESOURCE_ID);
 	}
 }
