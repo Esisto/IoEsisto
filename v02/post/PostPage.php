@@ -7,6 +7,7 @@ require_once("post/PostManager.php");
 require_once("post/resourceManager.php");
 require_once("post/collection/CollectionManager.php");
 
+
 class PostPage {
 	const NO_DATE = "no_date";
 	const SHORT = "short";
@@ -96,8 +97,11 @@ class PostPage {
 				$first = true;
 				foreach($post->getContent() as $cont) {
 					if($first) $first = false;
-					else echo ", ";
-					echo Filter::decodeFilteredText($cont);
+					else echo " ";
+					//echo Filter::decodeFilteredText($cont);
+					//$photo=Filter::decodeFilteredText($cont);
+					$path ="/IoEsisto/v02/" . $cont->getPath();
+					echo "<a href='$path'><img src='" . $path . "' width='100' height='50'></a>";
 				}
 			} else
 				echo Filter::decodeFilteredText($post->getContent());
@@ -195,8 +199,8 @@ class PostPage {
 				$photo = array();
 				for($i=0,$numphoto=0,$notvalid=0;$i<10;$i++){
 					if(trim($_FILES["upfile$i"]["name"]) != ""){
-						if($_FILES["upfile$i"]["type"] == "image/gif" || $_FILES["upfile$i"]["type"] == "image/jpeg" || $_FILES["upfile$i"]["type"] == "image/tiff" || $_FILES["upfile$i"]["type"] == "image/png"){
-							$photo[]= resourceManager::uploadPhoto(trim($_FILES["upfile$i"]["name"]),$user->getNickname(),$_FILES["upfile$i"]["tmp_name"]);
+						if($_FILES["upfile$i"]["type"] == "image/gif" || $_FILES["upfile$i"]["type"] == "image/jpeg" || $_FILES["upfile$i"]["type"] == "image/png"){
+							$photo[]= resourceManager::uploadPhoto(trim($_FILES["upfile$i"]["name"]),$user->getNickname(),$_FILES["upfile$i"]["tmp_name"],$_FILES["upfile$i"]["type"]);
 							$numphoto++;
 							/*DEBUG*/echo "caricata immagine upfile". $i ."</br> numphoto: " . $numphoto;
 						}else
@@ -205,7 +209,7 @@ class PostPage {
 				}
 				//se ha caricato file in formato non valido do errore
 				if($notvalid!=0)
-					$error[]="Devi inserire un formato valido: .tiff .jpeg .jpg .gif oppure .png";
+					$error[]="Devi inserire un formato valido: .jpeg .jpg .gif oppure .png";
 				//se non sono state caricate foto do errore
 				if($numphoto>0)
 					$data["content"] = $photo;
@@ -278,7 +282,8 @@ class PostPage {
 				default:
 					self::showNewNewsForm($data, $error);
 			}
-		} else self::showNewNewsForm($data, $error);
+		} else
+			self::showNewNewsForm($data, $error);
 	}
 	
 	static function showCommentForm($user, $post, $error = null) {
