@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://www.ioesisto.it/template/" targetNamespace="http://www.ioesisto.it/template/">
+	<simpleType name="divclass">
+		<restriction base="string">
+			<enumeration value="large"></enumeration>
+			<enumeration value="small"></enumeration>
+			<enumeration value="medium"></enumeration>
+			<enumeration value="side right"></enumeration>
+			<enumeration value="side left"></enumeration>
+			<enumeration value="clear"></enumeration>
+		</restriction>
+	</simpleType>
+	<complexType name="ad_type"></complexType>
+	<complexType name="column" mixed="true">
+		<sequence>
+			<choice minOccurs="0" maxOccurs="unbounded">
+				<element name="col" type="tns:column" />
+				<element name="div" type="tns:column" />
+				<element name="ad" type="tns:ad_type" />
+			</choice>
+		</sequence>
+		<attribute name="cols" type="integer"></attribute>
+		<attribute name="id" type="string"></attribute>
+		<attribute name="class" type="tns:divclass"></attribute>
+		<attribute name="style" type="tns:divclass"></attribute>
+	</complexType>
+	<element name="template">
+		<complexType>
+    		<sequence>
+	    		<element name="header">
+	    			<complexType><choice><element name="ad" type="tns:ad_type" /></choice></complexType>
+	    		</element>
+	    		<element name="content" type="tns:column" />
+	    		<element name="footer">
+	    			<complexType><choice><element name="ad" type="tns:ad_type" /></choice></complexType>
+	    		</element>
+    		</sequence>
+    		<attribute name="name" type="string" use="required"></attribute>
+    		<attribute name="style" type="string" use="required"></attribute>
+    	</complexType>
+    </element>
+</schema>
