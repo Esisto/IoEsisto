@@ -2,6 +2,17 @@
 
 class FeedbackDao extends Dao {
 
+	function exists($object) {
+		
+	}
+	
+	function quickLoad($id) {
+		
+	}
+	
+	function loadAll($user) {
+		
+	}
 	
 	function loadFeedback() {
 		require_once("query.php");

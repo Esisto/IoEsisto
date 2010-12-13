@@ -5,9 +5,9 @@
 
 static $errors = array(
 			// UserManager
-			UserManager::UM_NoUserError => "L'utente non è stato trovato.", //FIXME: DEBUG modificare in "L'utente o la password sono errati."
-			UserManager::UM_NoPasswordError => "La password è errata.", //FIXME: DEBUG modificare in "L'utente o la password sono errati."
-			UserManager::UM_NoSessionError => "Non è stato possibile creare una sessione valida, controlla Opzioni Internet e abilita i cookie.",
+			//UserManager::UM_NoUserError => "L'utente non è stato trovato.", //FIXME: DEBUG modificare in "L'utente o la password sono errati."
+			//UserManager::UM_NoPasswordError => "La password è errata.", //FIXME: DEBUG modificare in "L'utente o la password sono errati."
+			//UserManager::UM_NoSessionError => "Non è stato possibile creare una sessione valida, controlla Opzioni Internet e abilita i cookie.",
 			"" => "",
 			"" => "",
 			"" => "",

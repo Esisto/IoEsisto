@@ -1,7 +1,7 @@
 <?php
  
 require_once("session.php");
-require_once("mail/MailManager.php"); //TODO da elimenare la path con una define 
+require_once("manager/MailManager.php"); //TODO da elimenare la path con una define 
 
 class MailPage {
 	

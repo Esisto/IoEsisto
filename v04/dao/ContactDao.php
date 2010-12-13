@@ -30,18 +30,18 @@ class ContactDao extends Dao {
 	}
 	
 	function loadAll($user) {
-		parent::load($id);
+		parent::load($user);
 		if(is_numeric($user)) {
 			$id = $user;
 		} else {
-			if(!is_subclass_of($post, "User"))
+			if(!is_a($user, "User"))
 				throw new Exception("Attenzione! Il parametro di ricerca non è un utente.");
 			$id = $user->getID();
 		}
 			
 		$this->db->execute(Query::generateSelectStm(array($this->table, $this->table_ct),
 													array(new JoinConstraint($this->table->getColumn(DB::CONTACT_NAME), $this->table_ct->getColumn(DB::CONTACT_TYPE_NAME))),
-													array(new WhereConstraint($this->table->getColumn(CONTACT_USER), Operator::EQUAL, intval($id))),
+													array(new WhereConstraint($this->table->getColumn(DB::CONTACT_USER), Operator::EQUAL, intval($id))),
 													array()));
 			
 		$conts = array();
@@ -132,7 +132,7 @@ class ContactDao extends Dao {
 	function exists($contact) {
 		try {
 			$c = $this->quickLoad($contact->getID());
-			return is_subclass_of($c, self::OBJECT_CLASS);
+			return is_a($c, self::OBJECT_CLASS);
 		} catch(Exception $e) {
 			return false;
 		}

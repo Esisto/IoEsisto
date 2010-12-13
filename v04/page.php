@@ -29,6 +29,7 @@ class Page {
 	 */
 	private static function elaborateRequest($request) {
 		require_once("manager/FileManager.php");
+		
 		//echo "<br />" . $request; //DEBUG
 		$param_index = strpos($request,"?");
 		//echo "<br />" . $param_index; //DEBUG
@@ -89,7 +90,7 @@ class Page {
 				}
 				if(self::$requestedAction == self::$requestedObject) self::$requestedAction = "Read";
 				self::$requestedObject = "Post";
-				require_once 'search/SearchManager.php';
+				require_once 'manager/SearchManager.php';
 				$p = SearchManager::searchBy("Post", array("type" => "collection", "title" => "Favourites", "author" => self::$user->getID()), array());
 				if(is_array($p) && count($p) == 1) {
 					self::$currentObject = $p[0];
@@ -807,9 +808,9 @@ class Page {
 		
 		self::$user = Session::getUser();
 		$data = self::elaborateRequest($request);
-		if(self::$requestedObject == "Login")
+		if(self::$requestedObject == "Login") {
 			self::redirect("");
-		else if(self::$requestedObject == "Logout") {
+		} else if(self::$requestedObject == "Logout") {
 			Session::destroy();
 			self::redirect("");
 		}

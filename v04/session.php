@@ -46,7 +46,6 @@ class Session {
 	 * restituisce un oggetto user che ha avviato la sessione		
 	 */
 	static function getUser($who_asks = "Anonimous") {
-		
 		if ( isset($_SESSION["iduser"]) ) {
 			$userdao = new UserDao();
 			$user = $userdao->quickLoad($_SESSION["iduser"]);
@@ -60,9 +59,9 @@ class Session {
 				return $user;
 			else
 				return false;
-		}
-		else
+		} else {
 			return false;
+		}
 	}
 
 	static function is_set() {

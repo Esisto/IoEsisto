@@ -12,3 +12,5 @@ v02/db_schema.dbs
 .settings/org.eclipse.core.resources.prefs/v0
 .settings/org.eclipse.core.resources.prefs
 v04/db_schema.dbs
+v03/db_schema.dbs
+v03/ioesisto_db_v3.sql

@@ -3,6 +3,7 @@ require_once("manager/UserManager.php");
 require_once("settings.php");
 require_once("strings/" . LANG . "strings.php");
 require_once("manager/FileManager.php");
+require_once("session.php");
 
 class UserPage {
 
@@ -115,7 +116,9 @@ echo recaptcha_get_html($publickey);
 	}
 
 	static function showProfile($user) {
-		$my_profile = $user->getID() == Session::getUser()->getID();
+		$my_profile = false;
+		if(is_a($u = Session::getUser(), "User"))
+			$my_profile = $u->getID() == $user->getID();
 		?>
 <div class="userProfile" id="<?php echo $user->getID(); ?>">
 <div class="user_avatar">Avatar: <?php echo Filter::decodeFilteredText($user->getAvatar()); ?></div>

@@ -2,7 +2,21 @@
 
 class FollowDao extends Dao {
 	
+	function exists($object) {
+		
+	}
+	
+	function quickLoad($id) {
+		
+	}
+	
+	function loadAllFollowers($user) {
+		
+	}
 
+	function loadAllFollows($user) {
+		
+	}
 	
 	function loadFollowers() {
 		require_once("query.php");
