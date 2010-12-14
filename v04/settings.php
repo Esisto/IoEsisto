@@ -7,7 +7,7 @@ define("DB_NAME", "ioesisto3");
 define("DB_PORT", 8889);
 
 // File System settings.
-define("ROOT_LINK", "ioesisto/v03/");
+define("ROOT_LINK", "ioesisto/v04/");
 
 // Language settings.
 define("LANG", "en"); // selezionare il linguaggio voluto.
