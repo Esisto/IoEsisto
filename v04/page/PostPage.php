@@ -5,6 +5,8 @@ require_once("manager/FileManager.php");
 require_once("dataobject/Post.php");
 require_once("dao/PostDao.php");
 require_once("manager/PostManager.php");
+require_once("manager/CollectionManager.php");
+require_once("manager/ResourceManager.php");
 
 
 class PostPage {
@@ -97,8 +99,10 @@ class PostPage {
 				$first = true;
 				foreach($post->getContent() as $cont) {
 					if($first) $first = false;
-					else echo ", ";
-					echo Filter::decodeFilteredText($cont);
+					else echo " ";
+					//echo Filter::decodeFilteredText($cont);
+					$path ="/IoEsisto/v04/" . $cont->getPath();
+					echo "<a href='$path'><img src='" . $path . "' width='100' height='50'></a>";
 				}
 			} else
 				echo Filter::decodeFilteredText($post->getContent());
@@ -184,10 +188,36 @@ class PostPage {
 				$data["type"] = $_POST["type"];
 			else
 				$error[] = "Scegliere il tipo di post da pubblicare.";
-			if(isset($_POST["content"]) && trim($_POST["content"]) != "")
-				$data["content"] = $_POST["content"];
-			else
-				$error[] = "Inserire un contenuto.";
+				
+			if($data["type"] == "news"){
+				if(isset($_POST["content"]) && trim($_POST["content"]) != ""){
+					$data["content"] = $_POST["content"];
+				}else
+					$error[] = "Inserire un contenuto.";
+			} else if($data["type"] == "photoreportage"){
+				$photo = array();
+				for($i=0,$numphoto=0,$notvalid=0;$i<10;$i++){
+					if(trim($_FILES["upfile$i"]["name"]) != ""){
+						if($_FILES["upfile$i"]["type"] == "image/gif" || $_FILES["upfile$i"]["type"] == "image/jpeg" || $_FILES["upfile$i"]["type"] == "image/png"){
+							$photo[]= ResourceManager::uploadPhoto(trim($_FILES["upfile$i"]["name"]),$user->getNickname(),$_FILES["upfile$i"]["tmp_name"],$_FILES["upfile$i"]["type"]);
+							$numphoto++;
+						}else
+							$notvalid++;
+					}
+				}
+				//se ha caricato file in formato non valido do errore
+				if($notvalid!=0)
+					$error[]="Devi inserire un formato valido: .jpeg .jpg .gif oppure .png";
+				//se non sono state caricate foto do errore
+				if($numphoto>0)
+					$data["content"] = $photo;
+				else
+					$error[]="Devi inserire almeno un'immagine";	
+				
+			} else if($data["type"] == "videoreportage"){
+				
+			}
+			
 			if(isset($_POST["cat"]) && is_array($_POST["cat"]) && count($_POST["cat"]) > 0) {
 				$cat = ""; $first = true;
 				foreach($_POST["cat"] as $k => $c) {
@@ -208,7 +238,12 @@ class PostPage {
 				
 			if(is_null($error) || (is_array($error) && count($error) == 0)) {
 				$data["author"] = $user->getID();
-				$post = PostManager::createPost($data);
+				//se photoreportage creo una collection
+				if($data["type"]=="news" || $data["type"]=="videoreportage" ){
+					$post = PostManager::createPost($data);
+				}else if ($data["type"]=="photoreportage"){
+					$post = CollectionManager::createCollection($data);
+				}
 				if($post !== false) {
 					echo '
 			<div class="message">

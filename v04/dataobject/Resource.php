@@ -3,7 +3,7 @@ require_once 'dataobject/Editable.php';
 
 class Resource extends Editable {
 	private $ID;
-	private $owner_id;
+	private $owner;
 	private $path;
 	private $description;
 	private $tags;
@@ -16,14 +16,14 @@ class Resource extends Editable {
 	const VIDEO = "Video";
 	const PHOTO = "Photo";
 	
-	function __construct($owner_id, $path, $type) {
+	function __construct($owner, $path, $type) {
 		$this->owner = $owner;
 		$this->path = $path;
 		$this->type = $type;
 	}
 	
-	function getOwnerId() {
-		return $this->owner_id;
+	function getOwner() {
+		return $this->owner;
 	}
 	function getPath() {
 		return $this->path;

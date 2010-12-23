@@ -53,7 +53,7 @@ class CollectionManager {
 				if(!$p)
 					$p = new Magazine($data);
 			case Post::PHOTOREP:
-				if(!$p)
+				if(!$p) 
 					$p = new PhotoReportage($data);
 
 				$postdao = new PostDao();
