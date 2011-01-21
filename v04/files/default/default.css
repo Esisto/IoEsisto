@@ -3,9 +3,16 @@ body{
 	margin: 0;
 	padding: 0;
 }
-a {
+a{
 	text-decoration: none;
 	color: #000;
+}
+a:link, a:visited{
+	text-decoration: none;
+	color: #000000;	
+}
+a:hover{
+	text-decoration: underline;
 }
 p {
 	margin: 0;
@@ -143,8 +150,6 @@ p {
 	width: 900px;
 	margin: 0 auto;
 }
-
-
 
 /*---------------------- home.html ----------------------
   ---------------------- articles -----------------------*/
