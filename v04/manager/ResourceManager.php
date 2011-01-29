@@ -1,6 +1,7 @@
 <?php
 	require_once("dataobject/Resource.php");
 	require_once("settings.php");
+	require_once("dao/ResourceDao.php");
 	define("HEIGHT","100");
 	define("WIDTH","200");
 	
@@ -18,7 +19,7 @@
 		* @param tmp_name: nome temporaneo attribuito dal server all'imamgine
 		* @return: un oggetto resource di tipo photo completo di ogni informazione.
 		*/
-		function uploadPhoto($fname,$owner,$tmp_name,$mime){
+		function uploadPhoto($fname,$owner,$ownerID,$tmp_name,$mime){
 			//salvo il file nella cartella uploads/owner/date
 			$path=self::createUserDirectory($owner,$fname);
 			if(@is_uploaded_file($tmp_name)){
@@ -32,11 +33,13 @@
 			self::resize($path) or die("errore durante il resize dell'immagine");
 			
 			//restituisce un oggetto resource
-			$photo= new Resource($owner,$path,Resource::PHOTO);
-			//TODO carica l'oggetto resource nel db
-			return $photo;
+			$photo= new Resource($ownerID,$path,Resource::PHOTO);
+			
+			$photodao = new ResourceDao();
+			$p = $photodao->save($photo);
+			return $p;
 		}
-		
+	
 		function addDescription($rsID, $description){
 			//TODO
 		}
@@ -62,8 +65,8 @@
 				imagejpeg($new_res, $source);
 				imagedestroy($image);
 				imagedestroy($new_res);
-			return true;
 			}
+			return true;
 		}
 		
 		/**

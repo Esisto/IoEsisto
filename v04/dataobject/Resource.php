@@ -22,7 +22,7 @@ class Resource extends Editable {
 		$this->type = $type;
 	}
 	
-	function getOwner() {
+	function getOwnerId() {
 		return $this->owner;
 	}
 	function getPath() {

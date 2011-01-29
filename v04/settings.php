@@ -32,8 +32,8 @@ define("CAPTCHA_PRIVATE","6LcAhL0SAAAAAE5Tdd4ocLXOexEc4Z2gCS5ePxM8");
 define("CAPTCHA_PUBLIC", "6LcAhL0SAAAAANoKUZXVByUdlzJmJgKUtL0O2uFU");
 
 //YouTube Account
-define("YT_USER","");
-define("YT_PASS","");
+define("YT_USER","Utenti.Publichi@gmail.com");
+define("YT_PASS","Deploy2010");
 
 // Debug settings
 define("DEBUG", false);

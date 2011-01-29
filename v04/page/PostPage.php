@@ -199,7 +199,7 @@ class PostPage {
 				for($i=0,$numphoto=0,$notvalid=0;$i<10;$i++){
 					if(trim($_FILES["upfile$i"]["name"]) != ""){
 						if($_FILES["upfile$i"]["type"] == "image/gif" || $_FILES["upfile$i"]["type"] == "image/jpeg" || $_FILES["upfile$i"]["type"] == "image/png"){
-							$photo[]= ResourceManager::uploadPhoto(trim($_FILES["upfile$i"]["name"]),$user->getNickname(),$_FILES["upfile$i"]["tmp_name"],$_FILES["upfile$i"]["type"]);
+							$photo[]= ResourceManager::uploadPhoto(trim($_FILES["upfile$i"]["name"]),$user->getNickname(),$user->getID(),$_FILES["upfile$i"]["tmp_name"],$_FILES["upfile$i"]["type"]);
 							$numphoto++;
 						}else
 							$notvalid++;
@@ -246,8 +246,11 @@ class PostPage {
 				}else{
 					$post=false;
 				}
-				if ($data["type"]=="photoreportage")
+				if ($data["type"]=="photoreportage" && $_POST["phase"]==2){
 					$post = CollectionManager::createCollection($data);
+				}else{
+					$post=false;
+				}	
 				if($post !== false) {
 					echo '
 			<div class="message">
@@ -460,8 +463,8 @@ class PostPage {
 		?></div>
 		<?php
 		}
-		?>
-		<form name="<?php echo $name; ?>Post" action="?type=photoreportage?" method="post" enctype="multipart/form-data">
+		if(!isset($_GET["phase"])){?>
+		<form name="<?php echo $name; ?>Post" action="?type=photoreportage&phase=2" method="post" enctype="multipart/form-data">
 			<p class="post_headline"><label>Occhiello:</label><br />
 				<input class="post_headline" name="headline" value="<?php echo $post->getHeadline(); ?>"/></p>
 			<p class="title"><label>Titolo:</label><br/>
@@ -488,7 +491,7 @@ class PostPage {
 			<input id="post_place" name="place" type="hidden" value="<?php echo $post->getPlace(); ?>" />
 			<input name="visible" type="hidden" value="true" />
 			<input name="type" type="hidden" value="photoreportage" />
-			<p class="submit"><input type="submit" value="Pubblica" /> 
+			<p class="submit"><input type="submit" value="Prosegui" /> 
 				<input type="button" onclick="javascript:save();" value="Salva come bozza"/></p>
 			<script type="text/javascript">
 				function save() {
@@ -501,7 +504,12 @@ class PostPage {
 			MapManager::setCenterToMap($post->getPlace(), "map_canvas");
 			?>
 		</form>
-        <?php
+		<?php }else{ ?>
+			<fieldset><legend>Inserisci le descrizioni alle tue foto! </legend><?php
+				//fieldset per ogni foto (un for con un count degli oggetti)
+				//visualizzazione foto e testbox per la descrizione
+			?></fieldset>
+		<?php }
 	}
 
 	private static function showEditCollectionForm($post, $error, $new = false) {
@@ -610,7 +618,7 @@ class PostPage {
 			require_once "Zend/Gdata/ClientLogin.php";
 			$yt= new Zend_Gdata_ClientLogin();
 			//define in settings.php con user e pass
-			$httpClient = $yt->getHttpClient('Utenti.Publichi@gmail.com','Deploy2010','youtube', null,'ioesisto', null, null, 'https://www.google.com/accounts/ClientLogin');
+			$httpClient = $yt->getHttpClient(YT_USER,YT_PASS,'youtube', null,'ioesisto', null, null, 'https://www.google.com/accounts/ClientLogin');
 			echo "<br>Carica un video ...... <br><br>";
 			require_once("Zend/Loader.php");
 			Zend_Loader::loadClass('Zend_Gdata_YouTube');

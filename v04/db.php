@@ -149,6 +149,10 @@ class DB {
 	const RESOURCE_TYPE = "rs_type";
 	const RESOURCE_PATH = "rs_path";
 	const RESOURCE_OWNER = "rs_owner";
+	const RESOURCE_DESCRIPTION = "rs_description";
+	const RESOURCE_CREATION_DATE = "rs_creationDate";
+	const RESOURCE_TAGS = "rs_tags";
+	const RESOURCE_MODIFICATION_DATE = "rs_modificationDate";
 	
 	// tabella Ruolo
 	const ROLE_NAME = "rl_name";
