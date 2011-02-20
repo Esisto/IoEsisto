@@ -199,7 +199,7 @@ class PostPage {
 				for($i=0,$numphoto=0,$notvalid=0;$i<10;$i++){
 					if(trim($_FILES["upfile$i"]["name"]) != ""){
 						if($_FILES["upfile$i"]["type"] == "image/gif" || $_FILES["upfile$i"]["type"] == "image/jpeg" || $_FILES["upfile$i"]["type"] == "image/png"){
-							$photo[]= ResourceManager::uploadPhoto(trim($_FILES["upfile$i"]["name"]),$user->getNickname(),$_FILES["upfile$i"]["tmp_name"],$_FILES["upfile$i"]["type"]);
+							$photo[]= ResourceManager::uploadPhoto(trim($_FILES["upfile$i"]["name"]),$user->getNickname(),$user->getID(),$_FILES["upfile$i"]["tmp_name"],$_FILES["upfile$i"]["type"]);
 							$numphoto++;
 						}else
 							$notvalid++;
@@ -239,11 +239,18 @@ class PostPage {
 			if(is_null($error) || (is_array($error) && count($error) == 0)) {
 				$data["author"] = $user->getID();
 				//se photoreportage creo una collection
-				if($data["type"]=="news" || $data["type"]=="videoreportage" ){
+				if($data["type"]=="news")
 					$post = PostManager::createPost($data);
-				}else if ($data["type"]=="photoreportage"){
-					$post = CollectionManager::createCollection($data);
+				if($data["type"]=="videoreportage" && $_POST["phase"]==2){
+					$post = PostManager::createPost($data);
+				}else{
+					$post=false;
 				}
+				if ($data["type"]=="photoreportage" && $_POST["phase"]==2){
+					$post = CollectionManager::createCollection($data);
+				}else{
+					$post=false;
+				}	
 				if($post !== false) {
 					echo '
 			<div class="message">
@@ -456,8 +463,8 @@ class PostPage {
 		?></div>
 		<?php
 		}
-		?>
-		<form name="<?php echo $name; ?>Post" action="?type=photoreportage" method="post" enctype="multipart/form-data">
+		if(!isset($_GET["phase"])){?>
+		<form name="<?php echo $name; ?>Post" action="?type=photoreportage&phase=2" method="post" enctype="multipart/form-data">
 			<p class="post_headline"><label>Occhiello:</label><br />
 				<input class="post_headline" name="headline" value="<?php echo $post->getHeadline(); ?>"/></p>
 			<p class="title"><label>Titolo:</label><br/>
@@ -484,7 +491,7 @@ class PostPage {
 			<input id="post_place" name="place" type="hidden" value="<?php echo $post->getPlace(); ?>" />
 			<input name="visible" type="hidden" value="true" />
 			<input name="type" type="hidden" value="photoreportage" />
-			<p class="submit"><input type="submit" value="Pubblica" /> 
+			<p class="submit"><input type="submit" value="Prosegui" /> 
 				<input type="button" onclick="javascript:save();" value="Salva come bozza"/></p>
 			<script type="text/javascript">
 				function save() {
@@ -497,7 +504,12 @@ class PostPage {
 			MapManager::setCenterToMap($post->getPlace(), "map_canvas");
 			?>
 		</form>
-        <?php
+		<?php }else{ ?>
+			<fieldset><legend>Inserisci le descrizioni alle tue foto! </legend><?php
+				//fieldset per ogni foto (un for con un count degli oggetti)
+				//visualizzazione foto e testbox per la descrizione
+			?></fieldset>
+		<?php }
 	}
 
 	private static function showEditCollectionForm($post, $error, $new = false) {
@@ -563,17 +575,16 @@ class PostPage {
 		?></div>
 		<?php
 		}
+		if(!isset($_GET["phase"])){
 		?>
-		<form name="<?php echo $name; ?>Post" action="?type=videoreportage" method="post">
+		<form name="<?php echo $name; ?>Post" action="?type=videoreportage&phase=2" method="post">
 			<p class="post_headline"><label>Occhiello:</label><br />
 				<input class="post_headline" name="headline" value="<?php echo $post->getHeadline(); ?>"/></p>
 			<p class="title"><label>Titolo:</label><br/>
 				<input class="post_title" name="title" value="<?php echo $post->getTitle(); ?>"/></p>
 			<p class="post_subtitle"><label>Sottotilolo:</label><br />
 				<input class="post_subtitle" name="subtitle" value="<?php echo $post->getSubtitle(); ?>"/></p>
-			<p class="content"><label>Contenuto:</label><br/>
-				<!-- TODO --> <fieldset><legend>upload video</legend>	</fieldset>
-			</p>
+			<p class="content"><label>Contenuto:</label><br/></p>
 			<p class="tags"><label>Tags:</label> 
 				<input class="tags" id="post_tags_input" name="tags" value="<?php echo $post->getTags(); ?>"/></p>
 			<p class="categories"><label>Categorie:</label><br/><?php
@@ -583,10 +594,11 @@ class PostPage {
 				self::showCategoryTree($cat); ?>
 			</p>
 			<p class="<?php echo trim($post->getPlace()) == "" ? "hidden" : ""; ?>"><label id="place_label">Posizione: <?php echo $post->getPlace(); ?></label></p>
+			<input type="hidden" name="phase" value="<?php if(isset($_POST["phase"])==2) echo '2'; else echo '1';?>">
 			<input id="post_place" name="place" type="hidden" value="<?php echo $post->getPlace(); ?>" />
 			<input name="visible" type="hidden" value="true" />
 			<input name="type" type="hidden" value="videoreportage" />
-			<p class="submit"><input type="submit" value="Pubblica" /> 
+			<p class="submit"><input type="submit" value="Procedi" /> 
 				<input type="button" onclick="javascript:save();" value="Salva come bozza"/></p>
 			<script type="text/javascript">
 				function save() {
@@ -599,7 +611,37 @@ class PostPage {
 			MapManager::setCenterToMap($post->getPlace(), "map_canvas");
 			?>
 		</form>
-	<?php
+		<?php }else{ ?>
+			<fieldset><legend>Sei ora autenticato su youtube con l'account di PublicHi!!</legend><?php
+			
+			//ClientLogin autentication
+			require_once "Zend/Gdata/ClientLogin.php";
+			$yt= new Zend_Gdata_ClientLogin();
+			//define in settings.php con user e pass
+			$httpClient = $yt->getHttpClient(YT_USER,YT_PASS,'youtube', null,'ioesisto', null, null, 'https://www.google.com/accounts/ClientLogin');
+			echo "<br>Carica un video ...... <br><br>";
+			require_once("Zend/Loader.php");
+			Zend_Loader::loadClass('Zend_Gdata_YouTube');
+			$yt = new Zend_Gdata_YouTube($httpClient,"ioesisto",null,GDEV_KEY);
+			
+			//Upload video
+			require_once("Zend/Loader.php");
+			Zend_Loader::loadClass('Zend_Gdata_YouTube');
+			$yt = new Zend_Gdata_YouTube($httpClient,"ioesisto",null,GDEV_KEY);
+			// create a new VideoEntry object
+			$myVideoEntry = new Zend_Gdata_YouTube_VideoEntry();
+			require_once("manager/youtubeManager.php");				
+			$myVideoEntry = addMetaData($myVideoEntry,$_POST['title']);
+			$tokenArray = getTokenArray($yt,$myVideoEntry);
+			$form = getUploadForm($tokenArray,"http://localhost:8888/ioesisto/v04/Post/New?type=videoreportage&phase=2"); //TODO percorso relativo
+			echo $form . "</br>";
+				
+			echo "....... o inserisci l'URL di un video che vuoi allegare al tuo videoarticolo"
+			
+			//TODO textbox per l'inserimento dell'url del video (che va sostituito a contnent )
+			?>		
+			</fieldset>
+		<?php }
 	}
 	
 	static function showContestDetails($contest) {

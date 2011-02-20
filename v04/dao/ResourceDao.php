@@ -21,8 +21,8 @@ class ResourceDao extends Dao {
 		
 		if($this->db->num_rows() != 1)
 			throw new Exception("L'oggetto cercato non è stato trovato. Riprovare.");
-		
-		$row = $db->fetch_result();
+		//$row = $db->fetch_result();
+		$row = $this->db->fetch_result();
 		return $this->createFromDBRow($row);
 	}
 	
@@ -89,20 +89,26 @@ class ResourceDao extends Dao {
 	function save($resource) {
 		parent::save($resource, self::OBJECT_CLASS);
 		
-		$data = array(RESOURCE_OWNER => $resource->getOwnerId(),
-					  RESOURCE_PATH => $resource->getPath(),
-					  RESOURCE_TYPE => $resource->getType());
+		$data = array(DB::RESOURCE_OWNER => $resource->getOwnerId(),
+					  DB::RESOURCE_PATH => $resource->getPath(),
+					  DB::RESOURCE_TYPE => $resource->getType());
 		if(!is_null($resource->getDescription()))
-			$data[RESOURCE_DESCRIPTION] = $resource->getDescription();
+			$data[DB::RESOURCE_DESCRIPTION] = $resource->getDescription();
 		if(!is_null($resource->getTags()))
 			$data[DB::RESOURCE_TAGS] = $resource->getTags();
 		$data[DB::POST_CREATION_DATE] = date("Y-m-d G:i:s", $_SERVER["REQUEST_TIME"]);
 			
-		$rs = $db->execute($s = Query::generateInsertStm($table,$data), $table->getName(), $this);
-		if($db->affected_rows() != 1)
+		$this->db->execute($s = Query::generateInsertStm($this->table,$data), $this->table->getName(), $this);
+		//$rs = $db->execute($s = Query::generateInsertStm($table,$data), $table->getName(), $this);
+		//if($db->affected_rows() != 1)
+		//DEBUG
+		var_dump($this->db->affected_rows());
+		if($this->db->affected_rows() != 1)
 			throw new Exception("Si è verificato un errore salvando l'oggetto. Riprovare.");
 		
 		$r = $this->quickLoad($this->db->last_inserted_id());
+		//DEBUG
+		var_dump($this->db->last_inserted_id());
 		//inserisco i tag nuovi
 		if(!is_null($resource->getTags()) && trim($resource->getTags()) != "")
 			TagManager::createTags(explode(",", $resource->getTags()));
