@@ -61,6 +61,7 @@ class ResourceDao extends Dao {
 	
 	private function createFromDBRow($row) {
 		$r = new Resource($row[DB::RESOURCE_OWNER], $row[DB::RESOURCE_PATH], $row[DB::RESOURCE_TYPE]);
+		$r->setID($row[DB::RESOURCE_ID]);
 		$r->setDescription($row[DB::RESOURCE_DESCRIPTION])
 				->setCreationDate($row[DB::RESOURCE_CREATION_DATE])
 				->setTags($row[DB::RESOURCE_TAGS]);
@@ -82,7 +83,7 @@ class ResourceDao extends Dao {
 			$reportDao = new ReportDao();
 			$reportDao->loadAll($r);
 		}
-		$r->setAccessCount($this->getAccessCount($r));
+		//$r->setAccessCount($this->getAccessCount($r));
 		return $r;
 	}
 	
@@ -98,14 +99,10 @@ class ResourceDao extends Dao {
 			$data[DB::RESOURCE_TAGS] = $resource->getTags();
 		$data[DB::POST_CREATION_DATE] = date("Y-m-d G:i:s", $_SERVER["REQUEST_TIME"]);
 			
-		$this->db->execute($s = Query::generateInsertStm($this->table,$data), $this->table->getName(), $this);
-		//$rs = $db->execute($s = Query::generateInsertStm($table,$data), $table->getName(), $this);
-		//if($db->affected_rows() != 1)
-		//DEBUG
-		var_dump($this->db->affected_rows());
+		$this->db->execute($s = Query::generateInsertStm($this->table,$data), $this->table->getName(), $this);	
 		if($this->db->affected_rows() != 1)
 			throw new Exception("Si è verificato un errore salvando l'oggetto. Riprovare.");
-		
+
 		$r = $this->quickLoad($this->db->last_inserted_id());
 		//DEBUG
 		var_dump($this->db->last_inserted_id());

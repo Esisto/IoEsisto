@@ -246,8 +246,14 @@ class PostPage {
 				}else{
 					$post=false;
 				}
-				if ($data["type"]=="photoreportage" && $_POST["phase"]==2){
+				if ($data["type"]=="photoreportage" && $_GET["phase"]==2){
 					$post = CollectionManager::createCollection($data);
+					
+					// mostro form per modificare le descrizioni
+				} else if ($data["type"]=="photoreportage" && $_GET["phase"]==3) {
+					
+					// salvo tutte le modifiche alle risorse
+					// redirect su edit post
 				}else{
 					$post=false;
 				}	

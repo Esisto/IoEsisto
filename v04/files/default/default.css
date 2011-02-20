@@ -68,7 +68,7 @@ p {
 	height: 50px;
 	width: auto; 
 }
-
+.readonly { color: #bbb; }
 /*---------------------- operationsMenu ----------------------*/
 #operationsMenu{
 	width: 900px;
