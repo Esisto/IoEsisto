@@ -13,8 +13,8 @@ class Resource extends Editable {
 	private $reports;
 	private $accessCount = 1;			// numero di accessi
 	
-	const VIDEO = "Video";
-	const PHOTO = "Photo";
+	const VIDEO = "video";
+	const PHOTO = "photo";
 	
 	function __construct($owner, $path, $type) {
 		$this->owner = $owner;
@@ -22,7 +22,7 @@ class Resource extends Editable {
 		$this->type = $type;
 	}
 	
-	function getOwner() {
+	function getOwnerId() {
 		return $this->owner;
 	}
 	function getPath() {
