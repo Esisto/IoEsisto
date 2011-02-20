@@ -149,6 +149,10 @@ class DB {
 	const RESOURCE_TYPE = "rs_type";
 	const RESOURCE_PATH = "rs_path";
 	const RESOURCE_OWNER = "rs_owner";
+	const RESOURCE_DESCRIPTION = "rs_description";
+	const RESOURCE_CREATION_DATE = "rs_creationDate";
+	const RESOURCE_TAGS = "rs_tags";
+	const RESOURCE_MODIFICATION_DATE = "rs_modificationDate";
 	
 	// tabella Ruolo
 	const ROLE_NAME = "rl_name";
@@ -556,10 +560,14 @@ CREATE TABLE `" . self::TABLE_REPORT . "` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin AUTO_INCREMENT=1;
 
 CREATE TABLE `" . self::TABLE_RESOURCE . "` (
-  `" . self::RESOURCE_ID . "` bigint(20) NOT NULL,
+  `" . self::RESOURCE_ID . "` bigint(20) NOT NULL AUTO_INCREMENT,
   `" . self::RESOURCE_TYPE . "` enum('video','photo') NOT NULL,
   `" . self::RESOURCE_PATH . "` varchar(255) NOT NULL,
   `" . self::RESOURCE_OWNER . "` bigint(20) NOT NULL,
+  `" . self::RESOURCE_DESCRIPTION . "` text NULL,
+  `" . self::RESOURCE_CREATION_DATE . "` timestamp NOT NULL,
+  `" . self::RESOURCE_MODIFICATION_DATE . "` timestamp NOT NULL,
+  `" . self::RESOURCE_TAGS . "` text NOT NULL,
   `" . self::ACCESS_COUNT . "` bigint(20) NOT NULL DEFAULT 0,
   `" . self::AUTO_BLACK_CONTENT . "` tinyint(1) NOT NULL DEFAULT 0,
   `" . self::BLACK_CONTENT . "` tinyint(1) NOT NULL DEFAULT 0,
@@ -571,7 +579,7 @@ CREATE TABLE `" . self::TABLE_RESOURCE . "` (
   PRIMARY KEY (`" . self::RESOURCE_ID . "`),
   FOREIGN KEY (`" . self::RESOURCE_OWNER . "`) REFERENCES `" . self::TABLE_USER . "` (`" . self::USER_ID . "`) ON DELETE NO ACTION,
   FOREIGN KEY (`" . self::PREVIOUS_VERSION . "`) REFERENCES `" . self::TABLE_HISTORY . "` (`" . self::HISTORY_ID . "`) ON DELETE NO ACTION
-  ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin AUTO_INCREMENT=1;
 
 CREATE TABLE `" . self::TABLE_SUB_CATEGORY . "` (
   `" . self::SUB_CATEGORY_PARENT . "` varchar(50) NOT NULL,
