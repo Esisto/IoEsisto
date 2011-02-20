@@ -122,8 +122,10 @@ abstract class Dao {
 		//	throw new Exception("L'oggetto cercato non è stato trovato. Riprovare.");
 		$row = $this->db->fetch_result();
 		$n = intval($row[DB::ACCESS_COUNT]);
-		$s = "UPDATE " . $table->getName() . " SET " . DB::ACCESS_COUNT . " = " . ++$n . " WHERE " . $id_column_name . " = " . $object->getID();
-		$this->db->execute($s, null, LOGMANAGER);
+		
+		//FIXME finché non è fatto bene non aggiorno...
+		//$s = "UPDATE " . $table->getName() . " SET " . DB::ACCESS_COUNT . " = " . ++$n . " WHERE " . $id_column_name . " = " . $object->getID();
+		//$this->db->execute($s, null, LOGMANAGER);
 		//if($this->db->affected_rows() != 1)
 		//	throw new Exception("Si è verificato un errore aggiornando il dato. Riprovare.");
 		return $object;
