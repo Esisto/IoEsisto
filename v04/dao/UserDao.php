@@ -113,11 +113,11 @@ class UserDao extends Dao {
 			$resourceDao = new ResourceDao();
 			$user->setAvatar($resourceDao->quickLoad($row[DB::USER_AVATAR]));
 		} catch(Exception $e) {
-			try {
-				$user->setAvatar($resourceDao->quickLoad(EMPTY_AVATAR));
-			} catch (Exception $e1) {
-				//DEBUG da togliere più avanti, quando ci saranno le immagini.
-			}
+//			try {
+//				$user->setAvatar($resourceDao->quickLoad(EMPTY_AVATAR));
+//			} catch (Exception $e1) {
+//				//DEBUG da togliere più avanti, quando ci saranno le immagini.
+//			}
 		}
 		
 		if($this->loadDependences) {
