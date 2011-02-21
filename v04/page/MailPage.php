@@ -5,9 +5,11 @@ require_once("manager/MailManager.php"); //TODO da elimenare la path con una def
 
 class MailPage {
 	
-	static function showEditDirectoryForm( $error = null, $directory =  null ) {
+	static function showEditDirectoryForm($directory, $error = array()) {
 		$user = Session::getUser();
 		if ( count($_POST) == 0 ) {
+			if ( $user != false ) {						
+				$directoryarray = MailManager::loadUsersDirectories($user->getID());
 			?>
 			<form name="editdirectory" action="" method="post">
 				<fieldset>
@@ -41,23 +43,21 @@ class MailPage {
 					</script>	
 					<?php
 						
-						if ( $user != false ) {						
-							$directoryarray = MailManager::loadUsersDirectories($user->getID());
-							if ( $directoryarray != false )
-								foreach( $directoryarray as $directory ) {
-									echo "<input type=\"checkbox\" name=\"exdirar[]\" value=\"" . $directory->getID() ."\" />
-										<input type=\"text\" readonly=\"readonly\" id=\"" . $directory->getID() . "name\" name=\"" .  $directory->getName() ."\" value=\"" .  $directory->getName() ."\" />
-										<button type=\"button\" id=\"" .  $directory->getID() . "rename\" onclick=\"clickRename(event);\" >rename</button>
-										<input type=\"submit\" id=\"" . $directory->getID() . "confirm\" name=\"" .  $directory->getName() . "\" value=\"confirm\" disabled=\"disabled\" />
-										<button id=\"" . $directory->getID() . "cancel\" disabled=\"disabled\"  onclick=\"clickCancel(event);\" />cancel</button><br />";
-										   	
-								}
-						}
+						
+					if ( is_array($directoryarray))
+						foreach( $directoryarray as $directory ) {
+							echo "<input type=\"checkbox\" name=\"exdirar[]\" value=\"" . $directory->getID() ."\" />
+								<input type=\"text\" readonly=\"readonly\" id=\"" . $directory->getID() . "name\" name=\"" .  $directory->getName() ."\" value=\"" .  $directory->getName() ."\" />
+								<button type=\"button\" id=\"" .  $directory->getID() . "rename\" onclick=\"clickRename(event);\" >rename</button>
+								<input type=\"submit\" id=\"" . $directory->getID() . "confirm\" name=\"" .  $directory->getName() . "\" value=\"confirm\" disabled=\"disabled\" />
+								<button id=\"" . $directory->getID() . "cancel\" disabled=\"disabled\"  onclick=\"clickCancel(event);\" />cancel</button><br />";
+							}
 					?>
 					<input type="submit" name="delete" value="delete" />				
 				</fieldset>
 			</form>
 			<?php
+			}
 		}
 		else {
 			$error = array();			
