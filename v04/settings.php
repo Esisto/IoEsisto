@@ -6,6 +6,11 @@ define("DB_PASSWORD", "root");
 define("DB_NAME", "ioesisto3");
 define("DB_PORT", 8889);
 
+//Image settings.
+define("HEIGHT","100");
+define("WIDTH","200");
+define("UP_DIR",$_SERVER["DOCUMENT_ROOT"]."/ioesisto/v04/");
+
 // File System settings.
 define("ROOT_LINK", "ioesisto/v04/");
 

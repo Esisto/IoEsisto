@@ -2,11 +2,6 @@
 	require_once("dataobject/Resource.php");
 	require_once("settings.php");
 	require_once("dao/ResourceDao.php");
-	define("HEIGHT","100");
-	define("WIDTH","200");
-	
-	define("UP_DIR",$_SERVER["DOCUMENT_ROOT"]."/".ROOT_LINK);
-
 	
 	//Developer Key: AI39si4EINGln7_eb54GuuotT8Nnc3UyNzth0jRkuiiDYFW40nHp6xCzESfc7dRuIYG7fatRX5boymYR49CLQnDshZGIKYQkUg
 	
@@ -40,8 +35,15 @@
 			return $p;
 		}
 	
-		function addDescription($rsID, $description){
-			//TODO
+		/**
+		* Aggiunge la descrizione passata come parametro all'oggetto 
+		* @param resource: l'oggetto resource in cui caricare la descrizione
+		* @param description: la descrizione da aggiungere
+		*/
+		function addDescription($resource, $description){
+			$resource->setDescription($description);
+			$photodao = new ResourceDao();
+			$p = $photodao->update($resource,$editor); //TODO impostare valore a $editor
 		}
 		
 		/**
@@ -128,23 +130,22 @@
 		*@param owner: nickname del proprietario
 		*@param fname: nome dell'imamgine
 		*@return: /uploads/nomeUtente/data/nomefile.jpg
-		*Se il file esiste già genera n nome casuale aggiungendo la stringa "_X" prima dell'estensione
-		*dove X è un indice che parte da 1 e viene incrementato ogni volta di 1 finchè non trova un nome libero
+		*Se il file esiste già genera n nome casuale aggiungendo un numero in fondo al nome del file
 		*/
 		function generatePath($owner,$fname){
 			if(!file_exists(UP_DIR."uploads/$owner/". date("dmy") . "/$fname")){
 				$path= "uploads/$owner/". date("dmy") . "/$fname";
+				return $path;
 			}else{
-				//esiste già un file con quel nome
 				$i=1;
-				$string=explode(".", $fname); //$string[0] = file name, $string[1]= extension
 				do{
-					$editfname=$string[0]. "_" . $i . "." . $string[1];
+					$string=explode(".", $fname); //$string[0] = file name, $string[1]= extension
+					$editedfname=$string[0]. $i . "." . $string[1];
 					$i++;
-				}while(file_exists(UP_DIR."$owner/". date("dmy") . "/$editfname"));
-				$path= "uploads/$owner/". date("dmy") . "/$editfname";
+				}while(file_exists(UP_DIR."uploads/$owner/". date("dmy") . "/$editedfname"));
+				$path="uploads/$owner/". date("dmy") . "/$editedfname";
+				return $path;
 			}
-			return $path;
 		}
 	}
 
