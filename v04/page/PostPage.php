@@ -41,11 +41,11 @@ class PostPage {
 			<span id="post_place_<?php echo $post->getID(); ?>" class="post_place"></span><?php
 			if(is_array($post->getContent())) {
 				$first = true;
-				foreach($post->getContent() as $cont) {
+				foreach($post->getContent() as $rsID) {
 					if($first) $first = false;
 					else echo " ";
 					//echo Filter::decodeFilteredText($cont);
-					$cont = ResourceManager::loadResource($cont->getID());
+					$cont = ResourceManager::loadResource($rsID);
 					$path =	$cont->getPath();
 					$description = $cont->getDescription();
 					echo "<a href='$path'><img src='" . $path . "' width='100' height='50' alt='" . $description . "' title='" . $description . "'></a>";
@@ -102,11 +102,11 @@ class PostPage {
 			<span id="post_place_<?php echo $post->getID(); ?>" class="post_place"></span><?php
 			if(is_array($post->getContent())) {
 				$first = true;
-				foreach($post->getContent() as $cont) {
+				foreach($post->getContent() as $rsID) {
 					if($first) $first = false;
 					else echo " ";
 					//echo Filter::decodeFilteredText($cont);
-					$cont = ResourceManager::loadResource($cont->getID());
+					$cont = ResourceManager::loadResource($rsID);
 					$path =	$cont->getPath();
 					$description = $cont->getDescription();
 					echo "<a href='$path'><img src='" . $path . "' width='100' height='50' alt='" . $description . "' title='" . $description . "'></a>";
@@ -213,24 +213,29 @@ class PostPage {
 					$error[] = "Inserire un contenuto.";
 			} else if($data["type"] == "photoreportage"){
 				$photo = array();
-				for($i=0,$numphoto=0,$notvalid=0;$i<10;$i++){
+				//check if ther's not valid files
+				for($i=0,$notvalid=0;$i<10;$i++){
 					if(trim($_FILES["upfile$i"]["name"]) != ""){
-						if($_FILES["upfile$i"]["type"] == "image/gif" || $_FILES["upfile$i"]["type"] == "image/jpeg" || $_FILES["upfile$i"]["type"] == "image/png"){
-							$photo[]= ResourceManager::uploadPhoto(trim($_FILES["upfile$i"]["name"]),$user->getNickname(),$user->getID(),$_FILES["upfile$i"]["tmp_name"],$_FILES["upfile$i"]["type"]);
-							$numphoto++;
-						}else
-							$notvalid++;
+						if($_FILES["upfile$i"]["type"] == "image/gif" || $_FILES["upfile$i"]["type"] == "image/jpeg" || $_FILES["upfile$i"]["type"] == "image/png") ;
+						else $notvalid++;
 					}
 				}
-				//se ha caricato file in formato non valido do errore
-				if($notvalid!=0)
+				if($notvalid == 0){
+					for($i=0,$numphoto=0;$i<10;$i++){
+						if(trim($_FILES["upfile$i"]["name"]) != ""){
+							if($_FILES["upfile$i"]["type"] == "image/gif" || $_FILES["upfile$i"]["type"] == "image/jpeg" || $_FILES["upfile$i"]["type"] == "image/png"){
+								$photo[]= ResourceManager::uploadPhoto(trim($_FILES["upfile$i"]["name"]),$user->getNickname(),$user->getID(),$_FILES["upfile$i"]["tmp_name"],$_FILES["upfile$i"]["type"]);
+								$numphoto++;
+							}
+						}
+					}
+					
+					if($numphoto>0)
+						$data["content"] = $photo;
+					else
+						$error[]="Devi inserire almeno un'immagine";	
+				}else
 					$error[]="Devi inserire un formato valido: .jpeg .jpg .gif oppure .png";
-				//se non sono state caricate foto do errore
-				if($numphoto>0)
-					$data["content"] = $photo;
-				else
-					$error[]="Devi inserire almeno un'immagine";	
-				
 			} else if($data["type"] == "videoreportage"){
 				
 			}
@@ -264,6 +269,10 @@ class PostPage {
 					$post=false;
 				}
 				if ($data["type"]=="photoreportage" && $_GET["phase"]==2){
+					//save only the resource ID not the whole object
+					foreach($data["content"] as &$resource){
+						$resource = $resource->getID();
+					}
 					$post = CollectionManager::createCollection($data);
 					/*DEGUB*/ echo "PHASE 2";
 					
@@ -528,8 +537,9 @@ class PostPage {
 				<form name="<?php echo $name; ?>Post" action="?type=photoreportage&phase=3" method="post" enctype="multipart/form-data">
 					<?php for($i=0;$i<count($post->getContent());$i++){
 						$rs_array=$post->getContent();
-						$path =	"/ioesisto/v04/".$rs_array[$i]->getPath();
-						$index = $rs_array[$i]->getID(); ?>
+						$resource = ResourceManager::loadResource($rs_array[$i]);
+						$path =	"/ioesisto/v04/".$resource->getPath();
+						$index = $resource->getID(); ?>
 						<img src="<?php  echo $path; ?>" width="200" height="100"/>
 						<textarea name="<?php echo $index ?>" rows="5" cols="40"></textarea> <!--textarea name is the ID of the corresponding resource-->
 						<input type="hidden" name="<?php echo 'resourceID'.$i; ?>" value="<?php echo $index ?>">

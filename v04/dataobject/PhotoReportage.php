@@ -17,15 +17,22 @@ class PhotoReportage extends Collection {
 		if(!is_array($content))
 			$content = array($content);
 		
-		require_once("dataobject/Resource.php");
-		foreach ($content as $resource)
-			if(is_subclass_of($resource, "Resource") || $resource->getType() != Resource::PHOTO)
-				throw new Exception("ERRORE!!! Non stai inserendo delle Foto.");
+		//require_once("dataobject/Resource.php");
+		//foreach ($content as $resource)
+		//	if(is_subclass_of($resource, "Resource") || $resource->getType() != Resource::PHOTO)
+		//		throw new Exception("ERRORE!!! Non stai inserendo delle Foto.");
 
-		$this->content = $content;
+		$this->content = serialize($content);
 		return $this;
 	}
-
+	
+	/**
+	 * @Override
+	 */
+	function getContent() {
+		return unserialize($this->content);
+	}
+	
 	/**
 	 * Aggiunge una foto al contenuto.
 	 *
