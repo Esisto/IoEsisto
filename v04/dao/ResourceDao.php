@@ -105,7 +105,7 @@ class ResourceDao extends Dao {
 
 		$r = $this->quickLoad($this->db->last_inserted_id());
 		//DEBUG
-		var_dump($this->db->last_inserted_id());
+		//var_dump($this->db->last_inserted_id());
 		//inserisco i tag nuovi
 		if(!is_null($resource->getTags()) && trim($resource->getTags()) != "")
 			TagManager::createTags(explode(",", $resource->getTags()));
@@ -150,27 +150,29 @@ class ResourceDao extends Dao {
 		
 		$data = array();
 		//cerco le differenze POSSIBILI e le salvo.
-		if($r_old->setDescription() != $resource->setDescription())
-			$data[DB::RESOURCE_DESCRIPTION] = $resource->setDescription();
+		if($r_old->getDescription() != $resource->getDescription())
+			$data[DB::RESOURCE_DESCRIPTION] = $resource->getDescription();
 		if($r_old->getTags() != $resource->getTags())
 			$data[DB::RESOURCE_TAGS] = $resource->getTags();
 		$modDate = $_SERVER["REQUEST_TIME"];
-		$data[DB::POST_MODIFICATION_DATE] = date("Y/m/d G:i:s", $modDate);
+		$data[DB::RESOURCE_MODIFICATION_DATE] = date("Y/m/d G:i:s", $modDate);
 		
 		//salvo la versione precedente e ne tengo traccia.
-		$history_id = $this->saveHistory($r_old, "UPDATED");
+		$history_id = $this->saveHistory($r_old, $editor, "UPDATED");
 		$resource->setPreviousVersion($history_id);
-		$data[DB::POST_PREVIOUS_VERSION] = $resource->getPreviousVersion();
+		$data[DB::PREVIOUS_VERSION] = $resource->getPreviousVersion();
 		
 		$rs = $this->db->execute($s = Query::generateUpdateStm($this->table, $data,
 									array(new WhereConstraint($this->table->getColumn(DB::RESOURCE_ID),Operator::EQUAL,$resource->getID()))),
 									$this->table->getName(), $resource);
+				
+		//TODO decommentare quando AuthenticationManager è operativo
 		//aggiorno lo stato della risorsa (se chi l'ha modificata è un redattore).
-		if(AuthenticationManager::isEditor($editor)) {
-			$resource->setEditable(false);
-			$resource->setRemovable(false);
-			$this->updateState($resource);
-		}
+		//if(AuthenticationManager::isEditor($editor)) {
+		//	$resource->setEditable(false);
+		//	$resource->setRemovable(false);
+		//	$this->updateState($resource);
+		//}
 		
 		if($this->db->affected_rows() != 1)
 			throw new Exception("Si è verificato un errore aggiornando il dato. Riprovare.");

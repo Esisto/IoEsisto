@@ -45,8 +45,11 @@ class PostPage {
 					if($first) $first = false;
 					else echo " ";
 					//echo Filter::decodeFilteredText($cont);
+					$cont = ResourceManager::loadResource($cont->getID());
 					$path =	$cont->getPath();
-					echo "<a href='$path'><img src='" . $path . "' width='100' height='50'></a>";
+					$description = $cont->getDescription();
+					echo "<a href='$path'><img src='" . $path . "' width='100' height='50' alt='" . $description . "' title='" . $description . "'></a>";
+
 				}
 			} else
 				echo substr(Filter::decodeFilteredText($post->getContent()), 0, 200) . (strlen(Filter::decodeFilteredText($post->getContent())) < 200 ? "" : "...");
@@ -103,8 +106,10 @@ class PostPage {
 					if($first) $first = false;
 					else echo " ";
 					//echo Filter::decodeFilteredText($cont);
+					$cont = ResourceManager::loadResource($cont->getID());
 					$path =	$cont->getPath();
-					echo "<a href='$path'><img src='" . $path . "' width='100' height='50'></a>";
+					$description = $cont->getDescription();
+					echo "<a href='$path'><img src='" . $path . "' width='100' height='50' alt='" . $description . "' title='" . $description . "'></a>";
 				}
 			} else
 				echo Filter::decodeFilteredText($post->getContent());
