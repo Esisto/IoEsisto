@@ -43,8 +43,10 @@ class PostPage {
 				$first = true;
 				foreach($post->getContent() as $cont) {
 					if($first) $first = false;
-					else echo ", ";
-					echo Filter::decodeFilteredText($cont);
+					else echo " ";
+					//echo Filter::decodeFilteredText($cont);
+					$path =	$cont->getPath();
+					echo "<a href='$path'><img src='" . $path . "' width='100' height='50'></a>";
 				}
 			} else
 				echo substr(Filter::decodeFilteredText($post->getContent()), 0, 200) . (strlen(Filter::decodeFilteredText($post->getContent())) < 200 ? "" : "...");
@@ -101,7 +103,7 @@ class PostPage {
 					if($first) $first = false;
 					else echo " ";
 					//echo Filter::decodeFilteredText($cont);
-					$path ="/IoEsisto/v04/" . $cont->getPath();
+					$path =	$cont->getPath();
 					echo "<a href='$path'><img src='" . $path . "' width='100' height='50'></a>";
 				}
 			} else
@@ -178,7 +180,17 @@ class PostPage {
 		if(!AuthorizationManager::canUserDo(AuthorizationManager::CREATE, $_GET["type"]))
 			return; //TODO redirect verso pagina di errore.
 		
-		if(is_null($error) && count($_POST) > 0) {
+		if(isset($_GET["phase"]) && $_GET["phase"]==3){
+			if ($_GET["type"]=="photoreportage") {
+					/*DEBUG*/ echo "PHASE 3";
+					for($i=0;$i<$_POST["numResources"];$i++){
+						$resourceID = $_POST["resourceID".$i];
+						if(isset($_POST[$resourceID]))
+							ResourceManager::editResource($resourceID,$_POST[$resourceID],null,$user);
+					}	
+					//TODO redirect su edit post
+			}
+		}else if(is_null($error) && count($_POST) > 0) {
 			$data = array();
 			if(isset($_POST["title"]) && trim($_POST["title"]) != "")
 				$data["title"] = $_POST["title"];
@@ -248,13 +260,9 @@ class PostPage {
 				}
 				if ($data["type"]=="photoreportage" && $_GET["phase"]==2){
 					$post = CollectionManager::createCollection($data);
+					/*DEGUB*/ echo "PHASE 2";
 					
-					// mostro form per modificare le descrizioni
-				} else if ($data["type"]=="photoreportage" && $_GET["phase"]==3) {
-					
-					// salvo tutte le modifiche alle risorse
-					// redirect su edit post
-				}else{
+				} else {
 					$post=false;
 				}	
 				if($post !== false) {
@@ -510,11 +518,21 @@ class PostPage {
 			MapManager::setCenterToMap($post->getPlace(), "map_canvas");
 			?>
 		</form>
-		<?php }else{ ?>
-			<fieldset><legend>Inserisci le descrizioni alle tue foto! </legend><?php
-				//fieldset per ogni foto (un for con un count degli oggetti)
-				//visualizzazione foto e testbox per la descrizione
-			?></fieldset>
+		<?php }else if(count($error) == 0){ ?>
+			<fieldset><legend>Inserisci le descrizioni alle tue foto! </legend>
+				<form name="<?php echo $name; ?>Post" action="?type=photoreportage&phase=3" method="post" enctype="multipart/form-data">
+					<?php for($i=0;$i<count($post->getContent());$i++){
+						$rs_array=$post->getContent();
+						$path =	"/ioesisto/v04/".$rs_array[$i]->getPath();
+						$index = $rs_array[$i]->getID(); ?>
+						<img src="<?php  echo $path; ?>" width="200" height="100"/>
+						<textarea name="<?php echo $index ?>" rows="5" cols="40"></textarea> <!--textarea name is the ID of the corresponding resource-->
+						<input type="hidden" name="<?php echo 'resourceID'.$i; ?>" value="<?php echo $index ?>">
+					<?php }	?>
+					<input type="hidden" name="numResources" value="<?php echo count($post->getContent()); ?>"/>
+					<input type="submit" value="Prosegui" /> 
+				</form>
+			</fieldset>
 		<?php }
 	}
 
@@ -617,7 +635,7 @@ class PostPage {
 			MapManager::setCenterToMap($post->getPlace(), "map_canvas");
 			?>
 		</form>
-		<?php }else{ ?>
+		<?php }else if(count($error) == 0){ ?>
 			<fieldset><legend>Sei ora autenticato su youtube con l'account di PublicHi!!</legend><?php
 			
 			//ClientLogin autentication
