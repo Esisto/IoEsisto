@@ -85,6 +85,38 @@ class Session {
 	}
 	
 	/**
+	 * Salva un VideoReportage e una Risorsa (per la fase 2 del salvataggio di un video).
+	 * ATTENZIONE!!! Salva oggetti solo di tipo VideoReportage e Resource!!!
+	 * @param VideoReportage $post il video reportage da salvare temporaneamente
+	 * @param Resource $video la risorsa da salvare temporaneamente (opzionale)
+	 * @return true se è stato salvato, false altrimenti
+	 */
+	static function setTempVideoRep($post, $video = null) {
+		if(is_a($post, "VideoReportage") && ($video == null || is_a($video, "Resource"))) {
+			$_SESSION["temp_post"] = $post;
+			$_SESSION["temp_resource"] = $video;
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Restituisce il VideoReportage e il Video salvati in sessione (per il ritorno da youtube)
+	 * ATTENZIONE!!! Distrugge le cose dalla sessione!!!
+	 * @return un array associativo con i parametri "post" e "video". O un array vuoto se non è stato salvato nulla.
+	 */
+	static function getTempVideoRep() {
+		$res = array();
+		if(isset($_SESSION["temp_resource"])) {
+			$res["video"] = $_SESSION["temp_resource"];
+			unset($_SESSION["temp_resource"]);
+			$res["post"] = $_SESSION["temp_post"];
+			unset($_SESSION["temp_post"]);
+		}
+		return $res;
+	}
+	
+	/**
 	 * Metodo Session::destroy()
 	 * distrugge la sessione dell'user che ha avviato la sessione		
 	 */
