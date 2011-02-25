@@ -30,7 +30,25 @@ class ResourceManager {
 		$p = self::createResource($ownerID,$path,'photo');
 		return $p;
 	}
-
+	
+	/**
+	* Tronca a 50 caratteri il nome di un file mantenendone l'estensione e filtra alcuni caratteri
+	* @param fname: nome da troncare
+	* @return: il nome troncato
+	*/
+	static function editFileName($fname){
+		if(strlen($fname) > 50){
+			$string=explode(".", $fname); //$string[0] = file name, $string[1]= extension
+			$fname = substr($fname,0,49) . "." . $string[1];	
+		}
+		echo "<br>" . $fname;
+		$fname = str_replace('?','',$fname);
+		$fname = str_replace('#','',$fname);
+		$fname = str_replace(' ','_',$fname);
+		echo "<br>" . $fname;
+		return trim($fname);
+	}
+	
 	static function createResource($ownerID, $path, $type) {
 		if($type=='photo')
 			$resource = new Resource($ownerID,$path,Resource::PHOTO);

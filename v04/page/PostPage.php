@@ -224,7 +224,8 @@ class PostPage {
 					for($i=0,$numphoto=0;$i<10;$i++){
 						if(trim($_FILES["upfile$i"]["name"]) != ""){
 							if($_FILES["upfile$i"]["type"] == "image/gif" || $_FILES["upfile$i"]["type"] == "image/jpeg" || $_FILES["upfile$i"]["type"] == "image/png"){
-								$photo[]= ResourceManager::uploadPhoto(trim($_FILES["upfile$i"]["name"]),$user->getNickname(),$user->getID(),$_FILES["upfile$i"]["tmp_name"],$_FILES["upfile$i"]["type"]);
+								$fname = ResourceManager::editFileName($_FILES["upfile$i"]["name"]);
+								$photo[]= ResourceManager::uploadPhoto($fname,$user->getNickname(),$user->getID(),$_FILES["upfile$i"]["tmp_name"],$_FILES["upfile$i"]["type"]);
 								$numphoto++;
 							}
 						}
