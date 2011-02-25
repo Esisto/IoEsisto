@@ -41,11 +41,9 @@ class ResourceManager {
 			$string=explode(".", $fname); //$string[0] = file name, $string[1]= extension
 			$fname = substr($fname,0,49) . "." . $string[1];	
 		}
-		echo "<br>" . $fname;
 		$fname = str_replace('?','',$fname);
 		$fname = str_replace('#','',$fname);
 		$fname = str_replace(' ','_',$fname);
-		echo "<br>" . $fname;
 		return trim($fname);
 	}
 	

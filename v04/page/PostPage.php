@@ -7,6 +7,7 @@ require_once("dao/PostDao.php");
 require_once("manager/PostManager.php");
 require_once("manager/CollectionManager.php");
 require_once("manager/ResourceManager.php");
+require_once("page.php");
 
 
 class PostPage {
@@ -186,14 +187,14 @@ class PostPage {
 			return; //TODO redirect verso pagina di errore.
 		
 		if(isset($_GET["phase"]) && $_GET["phase"]==3){
-			if ($_GET["type"]=="photoreportage") {
+			if ($_GET["type"]=="photoreportage" && isset($_POST["numResources"])) {
 					/*DEBUG*/ echo "PHASE 3";
 					for($i=0;$i<$_POST["numResources"];$i++){
 						$resourceID = $_POST["resourceID".$i];
 						if(isset($_POST[$resourceID]))
 							ResourceManager::editResource($resourceID,$_POST[$resourceID],null,$user);
 					}	
-					//TODO redirect su edit post
+					Page::redirect("Edit");
 			}
 		}else if(is_null($error) && count($_POST) > 0) {
 			$data = array();
@@ -539,7 +540,8 @@ class PostPage {
 					<?php for($i=0;$i<count($post->getContent());$i++){
 						$rs_array=$post->getContent();
 						$resource = ResourceManager::loadResource($rs_array[$i]);
-						$path =	"/ioesisto/v04/".$resource->getPath();
+						$path = FileManager::appendToRootPath($resource->getPath());
+						//$path =	"/ioesisto/v04/".$resource->getPath();
 						$index = $resource->getID(); ?>
 						<img src="<?php  echo $path; ?>" width="200" height="100"/>
 						<textarea name="<?php echo $index ?>" rows="5" cols="40"></textarea> <!--textarea name is the ID of the corresponding resource-->
