@@ -1,8 +1,20 @@
 <?php 
 
-class Part {
+class Template {
 
 	
+	
+	function getAuthorId() {
+		
+	}
+	
+	function isEditable() {
+		
+	}
+	
+	function isRemovable() {
+		
+	}
 }
 
 ?>

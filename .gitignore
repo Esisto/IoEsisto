@@ -15,3 +15,9 @@ v04/db_schema.dbs
 v03/db_schema.dbs
 v03/ioesisto_db_v3.sql
 v04/uploads/*
+v02/maps/prova.php
+v02/partner/Partner.php
+v02/partner/PartnerManager.php
+v02/partner/PartnerPage.php
+v02/post/collection/CollectionPage.php
+v02/post/contest/ContestPage.php

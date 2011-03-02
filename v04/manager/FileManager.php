@@ -21,7 +21,7 @@ class FileManager {
 	static function getServerPath() {
 		$s = "http://"; //$s = ($_SERVER["HTTPS"] ? "https://" : "http://");
 		$s.= $_SERVER["SERVER_NAME"];
-		$s.= ($_SERVER["SERVER_PORT"] != '80' /*or whatever*/ ? ":" . $_SERVER["SERVER_PORT"] : "");
+		$s.= ($_SERVER["SERVER_PORT"] != '80' ? ":" . $_SERVER["SERVER_PORT"] : "");
 		return $s;
 	}
 	

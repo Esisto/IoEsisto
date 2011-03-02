@@ -46,7 +46,6 @@ class ResourceManager {
 		$fname = str_replace(' ','_',$fname);
 		return trim($fname);
 	}
-	
 	static function createResource($ownerID, $path, $type) {
 		if($type=='photo')
 			$resource = new Resource($ownerID,$path,Resource::PHOTO);
@@ -164,7 +163,7 @@ class ResourceManager {
 		return $path;     
 	}
 	
-	/*
+	/**
 	*Genera un path relativo per il salvataggio dell'imamgine $fname
 	*@param owner: nickname del proprietario
 	*@param fname: nome dell'imamgine

@@ -53,10 +53,9 @@ abstract class Dao {
 		if(!is_null($objectClass) && is_string($objectClass))
 			if(!is_a($object, $objectClass) && !is_subclass_of($object, $objectClass))
 				throw new Exception("Attenzione! L'oggetto da modificare non è di tipo: " . $objectClass);
-				
-		if(!AuthorizationManager::canUserDo(AuthorizationManager::EDIT, $object) && is_subclass_of($object, "Editable"))
-			if(!$object->isEditable())
-				throw new Exception("L'oggetto non può essere modificato perché è stato iscritto ad un contest o è sotto revisione di un redattore.");
+			
+		if(is_subclass_of($object, "Editable") && !$object->isEditable())
+			throw new Exception("L'oggetto non può essere modificato perché è stato iscritto ad un contest o è sotto revisione di un redattore.");
 				
 		$this->checkConnection();
 		return null;

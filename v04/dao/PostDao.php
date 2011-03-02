@@ -232,6 +232,8 @@ class PostDao extends Dao {
 	
 	function update($post, $editor) {
 		parent::update($post, $editor, self::OBJECT_CLASS);
+		if(!AuthorizationManager::canUserDo(DB::EDIT_POST, $object))
+			throw new Exception("L'utente non è autorizzato ad effettuare questa operazione.");
 		
 		$p_old = $this->quickLoad($post->getID());
 	
