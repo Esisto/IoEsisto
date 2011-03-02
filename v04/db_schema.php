@@ -113,12 +113,12 @@ class DBSchema {
 	 */
 	function __construct($tables) {
 		if(!isset($tables) || !is_array($tables)) {
-			if(file_exists("db_schema.dbs")) {
+			if(file_exists("db_schema.dbs")) 
 				$this->tables = unserialize(file_get_contents("db_schema.dbs"));
-				$GLOBALS["db_schema_status"] = "Schema loaded from file"; //DEBUG
-			} else {
+			else if(file_exists("cache/db_schema.cache"))
+				$this->tables = unserialize(file_get_contents("cache/db_schema.cache"));
+			else {
 				$this->loadFromDatabase();
-				$GLOBALS["db_schema_status"] = "Schema loaded from database"; //DEBUG
 				$this->save();
 			}
 		} else {
@@ -127,13 +127,12 @@ class DBSchema {
 				$t[$tables[$i]->getName()] = $tables[$i];
 			}
 			$this->tables = $t;
-			$GLOBALS["db_schema_status"] = "Schame passed by user";
 			$this->save();
 		}
 	}
 	
 	function save() {
-		$fp = fopen("db_schema.dbs", "w+");
+		$fp = fopen("cache/db_schema.cache", "w+");
 		fwrite($fp, serialize($this->tables));
 	}
 	

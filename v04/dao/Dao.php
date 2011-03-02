@@ -70,9 +70,9 @@ abstract class Dao {
 		$this->table = Query::getDBSchema()->getTable($tablename);
 	}
 	
-	//abstract function exists($object);
-	//
-	//abstract function quickLoad($id);
+	abstract function exists($object);
+	
+	abstract function quickLoad($id);
 	
 	protected function updateState($object, $table, $id_column_name) {
 		if(is_null($object)) throw new Exception("Attenzione! Non hai inserito l'oggetto da modificare.");		
