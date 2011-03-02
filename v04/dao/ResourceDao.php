@@ -98,7 +98,6 @@ class ResourceDao extends Dao {
 		if(!is_null($resource->getTags()))
 			$data[DB::RESOURCE_TAGS] = $resource->getTags();
 		$data[DB::POST_CREATION_DATE] = date("Y-m-d G:i:s", $_SERVER["REQUEST_TIME"]);
-			
 		$this->db->execute($s = Query::generateInsertStm($this->table,$data), $this->table->getName(), $this);	
 		if($this->db->affected_rows() != 1)
 			throw new Exception("Si è verificato un errore salvando l'oggetto. Riprovare.");

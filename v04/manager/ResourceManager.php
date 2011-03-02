@@ -164,7 +164,7 @@ class ResourceManager {
 		return $path;     
 	}
 	
-	/**
+	/*
 	*Genera un path relativo per il salvataggio dell'imamgine $fname
 	*@param owner: nickname del proprietario
 	*@param fname: nome dell'imamgine
@@ -185,6 +185,11 @@ class ResourceManager {
 			$path="uploads/$owner/". date("dmy") . "/$editedfname";
 			return $path;
 		}
+	}
+	
+	function getExtension($file){
+		$extension = pathinfo($file, PATHINFO_EXTENSION);
+		return $extension;
 	}
 }
 
