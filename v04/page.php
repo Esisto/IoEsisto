@@ -1117,7 +1117,7 @@ class Page {
 		<?php
 	}
 	
-	private static function redirect($where = "") {
+	public static function redirect($where = "") {
 		if(!headers_sent()) {
 			header("location: " . self::createLinkPath($where));
 		} else {

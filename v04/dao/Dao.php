@@ -71,9 +71,9 @@ abstract class Dao {
 		$this->table = Query::getDBSchema()->getTable($tablename);
 	}
 	
-	abstract function exists($object);
-	
-	abstract function quickLoad($id);
+	//abstract function exists($object);
+	//
+	//abstract function quickLoad($id);
 	
 	protected function updateState($object, $table, $id_column_name) {
 		if(is_null($object)) throw new Exception("Attenzione! Non hai inserito l'oggetto da modificare.");		
@@ -144,8 +144,9 @@ abstract class Dao {
 		
 		if(!is_a($editor, "User"))
 			throw new Exception("Non hai settato chi ha fatto la modifica.");
+		$modDate = $_SERVER["REQUEST_TIME"];
 		$data = array(DB::HISTORY_OBJECT => serialize($object),
-					  DB::HISTORY_DATE => time(),
+					  DB::HISTORY_DATE => date("Y/m/d G:i:s", $modDate),
 					  DB::HISTORY_EDITOR => $editor->getID(),
 					  DB::HISTORY_OPERATION => $operation);
 		

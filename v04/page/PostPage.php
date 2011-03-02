@@ -7,6 +7,7 @@ require_once("dao/PostDao.php");
 require_once("manager/PostManager.php");
 require_once("manager/CollectionManager.php");
 require_once("manager/ResourceManager.php");
+require_once("page.php");
 
 
 class PostPage {
@@ -41,10 +42,15 @@ class PostPage {
 			<span id="post_place_<?php echo $post->getID(); ?>" class="post_place"></span><?php
 			if(is_array($post->getContent())) {
 				$first = true;
-				foreach($post->getContent() as $cont) {
+				foreach($post->getContent() as $rsID) {
 					if($first) $first = false;
-					else echo ", ";
-					echo Filter::decodeFilteredText($cont);
+					else echo " ";
+					//echo Filter::decodeFilteredText($cont);
+					$cont = ResourceManager::loadResource($rsID);
+					$path =	$cont->getPath();
+					$description = $cont->getDescription();
+					echo "<a href='$path'><img src='" . $path . "' width='100' height='50' alt='" . $description . "' title='" . $description . "'></a>";
+
 				}
 			} else
 				echo substr(Filter::decodeFilteredText($post->getContent()), 0, 200) . (strlen(Filter::decodeFilteredText($post->getContent())) < 200 ? "" : "...");
@@ -97,12 +103,14 @@ class PostPage {
 			<span id="post_place_<?php echo $post->getID(); ?>" class="post_place"></span><?php
 			if(is_array($post->getContent())) {
 				$first = true;
-				foreach($post->getContent() as $cont) {
+				foreach($post->getContent() as $rsID) {
 					if($first) $first = false;
 					else echo " ";
 					//echo Filter::decodeFilteredText($cont);
-					$path ="/IoEsisto/v04/" . $cont->getPath();
-					echo "<a href='$path'><img src='" . $path . "' width='100' height='50'></a>";
+					$cont = ResourceManager::loadResource($rsID);
+					$path =	$cont->getPath();
+					$description = $cont->getDescription();
+					echo "<a href='$path'><img src='" . $path . "' width='100' height='50' alt='" . $description . "' title='" . $description . "'></a>";
 				}
 			} else
 				echo Filter::decodeFilteredText($post->getContent());
@@ -178,7 +186,17 @@ class PostPage {
 		if(!AuthorizationManager::canUserDo(AuthorizationManager::CREATE, $_GET["type"]))
 			return; //TODO redirect verso pagina di errore.
 		
-		if(is_null($error) && count($_POST) > 0) {
+		if(isset($_GET["phase"]) && $_GET["phase"]==3){
+			if ($_GET["type"]=="photoreportage" && isset($_POST["numResources"])) {
+					/*DEBUG*/ echo "PHASE 3";
+					for($i=0;$i<$_POST["numResources"];$i++){
+						$resourceID = $_POST["resourceID".$i];
+						if(isset($_POST[$resourceID]))
+							ResourceManager::editResource($resourceID,$_POST[$resourceID],null,$user);
+					}	
+					Page::redirect("Edit");
+			}
+		}else if(is_null($error) && count($_POST) > 0) {
 			$data = array();
 			if(isset($_POST["title"]) && trim($_POST["title"]) != "")
 				$data["title"] = $_POST["title"];
@@ -196,24 +214,30 @@ class PostPage {
 					$error[] = "Inserire un contenuto.";
 			} else if($data["type"] == "photoreportage"){
 				$photo = array();
-				for($i=0,$numphoto=0,$notvalid=0;$i<10;$i++){
+				//check if ther's not valid files
+				for($i=0,$notvalid=0;$i<10;$i++){
 					if(trim($_FILES["upfile$i"]["name"]) != ""){
-						if($_FILES["upfile$i"]["type"] == "image/gif" || $_FILES["upfile$i"]["type"] == "image/jpeg" || $_FILES["upfile$i"]["type"] == "image/png"){
-							$photo[]= ResourceManager::uploadPhoto(trim($_FILES["upfile$i"]["name"]),$user->getNickname(),$user->getID(),$_FILES["upfile$i"]["tmp_name"],$_FILES["upfile$i"]["type"]);
-							$numphoto++;
-						}else
-							$notvalid++;
+						if($_FILES["upfile$i"]["type"] == "image/gif" || $_FILES["upfile$i"]["type"] == "image/jpeg" || $_FILES["upfile$i"]["type"] == "image/png") ;
+						else $notvalid++;
 					}
 				}
-				//se ha caricato file in formato non valido do errore
-				if($notvalid!=0)
+				if($notvalid == 0){
+					for($i=0,$numphoto=0;$i<10;$i++){
+						if(trim($_FILES["upfile$i"]["name"]) != ""){
+							if($_FILES["upfile$i"]["type"] == "image/gif" || $_FILES["upfile$i"]["type"] == "image/jpeg" || $_FILES["upfile$i"]["type"] == "image/png"){
+								$fname = ResourceManager::editFileName($_FILES["upfile$i"]["name"]);
+								$photo[]= ResourceManager::uploadPhoto($fname,$user->getNickname(),$user->getID(),$_FILES["upfile$i"]["tmp_name"],$_FILES["upfile$i"]["type"]);
+								$numphoto++;
+							}
+						}
+					}
+					
+					if($numphoto>0)
+						$data["content"] = $photo;
+					else
+						$error[]="Devi inserire almeno un'immagine";	
+				}else
 					$error[]="Devi inserire un formato valido: .jpeg .jpg .gif oppure .png";
-				//se non sono state caricate foto do errore
-				if($numphoto>0)
-					$data["content"] = $photo;
-				else
-					$error[]="Devi inserire almeno un'immagine";	
-				
 			} else if($data["type"] == "videoreportage"){
 				
 			}
@@ -247,14 +271,14 @@ class PostPage {
 					$post=false;
 				}
 				if ($data["type"]=="photoreportage" && $_GET["phase"]==2){
+					//save only the resource ID not the whole object
+					foreach($data["content"] as &$resource){
+						$resource = $resource->getID();
+					}
 					$post = CollectionManager::createCollection($data);
+					/*DEGUB*/ echo "PHASE 2";
 					
-					// mostro form per modificare le descrizioni
-				} else if ($data["type"]=="photoreportage" && $_GET["phase"]==3) {
-					
-					// salvo tutte le modifiche alle risorse
-					// redirect su edit post
-				}else{
+				} else {
 					$post=false;
 				}	
 				if($post !== false) {
@@ -510,11 +534,23 @@ class PostPage {
 			MapManager::setCenterToMap($post->getPlace(), "map_canvas");
 			?>
 		</form>
-		<?php }else{ ?>
-			<fieldset><legend>Inserisci le descrizioni alle tue foto! </legend><?php
-				//fieldset per ogni foto (un for con un count degli oggetti)
-				//visualizzazione foto e testbox per la descrizione
-			?></fieldset>
+		<?php }else if(count($error) == 0){ ?>
+			<fieldset><legend>Inserisci le descrizioni alle tue foto! </legend>
+				<form name="<?php echo $name; ?>Post" action="?type=photoreportage&phase=3" method="post" enctype="multipart/form-data">
+					<?php for($i=0;$i<count($post->getContent());$i++){
+						$rs_array=$post->getContent();
+						$resource = ResourceManager::loadResource($rs_array[$i]);
+						$path = FileManager::appendToRootPath($resource->getPath());
+						//$path =	"/ioesisto/v04/".$resource->getPath();
+						$index = $resource->getID(); ?>
+						<img src="<?php  echo $path; ?>" width="200" height="100"/>
+						<textarea name="<?php echo $index ?>" rows="5" cols="40"></textarea> <!--textarea name is the ID of the corresponding resource-->
+						<input type="hidden" name="<?php echo 'resourceID'.$i; ?>" value="<?php echo $index ?>">
+					<?php }	?>
+					<input type="hidden" name="numResources" value="<?php echo count($post->getContent()); ?>"/>
+					<input type="submit" value="Prosegui" /> 
+				</form>
+			</fieldset>
 		<?php }
 	}
 
@@ -617,7 +653,7 @@ class PostPage {
 			MapManager::setCenterToMap($post->getPlace(), "map_canvas");
 			?>
 		</form>
-		<?php }else{ ?>
+		<?php }else if(count($error) == 0){ ?>
 			<fieldset><legend>Sei ora autenticato su youtube con l'account di PublicHi!!</legend><?php
 			
 			//ClientLogin autentication

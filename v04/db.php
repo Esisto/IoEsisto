@@ -269,13 +269,13 @@ class DB {
 	
 	static function getCreateQueries() {
 		$s = "CREATE TABLE `" . self::TABLE_HISTORY . "` (
-  `" . self::HISTORY_ID . "` bigint(20) NOT NULL,
+  `" . self::HISTORY_ID . "` bigint(20) NOT NULL AUTO_INCREMENT,
   `" . self::HISTORY_DATE . "` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `" . self::HISTORY_OBJECT . "` blob NOT NULL,
   `" . self::HISTORY_EDITOR . "` bigint(20) NOT NULL,
   `" . self::HISTORY_OPERATION . "` varchar(20) NOT NULL,
   PRIMARY KEY (`" . self::HISTORY_ID . "`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin AUTO_INCREMENT=1;
 
 CREATE TABLE `" . self::TABLE_ROLE . "` ( 
   `" . self::ROLE_NAME . "` varchar(50) NOT NULL,
