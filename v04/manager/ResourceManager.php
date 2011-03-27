@@ -58,14 +58,11 @@ class ResourceManager {
 		return $r;
 	}
 	
-	static function editResource($resourceID, $description=null, $tags=null, $user) {
+	static function editResource($resourceID, $data) {
 		$resource = self::loadResource($resourceID);
-		if($description != null)
-			$resource->setDescription($description);
-		if($tags != null)
-			$resource->setTags($tags);
+		$resource->edit($data);
 		$resourcedao = new ResourceDao();
-		return $resourcedao->update($resource,$user);
+		return $resourcedao->update($resource,Session::getUser());
 	}
 	
 	static function deleteResource($resource) {

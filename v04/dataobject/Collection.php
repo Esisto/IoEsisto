@@ -57,9 +57,9 @@ class Collection extends Post {
 			$s.= $this->comments[$i];
 		}
 		$s.= ") | votes = (";
-		for($i=0; $i<count($this->getVotes()); $i++) {
+		for($i=0; $i<count($this->getVote()); $i++) {
 			if($i>0) $s.= ", ";
-			$s.= $this->votes[$i];
+			$s.= $this->vote[$i];
 		}
 		$s.= ") | content = (";
 		for($i=0; $i<count($this->getContent()); $i++) {
