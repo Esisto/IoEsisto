@@ -7,8 +7,9 @@ require_once("dao/PostDao.php");
 require_once("manager/PostManager.php");
 require_once("manager/CollectionManager.php");
 require_once("manager/ResourceManager.php");
+require_once("manager/youtubeManager.php");
+require_once("session.php");
 require_once("page.php");
-
 
 class PostPage {
 	const NO_DATE = "no_date";
@@ -186,14 +187,49 @@ class PostPage {
 		if(!AuthorizationManager::canUserDo(AuthorizationManager::CREATE, $_GET["type"]))
 			return; //TODO redirect verso pagina di errore.
 		
-		if(isset($_GET["phase"]) && $_GET["phase"]==3){
+		if($_GET["type"]=="videoreportage3"){
+			if(isset($_POST["userUrl"]) && $_POST["userUrl"] != ''){
+				$rs = ResourceManager::createResource($user->getID(),youtubeManager::getVideoID($_POST["userUrl"]),'video');
+				echo youtubeManager::getVideoPlayer($rs->getPath());
+			}else if(isset($_GET["id"])){
+				$rs = ResourceManager::createResource($user->getID(),$_GET["id"],'video');
+				echo youtubeManager::getVideoPlayer($rs->getPath());
+			}else{
+				$error[] = "Errore nell'inserimento del video";
+				$post_temp = Session::getTempVideoRep();
+				self::showNewVideoReportageForm($post_temp,$error);
+			}
+			print_r($_SESSION);
+			$post_temp = Session::getTempVideoRep();
+			$post_temp= $post_temp['post'];
+			echo "<br>"; var_dump($post_temp);
+			$post_temp->setContent($rs->getID()); //content update with the new resource
+			
+			/*$data = PostManager::postToData($post_temp);		
+			$data = array();					
+			$data["title"] = $post_temp->getTitle();		
+			$data["type"] = $post_temp->getType();			
+			$data["content"] = $post_temp->getContent();		
+			$data["categories"] = $post_temp->getCategories();	
+			$data["place"] = $post_temp->getPlace();		
+			$data["headline"] = $post_temp->getHeadline();		
+			$data["subtitle"] = $post_temp->getSubtitle();		
+			$data["tags"] = $post_temp->getTags();			
+			$post = PostManager::createPost($data);*/
+			
+			//Page::redirect("Edit");
+			
+		}else if(isset($_GET["phase"]) && $_GET["phase"]==3){
 			if ($_GET["type"]=="photoreportage" && isset($_POST["numResources"])) {
 					/*DEBUG*/ echo "PHASE 3";
+					$data = array();
 					for($i=0;$i<$_POST["numResources"];$i++){
 						$resourceID = $_POST["resourceID".$i];
-						if(isset($_POST[$resourceID]))
-							ResourceManager::editResource($resourceID,$_POST[$resourceID],null,$user);
-					}	
+						if(isset($_POST[$resourceID]) && $_POST[$resourceID] != ''){ //$_POST[$resourceID] is the description
+							$data['description'] = $_POST[$resourceID];
+							$rsUpdated = ResourceManager::editResource($resourceID,$data);
+						}
+					}
 					Page::redirect("Edit");
 			}
 		}else if(is_null($error) && count($_POST) > 0) {
@@ -263,14 +299,11 @@ class PostPage {
 			if(is_null($error) || (is_array($error) && count($error) == 0)) {
 				$data["author"] = $user->getID();
 				//se photoreportage creo una collection
-				if($data["type"]=="news")
+				if($data["type"]=="news"){
 					$post = PostManager::createPost($data);
-				if($data["type"]=="videoreportage" && $_POST["phase"]==2){
+				}else if($data["type"]=="videoreportage" && $_POST["phase"]==2){
 					$post = PostManager::createPost($data);
-				}else{
-					$post=false;
-				}
-				if ($data["type"]=="photoreportage" && $_GET["phase"]==2){
+				}else if ($data["type"]=="photoreportage" && $_GET["phase"]==2){
 					//save only the resource ID not the whole object
 					foreach($data["content"] as &$resource){
 						$resource = $resource->getID();
@@ -278,9 +311,9 @@ class PostPage {
 					$post = CollectionManager::createCollection($data);
 					/*DEGUB*/ echo "PHASE 2";
 					
-				} else {
+				}else{
 					$post=false;
-				}	
+				}
 				if($post !== false) {
 					echo '
 			<div class="message">
@@ -301,6 +334,8 @@ class PostPage {
 			case Post::MAGAZINE:
 			case Post::PLAYLIST:
 				call_user_func(array("PostPage","showNew" . $_GET["type"] . "Form"), $data, $error);
+				break;
+			case "videoreportage3":
 				break;
 			case Post::NEWS:
 			default:
@@ -401,7 +436,7 @@ class PostPage {
 				case "Playlist":
 					call_user_func(array("PostPage","showEdit" . $_GET["type"] . "Form"), $data, $error);
 					break;
-				case "News":
+				case "news":
 				default:
 					self::showEditNewsForm($data, $error);
 			}
@@ -430,7 +465,7 @@ class PostPage {
 		<?php
 		}
 		?>
-		<form name="<?php echo $name; ?>Post" action="?type=News" method="post">
+		<form name="<?php echo $name; ?>Post" action="?type=news" method="post">
 			<p class="post_headline"><label>Occhiello:</label><br />
 				<input class="post_headline" name="headline" value="<?php echo $post->getHeadline(); ?>"/></p>
 			<p class="title"><label>Titolo:</label><br/>
@@ -493,7 +528,7 @@ class PostPage {
 		?></div>
 		<?php
 		}
-		if(!isset($_GET["phase"])){?>
+		if(!isset($_GET["phase"]) || count($error) != 0){?>
 		<form name="<?php echo $name; ?>Post" action="?type=photoreportage&phase=2" method="post" enctype="multipart/form-data">
 			<p class="post_headline"><label>Occhiello:</label><br />
 				<input class="post_headline" name="headline" value="<?php echo $post->getHeadline(); ?>"/></p>
@@ -617,7 +652,7 @@ class PostPage {
 		?></div>
 		<?php
 		}
-		if(!isset($_GET["phase"])){
+		if(!isset($_GET["phase"]) || count($error) != 0){
 		?>
 		<form name="<?php echo $name; ?>Post" action="?type=videoreportage&phase=2" method="post">
 			<p class="post_headline"><label>Occhiello:</label><br />
@@ -626,7 +661,6 @@ class PostPage {
 				<input class="post_title" name="title" value="<?php echo $post->getTitle(); ?>"/></p>
 			<p class="post_subtitle"><label>Sottotilolo:</label><br />
 				<input class="post_subtitle" name="subtitle" value="<?php echo $post->getSubtitle(); ?>"/></p>
-			<p class="content"><label>Contenuto:</label><br/></p>
 			<p class="tags"><label>Tags:</label> 
 				<input class="tags" id="post_tags_input" name="tags" value="<?php echo $post->getTags(); ?>"/></p>
 			<p class="categories"><label>Categorie:</label><br/><?php
@@ -640,7 +674,7 @@ class PostPage {
 			<input id="post_place" name="place" type="hidden" value="<?php echo $post->getPlace(); ?>" />
 			<input name="visible" type="hidden" value="true" />
 			<input name="type" type="hidden" value="videoreportage" />
-			<p class="submit"><input type="submit" value="Procedi" /> 
+			<p class="submit"><input type="submit" value="Vai al caricamento video" /> 
 				<input type="button" onclick="javascript:save();" value="Salva come bozza"/></p>
 			<script type="text/javascript">
 				function save() {
@@ -655,6 +689,10 @@ class PostPage {
 		</form>
 		<?php }else if(count($error) == 0){ ?>
 			<fieldset><legend>Sei ora autenticato su youtube con l'account di PublicHi!!</legend><?php
+			//salvo i dati del post nella sessione
+			$post->setType("videoreportage");//FIXME: capire perchè qui arriva type="news"
+			Session:: setTempVideoRep($post);
+			print_r($_SESSION);
 			
 			//ClientLogin autentication
 			require_once "Zend/Gdata/ClientLogin.php";
@@ -673,15 +711,17 @@ class PostPage {
 			// create a new VideoEntry object
 			$myVideoEntry = new Zend_Gdata_YouTube_VideoEntry();
 			require_once("manager/youtubeManager.php");				
-			$myVideoEntry = addMetaData($myVideoEntry,$_POST['title']);
-			$tokenArray = getTokenArray($yt,$myVideoEntry);
-			$form = getUploadForm($tokenArray,"http://localhost:8888/ioesisto/v04/Post/New?type=videoreportage&phase=2"); //TODO percorso relativo
+			$myVideoEntry = youtubeManager::addMetaData($myVideoEntry,$_POST['title']);
+			$tokenArray = youtubeManager::getTokenArray($yt,$myVideoEntry);
+			$form = youtubeManager::getUploadForm($tokenArray,"http://localhost/ioesisto/v04/Post/New?type=videoreportage3"); //TODO percorso relativo
 			echo $form . "</br>";
 				
-			echo "....... o inserisci l'URL di un video che vuoi allegare al tuo videoarticolo"
-			
-			//TODO textbox per l'inserimento dell'url del video (che va sostituito a contnent )
-			?>		
+			echo "....... o inserisci l'URL di un video che vuoi allegare al tuo videoarticolo<br/><br/>"
+			?>
+			<form name="<?php echo $name; ?>Post" action="?type=videoreportage3" method="post">
+			<input type="text" name="userUrl">
+			<input type="submit" value="Allega il video" /> 
+			</form>
 			</fieldset>
 		<?php }
 	}

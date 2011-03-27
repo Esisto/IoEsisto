@@ -14,11 +14,12 @@ class VideoReportage extends Post {
 	 * @Override
 	 */
 	function setContent($content) {
-		require_once("dataobject/Resource.php");
-		if(!is_subclass_of($content,"Resouce") || $content->getType() != Resource::VIDEO)
-			throw new Exception("ERRORE!!! Non stai inserendo un Video.");
-				
-		$this->content = $content;
+		//require_once("dataobject/Resource.php");
+		//foreach ($content as $resource)
+		//	if(is_subclass_of($resource, "Resource") || $resource->getType() != Resource::PHOTO)
+		//		throw new Exception("ERRORE!!! Non stai inserendo delle Foto.");
+
+		$this->content = serialize($content);
 		return $this;
 	}
 }

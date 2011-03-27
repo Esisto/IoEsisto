@@ -91,9 +91,9 @@ class Session {
 	 * @param Resource $video la risorsa da salvare temporaneamente (opzionale)
 	 * @return true se è stato salvato, false altrimenti
 	 */
-	static function setTempVideoRep($post, $video = null) {
-		if(is_a($post, "VideoReportage") && ($video == null || is_a($video, "Resource"))) {
-			$_SESSION["temp_post"] = $post;
+	static function setTempVideoRep($post, $video = null) {		
+		if(is_a($post, "Post") && ($video == null || is_a($video, "Resource"))) {
+			$_SESSION["temp_post"] = serialize($post);
 			$_SESSION["temp_resource"] = $video;
 			return true;
 		}
@@ -107,12 +107,13 @@ class Session {
 	 */
 	static function getTempVideoRep() {
 		$res = array();
-		if(isset($_SESSION["temp_resource"])) {
+		
+		if(isset($_SESSION["temp_post"])) {
 			$res["video"] = $_SESSION["temp_resource"];
 			unset($_SESSION["temp_resource"]);
-			$res["post"] = $_SESSION["temp_post"];
+			$res["post"] = unserialize($_SESSION["temp_post"]);
 			unset($_SESSION["temp_post"]);
-		}
+		} 
 		return $res;
 	}
 	

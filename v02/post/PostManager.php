@@ -218,6 +218,25 @@ class PostManager {
 		return Post::loadFromDatabase($id);
 	}
 	
+	/*
+	 *riceve un oggetto post e lo trasforma in un array associativo con tutti i suoi dati
+	 *@param: oggetto post
+	 *@return: array associativo data
+	 */
+	static function postToData($post){
+		$data = array();
+		$data["title"] = $post->getTitle();
+		$data["type"] = $post->getType();
+		$data["content"] = $post->getContent();
+		$data["categories"] = $post->getCategories();
+		$data["place"] = $post->getPlace();
+		$data["headline"] = $post->getHeadline();
+		$data["subtitle"] = $post->getSubtitle();
+		$data["tags"] = $post->getTags();
+		
+		return $data;
+	}
+	
 	/**
 	 * Aggiorna il permalink. È un'azione da non eseguire in automatico ma solo se l'utente lo richiede.
 	 * Perché se qualcuno ha usato il suo permalink precedente, i link non funzioneranno più.

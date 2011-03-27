@@ -15,6 +15,8 @@ class Resource extends Editable {
 	
 	const VIDEO = "video";
 	const PHOTO = "photo";
+	const DESC = 'description';
+	const TAGS = 'tags';
 	
 	function __construct($owner, $path, $type) {
 		$this->owner = $owner;
@@ -73,6 +75,14 @@ class Resource extends Editable {
 	function setAccessCount($accessCount) {
 		if(is_numeric($accessCount))
 			$this->accessCount = intval($accessCount);
+		return $this;
+	}
+	
+	function edit($data){
+		if(isset($data[Resource::DESC]))
+			$this->setDescription($data[Resource::DESC]);
+		if(isset($data[Resource::TAGS]))
+			$this->setTags($data[Resource::TAGS]);
 		return $this;
 	}
 	
