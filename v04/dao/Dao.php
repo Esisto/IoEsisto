@@ -1,14 +1,18 @@
 <?php
 require_once("query.php");
 require_once("dataobject/Editable.php");
+require_once("logger.php");
 
 abstract class Dao {
 	protected $db;
 	protected $table;
 	protected $historyTable;
+	protected $logger;
 	
 	function __construct() {
 		$this->db = new DBManager();
+		$this->logger = Logger::getLogger();
+		
 		if($this->db->connect_errno())
 			$this->db->display_connect_error("Dao::__construct()");
 		
