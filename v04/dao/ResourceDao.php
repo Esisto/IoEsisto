@@ -90,7 +90,7 @@ class ResourceDao extends Dao {
 	function save($resource) {
 		parent::save($resource, self::OBJECT_CLASS);
 		
-		$this->logger->debug("ResourceDao", "salvo risorsa " . $resource->getID());
+		$this->logger->debug("ResourceDao", "salvo risorsa " . $resource->getPath());
 		
 		$data = array(DB::RESOURCE_OWNER => $resource->getOwnerId(),
 					  DB::RESOURCE_PATH => $resource->getPath(),
