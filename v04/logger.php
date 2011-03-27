@@ -20,7 +20,7 @@ class Logger {
 	}
 	
 	function debug($clazz, $str) {
-		while($this->this->isWriting);
+		while($this->isWriting);
 		
 		$this->isWriting = true;
 		

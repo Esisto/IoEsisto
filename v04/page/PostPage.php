@@ -10,6 +10,7 @@ require_once("manager/ResourceManager.php");
 require_once("manager/youtubeManager.php");
 require_once("session.php");
 require_once("page.php");
+require_once("logger.php");
 
 class PostPage {
 	const NO_DATE = "no_date";
@@ -186,6 +187,9 @@ class PostPage {
 			$_GET["type"] = Post::NEWS;
 		if(!AuthorizationManager::canUserDo(AuthorizationManager::CREATE, $_GET["type"]))
 			return; //TODO redirect verso pagina di errore.
+		
+		$logger = Logger::getLogger();
+		$logger->debug("ResourceDao", $_GET["type"]);
 		
 		if($_GET["type"]=="videoreportage3"){
 			if(isset($_POST["userUrl"]) && $_POST["userUrl"] != ''){
