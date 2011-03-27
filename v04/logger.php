@@ -20,43 +20,43 @@ class Logger {
 	}
 	
 	function debug($clazz, $str) {
-		while($isWriting);
+		while($this->this->isWriting);
 		
-		$isWriting = true;
+		$this->isWriting = true;
 		
-		fwrite($this->fileDescriptor, date("Y-m-d H:i:s", time()) . " DEBUG-" . $clazz . ": " . $str);
+		fwrite($this->fileDescriptor, date("Y-m-d H:i:s", time()) . " DEBUG-" . $clazz . ": " . $str . "\n");
 		
-		$isWriting = false;
+		$this->isWriting = false;
 	}
 	
 	function info($clazz, $str) {
-		while($isWriting);
+		while($this->isWriting);
 		
-		$isWriting = true;
+		$this->isWriting = true;
 		
-		fwrite($this->fileDescriptor, date("Y-m-d H:i:s", time()) . " INFO-" . $clazz . ": " . $str);
+		fwrite($this->fileDescriptor, date("Y-m-d H:i:s", time()) . " INFO-" . $clazz . ": " . $str . "\n");
 		
-		$isWriting = false;
+		$this->isWriting = false;
 	}
 	
 	function error($clazz, $str) {
-		while($isWriting);
+		while($this->isWriting);
 		
-		$isWriting = true;
+		$this->isWriting = true;
 		
-		fwrite($this->fileDescriptor, date("Y-m-d H:i:s", time()) . " ERROR-" . $clazz . ": " . $str);
+		fwrite($this->fileDescriptor, date("Y-m-d H:i:s", time()) . " ERROR-" . $clazz . ": " . $str . "\n");
 		
-		$isWriting = false;
+		$this->isWriting = false;
 	}
 	
 	function warn($clazz, $str) {
-		while($isWriting);
+		while($this->isWriting);
 		
-		$isWriting = true;
+		$this->isWriting = true;
 		
-		fwrite($this->fileDescriptor, date("Y-m-d H:i:s", time()) . " WARN-" . $clazz . ": " . $str);
+		fwrite($this->fileDescriptor, date("Y-m-d H:i:s", time()) . " WARN-" . $clazz . ": " . $str . "\n");
 		
-		$isWriting = false;
+		$this->isWriting = false;
 	}
 }
 
