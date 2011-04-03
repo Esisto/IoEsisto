@@ -143,7 +143,7 @@ abstract class Dao {
 	 * @return l'id della riga salvata.
 	 */
 	protected function saveHistory($object, $editor, $operation) {
-		$this->save($object);
+		//$this->save($object);
 		
 		if(!is_a($editor, "User"))
 			throw new Exception("Non hai settato chi ha fatto la modifica.");
