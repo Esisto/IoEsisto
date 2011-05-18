@@ -32,7 +32,6 @@ function writePageHeader($user, $ad) {
 	    <div id="widgetRight"></div>
 	    <div class="clear"></div>
 	</div>
-	    x
 	<ul id="menuCity">
 	    <li><a href="#"> Roma </a></li>
 	    <li><a href="#"> Milano </a></li>
