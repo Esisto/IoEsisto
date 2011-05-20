@@ -6,14 +6,7 @@ body{
     color: #000000;
 }
 
-/*---------------------- header ----------------------
-
-/*---- ADVERTISING ----*/
-#headerAdvertising{
-    width: 915px;
-    margin: 5px auto;
-}
-
+/*---------------------- header ---------------------- */
 #header{
     width: 915px;
     margin: 0 auto;
@@ -21,70 +14,57 @@ body{
 }
 
 /*---- WIDGET ----*/
-.widgetImage{
-    margin: 7px 0;
-    float: right;
-}
-
 #widget{
     height: 35px;
     width: 915px;
     line-height: 2.3;
+}
+#widget input
+{
+	background: #FFFFFF;
+	color: #4B658F;
+	border: 1px solid #4B658F;
 }
 
 #widgetLeft{
     width: 12px;
     height: inherit;
     background: url(img/tabLeft.png) no-repeat;
-    float: left;
-}
-
-#loginPlace{
-    font-size: 80%;
-    height:  inherit;
-    background: #ECECEC;
-    float:  left;
 }
 
 #widgetCenter{
-    height: inherit;
-    width: 400px;
-    padding-right: 8px;
+    width: 891px;
+	height: inherit;
     background: #ECECEC;
-    float: left; 
+}
+
+#widgetCenterLeft{
+	width: 445px;
+	height: inherit;
+    background: #ECECEC;
+}
+#login{
+	margin-left: 5px;
+}
+
+#widgetCenterRight{
+	width: 445px;
+	height: inherit;
+    background: #ECECEC;
 }
 
 #search{
-    height: inherit;
-    background: #ECECEC;
-    float: left;
+	margin-left: 5px;
+}
+
+.widgetImage{
+	margin: 7px 5px 0 0;
 }
 
 #widgetRight{
     width: 12px;
     height: inherit;
     background: url(img/tabRight.png) no-repeat;
-    float: left;
-}
-
-/*---- FORM ----*/
-.button{
-    background: url(img/button.png);
-    color: #FFFFFF;
-    border: none;
-    text-transform: uppercase;
-    font-size: 60%;
-    height:  21px;
-    width: 65px;
-}
-
-.text{
-    width: 112px;
-}
-
-#magnify{
-    background: url(img/magnify.png) no-repeat center;
-    border: none;
 }
 
 /*---- MENU CITY ----*/
@@ -134,7 +114,7 @@ body{
 	width: 915px;
 	margin-top: -13px;
 	line-height: 2.2;
-	font-size: 84%;
+	font-size: 70%;
 	font-variant: small-caps;
 	font-weight: bold;
 	text-align: center;

@@ -1,8 +1,11 @@
 body{
-	background: url(img/stripes.png) repeat;
-	margin: 0;
-	padding: 0;
+    background: #FFFFFF;
+    margin: 0 auto;
+    padding: 0;
+    font-family: Helvetica, Arial;
+    color: #000000;
 }
+
 a {
 	text-decoration: none;
 	color: #000;
@@ -17,125 +20,194 @@ p {
 }
 
 /*---------------------- header ----------------------*/
-#headerBackground{
-	width: 100%;
-	background: #000000;
-}
 #header{
-	width: 900px;
-	height: 60px;
-	margin: 0 auto;
-/*	background: url(img/logo.png) no-repeat;*/
-	position:relative;
-	color: #ff6600;
-}
-#login_place {
-	float: right;
-	height: 50px;
-	text-align: right;
-	padding: 5px 1px;
-}
-#login_place form {
-	font-size: 11px;
-}
-#login_place input {
-	margin-bottom: 1px;
-	height: 15px;
-	font-size: 10px;
-}
-#login_place .button {
-	height: 20px;
-}
-#header p {
-	margin: 0;
-}
-#login_place a {
-	color: #ff6600;
-}
-#logo {
-	margin-top: 5px;
-	margin-left: 1px;
-	float: left;
-}
-#logo img {
-	height: 50px;
-	width: auto; 
+    width: 915px;
+    margin: 0 auto;
+    background: #FFFFFF;
 }
 
-/*---------------------- operationsMenu ----------------------*/
-#operationsMenu{
-	width: 900px;
-	margin: 0 auto;
-	position: absolute;
-	top: 34px;
-	color: black;
+/*---- WIDGET ----*/
+#widget{
+    height: 35px;
+    width: 915px;
+    line-height: 2.3;
 }
-#operations{
-	width: 600px;
-	margin: auto;
+#widget input
+{
+	background: #FFFFFF;
+	color: #4B658F;
+	border: 1px solid #4B658F;
 }
-.operationsMenuButton.firstButton{
-	border-top-left-radius: 5px 5px;	
+
+#widgetLeft{
+    width: 12px;
+    height: inherit;
+    background: url(img/tabLeft.png) no-repeat;
 }
-.operationsMenuButton.lastButton{
-	border-top-right-radius: 5px 5px;	
+
+#widgetCenter{
+    width: 891px;
+	height: inherit;
+    background: #ECECEC;
 }
-.operationsMenuButton {
-	text-transform: capitalize;
-	padding: 3px 0 7px 0;
+
+#widgetCenterLeft{
+	width: 445px;
+	height: inherit;
+    background: #ECECEC;
 }
-.operationsMenuButton:hover{
-	padding: 4px 0 6px 0;
+#login{
+	margin-left: 5px;
 }
-/*--------------------------- menu ---------------------------*/
-.operationsMenuButton:hover, .categoriesMenuButton:hover{
-	border-top: 1px solid 000;
-	border-left: 1px solid 000;
-	border-right: 1px solid #ffee99;
-	border-bottom: 1px solid #ffee99;
+
+#widgetCenterRight{
+	width: 445px;
+	height: inherit;
+    background: #ECECEC;
 }
-.categoriesMenuButton, .operationsMenuButton {
+
+#search{
+	margin-left: 5px;
+}
+
+.widgetImage{
+	margin: 7px 5px 0 0;
+}
+
+#widgetRight{
+    width: 12px;
+    height: inherit;
+    background: url(img/tabRight.png) no-repeat;
+}
+
+/*---- MENU CITY ----*/
+#menuCity{
+    margin: 0;
+    padding: 8px 0;
+    font-size: 80%;
+    font-variant: small-caps;
+    font-weight: bold;
+    text-align: center;
+    background: #4B658F;
+}
+#menuCity li{
+    margin: 0 3px;
+    display: inline;
+}
+#menuCity a{
+    text-decoration: none;
+    color: #ECECEC;
+}
+#menuCity a:hover{
+    text-decoration: underline;
+}
+
+/*---- LOGO ----*/
+#logo{
+    width: 915px;
+}
+#logo img{
+    width: 272px;
+    height: 125px; 
+    margin: 10px 321.5px;
+}
+
+/*---- DATE ----*/
+#date{
+    height: 22px;
+    margin-top: -10px;
+    color:  #838383;
+    font-size: 75%;
+    font-style: italic;
+    text-align: center;	
+}
+
+/*---- MENU CATEGORIES ----*/
+#menuCategories{
+	width: 915px;
+	margin-top: -13px;
+	line-height: 2.2;
+	font-size: 70%;
+	font-variant: small-caps;
+	font-weight: bold;
 	text-align: center;
-	width: 98px;
-	height: 14px;
-	font-size: 14px;
-	font-size-adjust:inherit;
-	border-top: 1px solid #ffee99;
-	border-left: 1px solid #ffee99;
-	border-right: 1px solid 000;
-	border-bottom: 1px solid 000;
-	background: #ff6600;
+	background: #4B658F;
+}
+#menuCategories ul{
+	height: 28px;
+	padding: 5px 0 0 0;
+	position: relative;
+	display: block;
+}
+.menuCategoriesLink, .menuCategoriesSubLink li {
+	list-style: none;
 	float: left;
 }
-.categoriesMenuButton a, operationsMenuButton a {
+#menuCategories ul ul {
+	width: 915px;
+	height: 28px;
+	background: #ECECEC;
+	visibility: hidden;
+	position: absolute;
+	margin-top: 28px;
+	left: 0;			
+}
+
+#menuCategories li a{
+	height: 28px;
+	display: block;
 	text-decoration: none;
 	text-align: center;
-	color: #000000;	
-}
-/*---------------------- categoriesMenu ----------------------*/
-#categoriesMenu{	
-	width: 100%;
-	background: #ff6600;
-}
-#categories{
-	width: 900px;
-	margin: 0 auto;
+	color: #ECECEC;
 } 
+#menuCategories li li a{
+	width: 83px;
+	color: #4B658F;
+}
+#menuCategories li li a:hover{
+	text-decoration: underline;
+}
+#menuCategories ul li:hover a{
+	color: #4B658F;
+	background: #ECECEC;
+}
+.menuCategoriesLink > div {
+	float:left;
+}
+.menuCategoriesLink > div > div {
+	float:left;
+}
+.menuCategoriesLink:hover .menuCategoriesLinkTabLeft {
+	background: url(img/menuCategoriesLinkLeft.png) bottom no-repeat;
+}
+.menuCategoriesLink:hover .menuCategoriesLinkTabRight {
+	background: url(img/menuCategoriesLinkRight.png) bottom no-repeat;
+}
+#menuCategories ul li:hover ul{
+	visibility: visible;
+}
+.menuCategoriesLink{
+	height: 28px;
+}
+.menuCategoriesLinkTabLeft{
+	width: 16px;
+	height: 30px;
+	margin-left: 1px;
+	float:left;
+}
+.menuCategoriesLinkTabRight{
+	width: 16px;
+	height: 30px;
+	margin-right: 1px;
+	float:left;
+}
 
-.categoriesMenuButton {
-	text-transform:uppercase;
-	padding: 4px 0 6px 0;
+.left {
+	float:left;
 }
-.categoriesMenuButton.firstButton{
-	border-bottom-left-radius: 5px 5px;
-	border-top-left-radius: 5px 5px;	
-}
-.categoriesMenuButton.lastButton{
-	border-bottom-right-radius: 5px 5px;
-	border-top-right-radius: 5px 5px;	
-}
-.categoriesMenuButton:hover{
-	padding: 5px 0 5px 0;
+
+.clear{
+    clear: both;
 }
 
 /*---------------------- page ----------------------*/

@@ -8,7 +8,9 @@
 		<js src="http://code.google.com/apis/gears/gears_init.js" />
 		<js src="plugins/ckeditor/ckeditor.js" />
 	</head>
-	<header><ad/></header>
+	
+	<ad/>
+	<header><div></div></header>
 	<content cols="1">
 		<col cols="2">
 			<col class="side left">

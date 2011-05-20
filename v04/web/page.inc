@@ -5,33 +5,32 @@ function writePageHeader($user, $ad) {
 <div id="header">
         
 	<div id="widget">
-		<div id="widgetLeft"></div>
-		<div id="loginPlace">
-		<?php if($user === false) {
-			require_once 'page/UserPage.php';
-			UserPage::showLoginForm();
-		} else { ?>
-			Benvenut<?php echo ($user->getGender() == "f" ? "a" : "o"); ?> 
-			<b><?php echo $user->getNickname(); ?></b>
-			<!-- temporaneo --> <a href="<?php echo FileManager::appendToRootPath("Logout");?>">Logout</a>
-		<?php
-		}?>
+		<div class="left" id="widgetLeft"></div>
+		<div class="left" id="widgetCenter">
+			<div class="left" id="widgetCenterLeft">
+			<?php if($user === false) {
+				require_once 'page/UserPage.php';
+				UserPage::showLoginForm();
+			} else { ?>
+				Benvenut<?php echo ($user->getGender() == "f" ? "a" : "o"); ?> 
+				<b><?php echo $user->getNickname(); ?></b>
+			<?php } ?>
+			</div>
+			<div class="right" id="WidgetCenterRight">
+				<!-- TODO collegare form di ricerca a qualcosa -->
+				<form id="search" class="right" name="search" action="" method="post">
+					<input type="text" name="search" value="cerca"/>
+					<input type="submit" value=""/>
+				</form>
+				<img class="right widgetImage" src="<?php echo FileManager::appendToRootPath("files/default/img/widgetClock.png");?>" alt="widgetClock" title="widgetClock"/>
+				<img class="right widgetImage" src="<?php echo FileManager::appendToRootPath("files/default/img/widgetMeteo.png");?>" alt="widgetMeteo" title="widgetMeteo"/>
+			</div>
+			<div class="clear"></div>
 		</div>
-	    <div id="widgetCenter">
-		<img class="widgetImage" src="<?php echo FileManager::appendToRootPath("files/default/img/widgetClock.png");?>" />
-		<img class="widgetImage" src="<?php echo FileManager::appendToRootPath("files/default/img/widgetMeteo.png");?>" />
+		<div class="left" id="widgetRight"></div>
 		<div class="clear"></div>
-	    </div>
-	    <div id="search">
-		<!-- TODO collegare a qualcosa -->
-		<form name="search" action="" method="post">
-		    <input class="text" type="text" name="search" value="cerca" onclick="document.search.search.value ='';">
-		    <input id="magnify" type="submit" value="">
-		</form>
-	    </div>
-	    <div id="widgetRight"></div>
-	    <div class="clear"></div>
 	</div>
+	
 	<ul id="menuCity">
 	    <li><a href="#"> Roma </a></li>
 	    <li><a href="#"> Milano </a></li>
@@ -51,191 +50,46 @@ function writePageHeader($user, $ad) {
 	</ul>
 			
 	<div id="logo">
-		<a href="<?php echo FileManager::appendToRootPath(); ?>"><img src="<?php echo FileManager::appendToRootPath("files/default/img/logo.png"); ?>" alt="PublicHi!?"/></a>
+		<a href="<?php echo FileManager::appendToRootPath(); ?>"><img src="<?php echo FileManager::appendToRootPath("files/default/img/logo.png"); ?>" alt="PublicHi!?" title="PublicHi!?"/></a>
 	</div>
 	    
 	<div id="date">
 		<?php echo date("l d F Y "); ?>
 	</div>
-	
+		
 	<div id="menuCategories">
 	    <ul>
+		<?php
+		require_once("manager/CategoryManager.php");
+		$cat = CategoryManager::loadAllCategories();
+		foreach ($cat as $category){?>
 		<li class="menuCategoriesLink">
-		    <div><div class="menuCategoriesLinkTabLeft"></div><div><a href="#">Cultura</a></div><div class="menuCategoriesLinkTabRight"></div><div class="clear"></div></div>
+		    <div><div class="menuCategoriesLinkTabLeft"></div><div><a href="<?php echo FileManager::appendToRootPath("Category/".$category->getName()); ?>"><?php echo $category->getName(); ?></a></div><div class="menuCategoriesLinkTabRight"></div><div class="clear"></div></div>
 		    <ul class="menuCategoriesSubLink clear">
-			<li><a href="#">Cultura</a></li>
-			<li><a href="#">Cultura</a></li>
-			<li><a href="#">Cultura</a></li>
-			<li><a href="#">Cultura</a></li>
-			<li><a href="#">Cultura</a></li>
-			<li><a href="#">Cultura</a></li>
-			<li><a href="#">Cultura</a></li>
-			<li><a href="#">Cultura</a></li>
-			<li><a href="#">Cultura</a></li>
-			<li><a href="#">Cultura</a></li>
-			<li><a href="#">Cultura</a></li>
+			<?php foreach ($category->getChildren() as $child)
+			echo "<li><a href='" . FileManager::appendToRootPath("Category/".$child->getName()) . "'>" . $child->getName() . "</a></li>";
+			?>
 		    </ul>
 		</li>
-		<li class="menuCategoriesLink">
-		    <div><div class="menuCategoriesLinkTabLeft"></div><div><a href="#">Finanza</a></div><div class="menuCategoriesLinkTabRight"></div><div class="clear"></div></div>
-		    <ul  class="menuCategoriesSubLink clear">
-			<li><a href="#">Finanza</a></li>
-			<li><a href="#">Finanza</a></li>
-			<li><a href="#">Finanza</a></li>
-			<li><a href="#">Finanza</a></li>
-			<li><a href="#">Finanza</a></li>
-			<li><a href="#">Finanza</a></li>
-			<li><a href="#">Finanza</a></li>
-			<li><a href="#">Finanza</a></li>
-			<li><a href="#">Finanza</a></li>
-			<li><a href="#">Finanza</a></li>
-			<li><a href="#">Finanza</a></li>
-		    </ul>
-		</li>
-		<li class="menuCategoriesLink">
-		    <div><div class="menuCategoriesLinkTabLeft"></div><div><a href="#">Motori</a></div><div class="menuCategoriesLinkTabRight"></div><div class="clear"></div></div>
-		    <ul class="menuCategoriesSubLink clear">
-			<li><a href="#">Motori</a></li>
-			<li><a href="#">Motori</a></li>
-			<li><a href="#">Motori</a></li>
-			<li><a href="#">Motori</a></li>
-			<li><a href="#">Motori</a></li>
-			<li><a href="#">Motori</a></li>
-			<li><a href="#">Motori</a></li>
-			<li><a href="#">Motori</a></li>
-			<li><a href="#">Motori</a></li>
-			<li><a href="#">Motori</a></li>
-			<li><a href="#">Motori</a></li>
-			</ul>
-		</li>
-		<li class="menuCategoriesLink">
-		    <div><div class="menuCategoriesLinkTabLeft"></div><div><a href="#">Novit&#225</a></div><div class="menuCategoriesLinkTabRight"></div><div class="clear"></div></div>
-		    <ul class="menuCategoriesSubLink clear">
-			<li><a href="#">Novit&#225</a></li>
-			<li><a href="#">Novit&#225</a></li>
-			<li><a href="#">Novit&#225</a></li>
-			<li><a href="#">Novit&#225</a></li>
-			<li><a href="#">Novit&#225</a></li>
-			<li><a href="#">Novit&#225</a></li>
-			<li><a href="#">Novit&#225</a></li>
-			<li><a href="#">Novit&#225</a></li>
-			<li><a href="#">Novit&#225</a></li>
-			<li><a href="#">Novit&#225</a></li>
-			<li><a href="#">Novit&#225</a></li>
-		    </ul>
-		</li>
-		<li class="menuCategoriesLink">
-		    <div><div class="menuCategoriesLinkTabLeft"></div><div><a href="#">Politica</a></div><div class="menuCategoriesLinkTabRight"></div><div class="clear"></div></div>
-		    <ul class="menuCategoriesSubLink clear">
-			<li><a href="#">Politica</a></li>
-			<li><a href="#">Politica</a></li>
-			<li><a href="#">Politica</a></li>
-			<li><a href="#">Politica</a></li>
-			<li><a href="#">Politica</a></li>
-			<li><a href="#">Politica</a></li>
-			<li><a href="#">Politica</a></li>
-			<li><a href="#">Politica</a></li>
-			<li><a href="#">Politica</a></li>
-			<li><a href="#">Politica</a></li>
-			<li><a href="#">Politica</a></li>
-		    </ul>
-		</li>
-		<li class="menuCategoriesLink">
-		    <div><div class="menuCategoriesLinkTabLeft"></div><div><a href="#">Scienze</a></div><div class="menuCategoriesLinkTabRight"></div><div class="clear"></div></div>
-		    <ul class="menuCategoriesSubLink clear">
-			<li><a href="#">Scienze</a></li>
-			<li><a href="#">Scienze</a></li>
-			<li><a href="#">Scienze</a></li>
-			<li><a href="#">Scienze</a></li>
-			<li><a href="#">Scienze</a></li>
-			<li><a href="#">Scienze</a></li>
-			<li><a href="#">Scienze</a></li>
-			<li><a href="#">Scienze</a></li>
-			<li><a href="#">Scienze</a></li>
-			<li><a href="#">Scienze</a></li>
-			<li><a href="#">Scienze</a></li>
-		    </ul>
-		</li>
-		<li class="menuCategoriesLink">
-		    <div><div class="menuCategoriesLinkTabLeft"></div><div><a href="#">Spettacoli</a></div><div class="menuCategoriesLinkTabRight"></div><div class="clear"></div></div>
-		    <ul class="menuCategoriesSubLink clear">
-			<li><a href="#">Spettacoli</a></li>
-			<li><a href="#">Spettacoli</a></li>
-			<li><a href="#">Spettacoli</a></li>
-			<li><a href="#">Spettacoli</a></li>
-			<li><a href="#">Spettacoli</a></li>
-			<li><a href="#">Spettacoli</a></li>
-			<li><a href="#">Spettacoli</a></li>
-			<li><a href="#">Spettacoli</a></li>
-			<li><a href="#">Spettacoli</a></li>
-			<li><a href="#">Spettacoli</a></li>
-			<li><a href="#">Spettacoli</a></li>
-		    </ul>
-		</li>
-		<li class="menuCategoriesLink">
-		    <div><div class="menuCategoriesLinkTabLeft"></div><div><a href="#">Sport</a></div><div class="menuCategoriesLinkTabRight"></div><div class="clear"></div></div>
-		    <ul class="menuCategoriesSubLink clear">
-			<li><a href="#">Sport</a></li>
-			<li><a href="#">Sport</a></li>
-			<li><a href="#">Sport</a></li>
-			<li><a href="#">Sport</a></li>
-			<li><a href="#">Sport</a></li>
-			<li><a href="#">Sport</a></li>
-			<li><a href="#">Sport</a></li>
-			<li><a href="#">Sport</a></li>
-			<li><a href="#">Sport</a></li>
-			<li><a href="#">Sport</a></li>
-			<li><a href="#">Sport</a></li>
-		    </ul>
-		</li>
-		<li class="menuCategoriesLink">
-		    <div><div class="menuCategoriesLinkTabLeft"></div><div><a href="#">Hobby</a></div><div class="menuCategoriesLinkTabRight"></div><div class="clear"></div></div>
-		    <ul class="menuCategoriesSubLink clear">
-			<li><a href="#">Hobby</a></li>
-			<li><a href="#">Hobby</a></li>
-			<li><a href="#">Hobby</a></li>
-			<li><a href="#">Hobby</a></li>
-			<li><a href="#">Hobby</a></li>
-			<li><a href="#">Hobby</a></li>
-			<li><a href="#">Hobby</a></li>
-			<li><a href="#">Hobby</a></li>
-			<li><a href="#">Hobby</a></li>
-			<li><a href="#">Hobby</a></li>
-			<li><a href="#">Hobby</a></li>
-		    </ul>
-		</li>
-		<li class="menuCategoriesLink">
-		    <div><div class="menuCategoriesLinkTabLeft"></div><div><a href="#">Altro...</a></div><div class="menuCategoriesLinkTabRight"></div><div class="clear"></div></div>
-		    <ul class="menuCategoriesSubLink clear">
-			<li><a href="#">Altro...</a></li>
-			<li><a href="#">Altro...</a></li>
-			<li><a href="#">Altro...</a></li>
-			<li><a href="#">Altro...</a></li>
-			<li><a href="#">Altro...</a></li>
-			<li><a href="#">Altro...</a></li>
-			<li><a href="#">Altro...</a></li>
-			<li><a href="#">Altro...</a></li>
-			<li><a href="#">Altro...</a></li>
-			<li><a href="#">Altro...</a></li>
-			<li><a href="#">Altro...</a></li>
-		    </ul>
-		</li>
+		<?php } ?>
+	
+		<?php if($user){ ?>
 		<li class="menuCategoriesLink">
 		    <div><div class="menuCategoriesLinkTabLeft"></div><div><a href="#">Account</a></div><div class="menuCategoriesLinkTabRight"></div><div class="clear"></div></div>
 		    <ul class="menuCategoriesSubLink clear">
-			<li><a href="#">Account</a></li>
-			<li><a href="#">Account</a></li>
-			<li><a href="#">Account</a></li>
-			<li><a href="#">Account</a></li>
-			<li><a href="#">Account</a></li>
-			<li><a href="#">Account</a></li>
-			<li><a href="#">Account</a></li>
-			<li><a href="#">Account</a></li>
-			<li><a href="#">Account</a></li>
-			<li><a href="#">Account</a></li>
-			<li><a href="#">Account</a></li>
+			<li><a href="<?php echo FileManager::appendToRootPath("Post/New");?>">Pubblica</a></li>
+			<li><a href="<?php echo FileManager::appendToRootPath("Edit");?>">Modifica</a></li>
+			<li><a href="<?php echo FileManager::appendToRootPath("Mailbox");?>">Posta</a></li>
+			<li><a href="<?php echo FileManager::appendToRootPath("Profile");?>">Profilo</a></li>
+			<li><a href="<?php echo FileManager::appendToRootPath("Favourites");?>">Preferiti</a></li>
+			<li><a href="<?php echo FileManager::appendToRootPath("Logout");?>">Logout</a></li>
 		    </ul>
 		</li>
+		<?php } else { ?>
+		<li class="menuCategoriesLink">
+		    <div><div class="menuCategoriesLinkTabLeft"></div><div><a href="<?php echo FileManager::appendToRootPath("Signin");?>"">Registrati</a></div><div class="menuCategoriesLinkTabRight"></div><div class="clear"></div></div>
+		</li>
+		<?php } ?>
 	    </ul>
 	</div>
 </div>
