@@ -6,6 +6,11 @@ body{
     color: #000000;
 }
 
+body p{
+	margin: 0;
+	padding: 0;
+}
+
 /*---------------------- header ---------------------- */
 #header{
     width: 915px;
@@ -18,6 +23,9 @@ body{
     height: 35px;
     width: 915px;
     line-height: 2.3;
+}
+#widget p{
+	display: inline;
 }
 #widget input
 {
@@ -41,10 +49,14 @@ body{
 #widgetCenterLeft{
 	width: 445px;
 	height: inherit;
-    background: #ECECEC;
+	background: #ECECEC;
 }
 #login{
 	margin-left: 5px;
+}
+#welcome{
+	line-height: 2.8;
+	font-size:80%
 }
 
 #widgetCenterRight{

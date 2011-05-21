@@ -6,12 +6,9 @@ body{
     color: #000000;
 }
 
-a {
-	text-decoration: none;
-	color: #000;
-}
-p {
+body p{
 	margin: 0;
+	padding: 0;
 }
 
 /*---------------------- clear ----------------------*/
@@ -31,6 +28,9 @@ p {
     height: 35px;
     width: 915px;
     line-height: 2.3;
+}
+#widget p{
+	display: inline;
 }
 #widget input
 {
@@ -58,6 +58,10 @@ p {
 }
 #login{
 	margin-left: 5px;
+}
+#welcome{
+	line-height: 2.8;
+	font-size:80%
 }
 
 #widgetCenterRight{

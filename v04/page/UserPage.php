@@ -46,9 +46,9 @@ class UserPage {
 				echo $valore . "<br/>";
 			}
 		}?>
-<input type="text" name="username" value="" />
-<input type="password" name="password" value="" />
-<input class="button" type="submit" value="Login"></form>
+<p><input type="text" name="username" value="" /></p>
+<p><input type="password" name="password" value="" /></p>
+<p><input class="button" type="submit" value="Login"></form></p>
 			<?php
 	}
 

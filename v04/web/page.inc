@@ -12,15 +12,14 @@ function writePageHeader($user, $ad) {
 				require_once 'page/UserPage.php';
 				UserPage::showLoginForm();
 			} else { ?>
-				Benvenut<?php echo ($user->getGender() == "f" ? "a" : "o"); ?> 
-				<b><?php echo $user->getNickname(); ?></b>
+				<p id="welcome">Benvenut<?php echo ($user->getGender() == "f" ? "a" : "o"); ?> <b><?php echo $user->getNickname(); ?></b></p>
 			<?php } ?>
 			</div>
 			<div class="right" id="WidgetCenterRight">
 				<!-- TODO collegare form di ricerca a qualcosa -->
-				<form id="search" class="right" name="search" action="" method="post">
-					<input type="text" name="search" value="cerca"/>
-					<input type="submit" value=""/>
+				<form id="search" class="right" action="" method="post">
+					<p><input type="text" name="search" value="cerca"/></p>
+					<p><input type="submit" value=""/></p>
 				</form>
 				<img class="right widgetImage" src="<?php echo FileManager::appendToRootPath("files/default/img/widgetClock.png");?>" alt="widgetClock" title="widgetClock"/>
 				<img class="right widgetImage" src="<?php echo FileManager::appendToRootPath("files/default/img/widgetMeteo.png");?>" alt="widgetMeteo" title="widgetMeteo"/>
