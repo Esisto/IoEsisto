@@ -12,17 +12,21 @@ function writePageHeader($user, $ad) {
 				require_once 'page/UserPage.php';
 				UserPage::showLoginForm();
 			} else { ?>
-				<p id="welcome">Benvenut<?php echo ($user->getGender() == "f" ? "a" : "o"); ?> <b><?php echo $user->getNickname(); ?></b></p>
+				<span class="welcome">Benvenut<?php echo ($user->getGender() == "f" ? "a" : "o"); ?> <b><?php echo $user->getNickname(); ?></b></span>
+				<span class="welcome"><a href="<?php echo FileManager::appendToRootPath("Logout");?>">Logout</a></span>
 			<?php } ?>
 			</div>
 			<div class="right" id="WidgetCenterRight">
-				<!-- TODO collegare form di ricerca a qualcosa -->
+				<?php
+				//require_once 'page/SearchPage.php';
+				//SearchPage::showDefaultSearchForm();
+				?>
 				<form id="search" class="right" action="" method="post">
 					<p><input type="text" name="search" value="cerca"/></p>
 					<p><input type="submit" value=""/></p>
 				</form>
-				<img class="right widgetImage" src="<?php echo FileManager::appendToRootPath("files/default/img/widgetClock.png");?>" alt="widgetClock" title="widgetClock"/>
-				<img class="right widgetImage" src="<?php echo FileManager::appendToRootPath("files/default/img/widgetMeteo.png");?>" alt="widgetMeteo" title="widgetMeteo"/>
+				<div id="clock"><img class="right widgetImage" src="<?php echo FileManager::appendToRootPath("files/default/img/widgetClock.png");?>" alt="widgetClock" title="widgetClock"/></div>
+				<div id="meteo"><img class="right widgetImage" src="<?php echo FileManager::appendToRootPath("files/default/img/widgetMeteo.png");?>" alt="widgetMeteo" title="widgetMeteo"/></div>
 			</div>
 			<div class="clear"></div>
 		</div>

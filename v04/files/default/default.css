@@ -13,37 +13,52 @@ body p{
 
 /*---------------------- header ---------------------- */
 #header{
-    width: 915px;
-    margin: 0 auto;
-    background: #FFFFFF;
+	width: 915px;
+	margin: 0 auto;
+	background: #FFFFFF;
 }
 
 /*---- WIDGET ----*/
 #widget{
-    height: 35px;
-    width: 915px;
-    line-height: 2.3;
+	height: 35px;
+	width: 915px;
+	line-height: 2.3;
 }
 #widget p{
 	display: inline;
 }
-#widget input
-{
-	background: #FFFFFF;
-	color: #4B658F;
-	border: 1px solid #4B658F;
+
+#widgetCenterLeft .button{
+	height: 22px;
+	width: 67px;
+	background: url(img/button.png) center no-repeat;
+	border: none;	
+}
+#widgetCenterLeft .button:active{
+	height: 22px;
+	width: 67px;
+	color: #ECECEC;
+	background: url(img/buttonRoll.png) center no-repeat;
+}
+
+#widgetCenterRight input[type=submit] {
+	height: 20px;
+	width: 20px;
+	line-height: 1.6;	
+	background: url(img/magnify.png) center no-repeat;
+	border: none;
 }
 
 #widgetLeft{
-    width: 12px;
-    height: inherit;
-    background: url(img/tabLeft.png) no-repeat;
+	width: 12px;
+	height: inherit;
+	background: url(img/tabLeft.png) no-repeat;
 }
 
 #widgetCenter{
-    width: 891px;
+	width: 891px;
 	height: inherit;
-    background: #ECECEC;
+	background: #ECECEC;
 }
 
 #widgetCenterLeft{
@@ -54,44 +69,78 @@ body p{
 #login{
 	margin-left: 5px;
 }
-#welcome{
+
+.welcome{
+	height: 30px;
+	width: 70px;
 	line-height: 2.8;
-	font-size:80%
+	font-size:80%;
+}
+.welcome a{
+	padding: 6px 14px;
+	background: url(img/button.png) center no-repeat;
+	text-align: center;
+	text-decoration: none;	
+	border: none;
+}
+.welcome a:active{
+	height: 30px;
+	width: 70px;
+	color: #ECECEC;
+	background: url(img/buttonRoll.png) center no-repeat;
 }
 
 #widgetCenterRight{
 	width: 445px;
 	height: inherit;
-    background: #ECECEC;
+	background: #ECECEC;
 }
 
 #search{
 	margin-left: 5px;
 }
 
-.widgetImage{
-	margin: 7px 5px 0 0;
+#clock{
+	height: 35px;
+	width: 46px;
+	background: url(img/clockButton.png);
+	float: right;
+}
+#clock img{
+	margin-top: 10px;
+	margin-right: 13px;
+}
+
+#meteo{
+	height: 35px;
+	width: 60px;
+	background: url(img/meteoButton.png);
+	float: right;
+}
+#meteo img{
+	margin-top: 8px;
+	margin-right: 13px;
 }
 
 #widgetRight{
-    width: 12px;
-    height: inherit;
-    background: url(img/tabRight.png) no-repeat;
+	width: 12px;
+	height: inherit;
+	background: url(img/tabRight.png) no-repeat;
 }
 
 /*---- MENU CITY ----*/
 #menuCity{
-    margin: 0;
-    padding: 8px 0;
-    font-size: 80%;
-    font-variant: small-caps;
-    font-weight: bold;
-    text-align: center;
-    background: #4B658F;
+	margin: 0;
+	padding: 8px 0;
+	font-size: 80%;
+	font-variant: small-caps;
+	font-weight: bold;
+	text-align: center;
+	background: #4B658F;
 }
 #menuCity li{
-    margin: 0 3px;
-    display: inline;
+	margin: 0 3px;
+	display: inline;
 }
 #menuCity a{
     text-decoration: none;

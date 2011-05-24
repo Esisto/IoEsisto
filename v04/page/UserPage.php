@@ -48,7 +48,7 @@ class UserPage {
 		}?>
 <p><input type="text" name="username" value="" /></p>
 <p><input type="password" name="password" value="" /></p>
-<p><input class="button" type="submit" value="Login"></form></p>
+<p><input class="button" type="submit" value="Accedi"></form></p>
 			<?php
 	}
 
