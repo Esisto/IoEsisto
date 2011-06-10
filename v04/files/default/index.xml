@@ -11,49 +11,33 @@
 	
 	<ad/>
 	<header><div></div></header>
-	<content cols="1">
-		<col cols="2">
-			<col id="main" class="large">
-				PCMain
-				<div cols="2">
-					<col class="comments">PCComments</col>
-					<col class="seeAlso">PCRelated</col>
-					<div class="clear" />
-				</div>
-				<div class="clear" />
-			</col>
-			<col class="side right">
-				PCWho
-				PCSearch
-				<ad/>
-				<div class="clear" />
+	
+	<content cols="1" id="homeContent">
+		<col cols="2" id="left homeContentTop">
+			PCMostRecent
+			<col class="left homeNews">
+				PCVideoNews
 			</col>
 			<div class="clear" />
 		</col>
-		<div class="clear largest" cols="1">
-			<div>PCCategories</div>
-			<col cols="2">
-				<col class="medium left">
-					PCCat1
-					PCCat3
-					<ad/>
-					PCCat5
-					PCCat7
-				</col>
-				<col class="medium right">
-					PCCat2
-					PCCat4
-					<ad/>
-					PCCat6
-					PCCat8
-				</col>
-				<div class="clear" />
+		<col cols="2">
+			<col class="large"><ad/></col>
+			<col class="side right"><ad/></col>
+			<div class="clear" />
+		</col>
+		<col cols="3" id="left homeContentBottom">
+			<col class="homeNews firstHomeNews left">
+				PCPopular
 			</col>
-		</div>
-		<div class="clear largest" cols="1">
-			<ad/>
-			PCRandomPosts
-		</div>
+			<col class="homeNews left">
+				PCFlashNews
+			</col>
+			<col class="left homeNews">
+				PCPhotoNews
+			</col>
+			<div class="clear" />
+		</col>
 	</content>
+	
 	<footer><ad/></footer>
 </template>

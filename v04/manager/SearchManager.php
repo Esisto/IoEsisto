@@ -84,6 +84,8 @@ class SearchManager {
 				$wheres[] = new WhereConstraint($table->getColumn(DB::POST_AUTHOR), Operator::EQUAL, intval($value));
 			if($key == "no_id")
 				$wheres[] = new WhereConstraint($table->getColumn(DB::POST_ID), Operator::NOTEQUAL, intval($value));
+			if($key == "type")
+				$wheres[] = new WhereConstraint($table->getColumn(DB::POST_TYPE), Operator::LIKE, "%" . Filter::filterText($value) . "%");
 			if($key == "loadComments")
 				$loadComments = $value == true;
 		}

@@ -937,6 +937,7 @@ class Page {
 	}
 	
 	private static $post_options = array();
+	
 	private static function PCMain($data) {
 		require_once 'page/PostPage.php';
 		if(self::$requestedObject == "index") {
@@ -948,6 +949,196 @@ class Page {
 		
 		self::$post_options[PostPage::NO_DATE] = false;
 		self::$post_options[PostPage::NO_COMMENTS] = false;
+	}
+	
+	private static function PCMostRecent($data){ ?>
+		<div class="left" id="mostRecent">
+		    <ul class="left">
+			<li class="left">
+				<div>
+					<div class="firstMenuMostRecentTabLeft firstMenuMostRecentTabLeftUse left"></div>
+					<div class="menuMostRecentTabCenter menuMostRecentTabCenterUse left"><p>Cronaca</p></div>
+					<div class="menuMostRecentTabRight menuMostRecentTabRightUse left"></div>
+					<div class="clear"></div>
+				</div>
+			</li>	
+			<li class="menuMostRecentList left">
+				<div>
+					<div class="menuMostRecentTabLeft left"></div>
+					<div class="menuMostRecentTabCenter left"><a href="#">Cultura</a></div>
+					<div class="menuMostRecentTabRight left"></div><div class="clear"></div>
+				</div>
+			</li>	
+			<li class="menuMostRecentList left">
+				<div>
+					<div class="menuMostRecentTabLeft left"></div>
+					<div class="menuMostRecentTabCenter left"><a href="#">Finanza</a></div>
+					<div class="menuMostRecentTabRight left"></div><div class="clear"></div>
+				</div>
+			</li>
+			<li class="menuMostRecentList left">
+				<div>
+					<div class="menuMostRecentTabLeft left"></div>
+					<div class="menuMostRecentTabCenter left"><a href="#">Motori</a></div>
+					<div class="menuMostRecentTabRight left"></div><div class="clear"></div>
+				</div>
+			</li>   
+		    </ul>
+		    
+		    <div id="mostRecentTop">
+			<div class="left" id="mostRecentArticlesTopLeft"></div>
+			<div class="left" id="mostRecentArticlesTopCenter"></div>
+			<div class="left" id="mostRecentArticlesTopRight"></div>
+			<div class="clear"></div>
+		    </div>
+		    
+		    <div class="left" id="mostRecentArticles">
+			<h2 id="mostRecentTitle">Milano, pacco bomba in corso sempione<!-- TODO --></h2>
+			<div id="mostRecentImg"><img src="img/mostRecentImgBottomRight.png"></div>
+			<p id="mostRecentSubTitle">Gli artificieri hanno trovato esplosivo collegato a delle bottiglie incendiarie
+							davanti a un negozio dell'Eni<!-- TODO --></p>
+			<p>MILANO - Avrebbe potuto provocare danni il pacco bomba rinvenuto in corso Sempione a Milano.
+			E quanto emerge dai primi rilievi effettuati dagli artificieri intervenuti sul posto.
+			Si tratta di un ordigno incendiario contenente tre petardi in cui innesco era collegato a bottiglie di benzina.
+			L'esplosivo È stato trovato all'angolo tra via Melzi davanti all'Eni Store,
+			a cinquanta metri dalla readazione de "Il Fatto Quotidiano".
+			Sul posto sono intervenuti gli artificieri che hanno isolato il pacco e poi hanno ispezionato gli stabili.
+			Oltre alla redazione de "Il Fatto Quotidiano", nelle vicinanze del luogo dove È stato trovato
+			il pacco bomba c'È anche la sede della Rai, a qualche centinaio di metri.
+			Ma È stato poi accertato che...<!-- TODO --> </p>
+			<div class="clear"></div>
+		    </div>
+		    
+		    <div id="mostRecentBottom">
+			<div class="left" id="mostRecentArticlesBottomLeft"></div>
+			<div class="left" id="mostRecentArticlesBottomCenter"></div>
+			<div class="left" id="mostRecentArticlesBottomRight"></div>
+			<div class="clear"></div>
+		    </div>
+		    
+		    <ul class="shareContinue right">
+			<li class="shareContinueLatest right">
+				<div>
+					<div class="shareContinueTabLeft left"></div>
+					<div class="shareContinueTabCenter left"><a href="#">Continua</a></div>
+					<div class="shareContinueTabRight left"></div><div class="clear"></div>
+				</div>
+			</li>	
+			<li class=" right">
+				<div>
+					<div class="shareContinueTabLeft left"></div>
+					<div class="shareContinueTabCenter left"><a href="#">Condividi...</a></div>
+					<div class="shareContinueTabRight left"></div><div class="clear"></div>
+				</div>
+			</li>	
+		    </ul>
+	    
+		    <div class="clear"></div>	    
+		</div> <?php 
+	}
+	
+	private static function PCVideoNews($data){
+	?>	
+		<ul class="left">
+		    <li class="left">
+			<div><div class="homeNewsTabLeft left"></div><div class="homeNewsTabCenter left"><span class="left">VIDEO</span><p class="left">NEWS</p></div><div class="homeNewsTabRight left"></div><div class="clear"></div></div>
+		    </li>	
+		</ul>
+	    
+		<div class="homeNewsTop"><div class="left homeNewsTopLeft"></div><div class="left homeNewsTopCenter"></div><div class="left homeNewsTopRight"></div><div class="clear"></div></div>
+	    
+		<div class="homeNewsCenter">
+			<div id="videoNews"><?php
+					require_once 'manager/SearchManager.php';
+					//TODO: modificare criterio di ricerca: ultimo giorno, category= cronaca||politica||scienza||economia||spettacoli||sport
+					$posts = SearchManager::searchBy(array("Post"),
+								array("type" => "videoreportage", "category" => "Cronaca", "loadComments" => false),
+								array("limit" => 1, "order" => "DESC", "by" => array("ps_creationDate")));
+					foreach($posts as $post) {
+						require_once 'page/PostPage.php';
+						self::$post_options[PostPage::VIDEO] = true;
+						PostPage::showPost($post, self::$post_options);
+						self::$post_options[PostPage::VIDEO] = false;
+					}
+			?><div class="clear"></div>
+			</div>
+		</div>
+		
+		<div class="homeNewsBottom"><div class="left homeNewsBottomLeft"></div><div class="left homeNewsBottomCenter"></div><div class="left homeNewsBottomRight"></div><div class="clear"></div></div>
+	   
+		<ul class="shareContinue right">
+		    <li class="shareContinueLatest right">
+			<div><div class="shareContinueTabLeft left"></div><div class="shareContinueTabCenter left"><a href="#">Continua</a></div><div class="shareContinueTabRight left"></div><div class="clear"></div></div>
+		    </li>	
+		    <li class=" right">
+			<div><div class="shareContinueTabLeft left"></div><div class="shareContinueTabCenter left"><a href="#">Condividi...</a></div><div class="shareContinueTabRight left"></div><div class="clear"></div></div>
+		    </li>	
+		</ul>
+	    
+		<div class="clear"></div>
+		<?php
+	}
+	
+	private static function PCFlashNews($data){	
+		?>
+		<ul class="left">
+			<li class="left">
+				<div><div class="homeNewsTabLeft left"></div><div class="homeNewsTabCenter left"><span class="left">FLASH</span><p class="left">NEWS</p></div><div class="homeNewsTabRight left"></div><div class="clear"></div></div>
+			</li>	
+		</ul>
+		
+		<div class="homeNewsTop"><div class="homeNewsTopLeft left"></div><div class="homeNewsTopCenter left"></div><div class="homeNewsTopRight left"></div><div class="clear"></div></div>
+		
+		<div class="homeNewsCenter"><?php
+			require_once 'manager/SearchManager.php';
+			//TODO: modificare criterio di ricerca: ultimo giorno, category= cronaca||politica||scienza||economia||spettacoli||sport
+			$posts = SearchManager::searchBy(array("Post"),
+						array("type" => "news", "category" => "Cronaca", "loadComments" => false),
+						array("limit" => 3, "order" => "DESC", "by" => array("ps_creationDate")));
+			foreach($posts as $post) {
+					require_once 'page/PostPage.php';
+					self::$post_options[PostPage::FLASH] = true;
+					PostPage::showPost($post, self::$post_options);
+					self::$post_options[PostPage::FLASH] = false;
+			}
+		?></div>
+		
+		<div class="homeNewsBottom"><div class="left homeNewsBottomLeft"></div><div class="left homeNewsBottomCenter"></div><div class="left homeNewsBottomRight"></div><div class="clear"></div></div>
+	   
+		<ul class="shareContinue right">
+			<li class="shareContinueLatest right">
+				<div><div class="shareContinueTabLeft left"></div><div class="shareContinueTabCenter left"><a href="#">Continua</a></div><div class="shareContinueTabRight left"></div><div class="clear"></div></div>
+			</li>	
+			<li class=" right">
+				<div><div class="shareContinueTabLeft left"></div><div class="shareContinueTabCenter left"><a href="#">Condividi...</a></div><div class="shareContinueTabRight left"></div><div class="clear"></div></div>
+			</li>	
+		</ul>
+		
+		<div class="clear"></div>
+		<?php 
+	}
+	
+	private static function PCPopular($data){
+		/*DEBUG*/echo "<p>Popular News</p>";
+		
+		/*TODO: da dafinire*/
+	}
+	
+	private static function PCPhotoNews($data){
+		/*DEBUG*/echo "<p>Photo News</p>";
+		
+		require_once 'manager/SearchManager.php';
+		//$posts = SearchManager::searchBy();
+		
+		/*TODO: query che prende i post che hanno:
+		*	type=photoreportage
+		*	day=today (else=yesterday else ecc.ecc.)
+		*	category= cronaca||politica||scienza||economia||spettacoli||sport
+		*per poi dare in output le informazioni formattate:
+		*	url
+		*	titolo
+		*	didascalia
+		*/
 	}
 	
 	private static function PCComments($data) {

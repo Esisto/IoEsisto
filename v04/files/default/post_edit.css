@@ -18,85 +18,130 @@ body p{
 
 /*---------------------- header ----------------------*/
 #header{
-    width: 915px;
-    margin: 0 auto;
-    background: #FFFFFF;
+	width: 916px;
+	margin: 0 auto;
+	background: #FFFFFF;
 }
 
 /*---- WIDGET ----*/
 #widget{
-    height: 35px;
-    width: 915px;
-    line-height: 2.3;
+	height: 35px;
+	width: 916px;
+	line-height: 2.3;
 }
 #widget p{
 	display: inline;
 }
-#widget input
-{
-	background: #FFFFFF;
-	color: #4B658F;
-	border: 1px solid #4B658F;
-}
 
 #widgetLeft{
-    width: 12px;
-    height: inherit;
-    background: url(img/tabLeft.png) no-repeat;
+	width: 12px;
+	height: inherit;
+	background: url(img/tabLeft.png) no-repeat;
 }
 
 #widgetCenter{
-    width: 891px;
+	width: 892px;
 	height: inherit;
-    background: #ECECEC;
+	background: #ECECEC;
 }
 
 #widgetCenterLeft{
 	width: 445px;
 	height: inherit;
-    background: #ECECEC;
+	background: #ECECEC;
 }
+
 #login{
 	margin-left: 5px;
 }
-#welcome{
+#widgetCenterLeft input{
+	/*border: none;*/
+}
+#widgetCenterLeft .button{
+	height: 22px;
+	width: 67px;
+	background: url(img/button.png) center no-repeat;
+	border: none;	
+}
+#widgetCenterLeft .button:active{
+	height: 22px;
+	width: 67px;
+	color: #ECECEC;
+	background: url(img/buttonRoll.png) center no-repeat;
+}
+.welcome{
+	height: 30px;
+	width: 70px;
 	line-height: 2.8;
-	font-size:80%
+	font-size:80%;
+}
+.welcome a{
+	padding: 6px 14px;
+	background: url(img/button.png) center no-repeat;
+	text-align: center;
+	text-decoration: none;
+	color: #000000;
+	border: none;
+}
+.welcome a:active{
+	height: 30px;
+	width: 70px;
+	color: #ECECEC;
+	background: url(img/buttonRoll.png) center no-repeat;
+	text-decoration: none;
 }
 
 #widgetCenterRight{
 	width: 445px;
 	height: inherit;
-    background: #ECECEC;
+	background: #ECECEC;
 }
 
-#search{
+#wsearch{
+	height: 32px;
+	width: 159px;
 	margin-left: 5px;
+	line-height: 2.4;
+	float: right;
+}
+#wsearch input[type=submit] {
+	height: 24px;
+	width: 20px;
+	line-height: 2;
+	border: none;
+	background: url(img/magnify.png) center no-repeat;
 }
 
-.widgetImage{
-	margin: 7px 5px 0 0;
+#meteo{
+	height: 35px;
+	width: 60px;
+	background: url(img/meteoButton.png);
+	float: right;
+}
+#meteo img{
+	margin-top: 8px;
+	margin-right: 13px;
 }
 
 #widgetRight{
-    width: 12px;
-    height: inherit;
-    background: url(img/tabRight.png) no-repeat;
+	width: 12px;
+	height: inherit;
+	background: url(img/tabRight.png) no-repeat;
 }
 
 /*---- MENU CITY ----*/
 #menuCity{
-    margin: 0;
-    padding: 8px 0;
-    font-size: 80%;
-    font-variant: small-caps;
-    font-weight: bold;
-    text-align: center;
-    background: #4B658F;
+	margin: 0;
+	padding: 8px 0;
+	font-size: 80%;
+	font-variant: small-caps;
+	font-weight: bold;
+	text-align: center;
+	background: #4B658F;
 }
 #menuCity li{
-    margin: 0 3px;
-    display: inline;
+	margin: 0 3px;
+	display: inline;
 }
 #menuCity a{
     text-decoration: none;
@@ -108,7 +153,7 @@ body p{
 
 /*---- LOGO ----*/
 #logo{
-    width: 915px;
+    width: 916px;
 }
 #logo img{
     width: 272px;
@@ -128,7 +173,7 @@ body p{
 
 /*---- MENU CATEGORIES ----*/
 #menuCategories{
-	width: 915px;
+	width: 916px;
 	margin-top: -13px;
 	line-height: 2.2;
 	font-size: 70%;
@@ -148,7 +193,7 @@ body p{
 	float: left;
 }
 #menuCategories ul ul {
-	width: 915px;
+	width: 916px;
 	height: 28px;
 	background: #ECECEC;
 	visibility: hidden;
@@ -196,13 +241,13 @@ body p{
 .menuCategoriesLinkTabLeft{
 	width: 16px;
 	height: 30px;
-	margin-left: 1px;
+	margin-left: 2px;
 	float:left;
 }
 .menuCategoriesLinkTabRight{
 	width: 16px;
 	height: 30px;
-	margin-right: 1px;
+	margin-right: 2px;
 	float:left;
 }
 

@@ -16,6 +16,8 @@ class PostPage {
 	const NO_DATE = "no_date";
 	const SHORT = "short";
 	const SHORTEST = "shortest";
+	const FLASH = "flash";
+	const VIDEO = "video";
 	const NO_COMMENTS = "no_comments";
 	const NO_TAGS = "no_tags";
 	const SMALL_TITLE = "small_title";
@@ -67,9 +69,45 @@ class PostPage {
 <?php
 	}
 	
+	static function showFlashPost($post, $options = null) {
+		?>		
+		<a class="flashNewsLink" href="<?php echo FileManager::appendToRootPath($post->getPermalink()); ?>">
+			<div class="flashNewsFirst">
+				<div class="flashNewsImg left"><img src="img/.png" alt="First flashNewsImage"></div> <!-- TODO: inserire immagine se presente -->
+					<div class="flashNewsContent left">
+					<div class="flashNewsTitle left"><h2><?php echo Filter::decodeFilteredText($post->getTitle()); ?></h2></div>
+					<div class="flashNewsArticles left"><p><?php echo substr(Filter::decodeFilteredText($post->getContent()), 0, 50) . (strlen(Filter::decodeFilteredText($post->getContent())) < 50 ? "" : " ..."); ?></p></div>
+					<div class="clear"></div>
+				</div>
+				<div class="clear"></div>
+			</div>
+		</a>
+		<?php
+	}
+	
+	static function showVideoPost($post, $options = null) {
+		?>	
+		<div id="videoNewsTitle" class="left"><h2><?php echo Filter::decodeFilteredText($post->getTitle()); ?></h2></div>
+		    
+		    <div id="videoNewsYouTube" class="left"><?php
+			require_once("manager/youtubeManager.php");
+			/*DEBUG*/ echo 	youtubeManager::getVideoPlayer("Y8aReEh-kB4",280);
+			//echo youtubeManager::getVideoPlayer(Filter::decodeFilteredText($post->getContent()));
+		    ?></div>	
+			
+		    <div id="videoNewsAuthor" class="left"><p><?php $postdao = new PostDao(); echo Filter::decodeFilteredText($postdao->getAuthorName($post)); ?></p></div>
+		<?php
+	}
+	
 	static function showPost($post, $options = null) {
 		if(isset($options[self::SHORTEST]) && $options[self::SHORTEST]) {
 			self::showShortPost($post);
+			return;
+		}else if(isset($options[self::FLASH]) && $options[self::FLASH]) {
+			self::showFlashPost($post);
+			return;
+		}else if(isset($options[self::VIDEO]) && $options[self::VIDEO]) {
+			self::showVideoPost($post);
 			return;
 		}
 ?>
