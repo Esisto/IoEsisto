@@ -21,6 +21,7 @@ class PostPage {
 	const NO_COMMENTS = "no_comments";
 	const NO_TAGS = "no_tags";
 	const SMALL_TITLE = "small_title";
+	const FIRST = "first";
 	const NO_MODIF_DATE = "no_modif_date";
 	const NO_CATEGORIES = "no_categories";
 	
@@ -72,7 +73,12 @@ class PostPage {
 	static function showFlashPost($post, $options = null) {
 		?>		
 		<a class="flashNewsLink" href="<?php echo FileManager::appendToRootPath($post->getPermalink()); ?>">
-			<div class="flashNewsFirst">
+			<?php
+			if(isset($options[self::FIRST]) && $options[self::FIRST])
+				echo "<div class='flashNewsFirst'>";
+			else
+				echo "<div class='flashNews'>";
+			?>
 				<div class="flashNewsImg left"><img src="img/.png" alt="First flashNewsImage"></div> <!-- TODO: inserire immagine se presente -->
 					<div class="flashNewsContent left">
 					<div class="flashNewsTitle left"><h2><?php echo Filter::decodeFilteredText($post->getTitle()); ?></h2></div>
@@ -104,7 +110,7 @@ class PostPage {
 			self::showShortPost($post);
 			return;
 		}else if(isset($options[self::FLASH]) && $options[self::FLASH]) {
-			self::showFlashPost($post);
+			self::showFlashPost($post, $options);
 			return;
 		}else if(isset($options[self::VIDEO]) && $options[self::VIDEO]) {
 			self::showVideoPost($post);

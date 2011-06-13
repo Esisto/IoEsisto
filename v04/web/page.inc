@@ -136,7 +136,7 @@ function writeAD($class) {
 
 function writePageFooter($class, $ad) {
 ?>
-<div id="footerBackground">
+<div id="footer">
 	<div id="references">
 		<p>Powered by CLAD-Team
 			<em>Queries made: 
@@ -150,18 +150,27 @@ function writePageFooter($class, $ad) {
 			</em>
 		</p>
 	</div>
-	<div id="footer" <?php echo (!is_null($class) ? 'class="' . $class . '"' : ''); ?>>
-<?php 
-	if($ad) {
-		writeAD("footer");
+	
+	<div id="footerAdvertise" <?php echo (!is_null($class) ? 'class="' . $class . '"' : ''); ?>>
+	<?php 
+		if($ad) {
+			writeAD("footerAdvertise");
 	}
-?>
-		<p id="license">
-			This site is under GNU-License<br/>
-			You can find the code on <a href="http://github.com" target="_blank">github.com</a><br/>
-			under the codename: <a href="http://github.com/Esisto/IoEsisto" target="_blank">IoEsisto</a>
-		</p>
-		<div class="clear"></div>
+	?>	
+	</div>
+
+	<div id="copyright">
+		<div class="left"></div>
+		<div id="copyrightMenu">
+			<ul>
+				<li><a href="<?php echo FileManager::appendToRootPath("Copyright"); ?>">Copyright</a></li>
+				<li><a href="<?php echo FileManager::appendToRootPath("Conditions"); ?>">Termini e Condizioni</a></li>
+				<li><a href="<?php echo FileManager::appendToRootPath("Contacts"); ?>">Contatti</a></li>
+				<li><a href="<?php echo FileManager::appendToRootPath("Privacy"); ?>">Privacy</a></li>
+				<li><a href="<?php echo FileManager::appendToRootPath("Rules"); ?>">Regole Guida</a></li>
+			</ul>
+		</div>
+		<div class="right"></div>
 	</div>
 </div>
 <?php

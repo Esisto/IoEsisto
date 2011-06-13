@@ -16,15 +16,16 @@ CKEDITOR.editorConfig = function( config )
 
     config.toolbar_edited =
     [
-        ['NewPage','Preview'],
-        ['Cut','Copy','Paste','PasteText','PasteFromWord','-','Scayt'],
-        ['Undo','Redo','-','Find','Replace'],
-        '/',
-        ['Bold','Italic','Strike'],
+    ['Undo','Redo','-','Find','Replace','-','SelectAll','RemoveFormat'],
+    ['Maximize', 'ShowBlocks','-','About'],
+    ['Cut','Copy','Paste','PasteText','PasteFromWord','-','Print', 'SpellChecker', 'Scayt'],
+    '/',
+    ['Font','FontSize','Format','-','Bold','Italic','Underline','Strike','Subscript','Superscript','-','TextColor','BGColor'],
+    '/',
+    
+	['NumberedList','BulletedList','-','Outdent','Indent','Blockquote'],
 	['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],
-	['Styles','Format','Font','FontSize'],
-	['TextColor','BGColor'],
-        ['NumberedList','BulletedList','-','Outdent','Indent','Blockquote'],
+	['Link','Unlink','Anchor']
     ];
     
     config.toolbar = 'Full';

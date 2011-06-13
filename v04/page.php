@@ -1016,22 +1016,7 @@ class Page {
 			<div class="clear"></div>
 		    </div>
 		    
-		    <ul class="shareContinue right">
-			<li class="shareContinueLatest right">
-				<div>
-					<div class="shareContinueTabLeft left"></div>
-					<div class="shareContinueTabCenter left"><a href="#">Continua</a></div>
-					<div class="shareContinueTabRight left"></div><div class="clear"></div>
-				</div>
-			</li>	
-			<li class=" right">
-				<div>
-					<div class="shareContinueTabLeft left"></div>
-					<div class="shareContinueTabCenter left"><a href="#">Condividi...</a></div>
-					<div class="shareContinueTabRight left"></div><div class="clear"></div>
-				</div>
-			</li>	
-		    </ul>
+		   <?php self::ShareContinue(); ?>
 	    
 		    <div class="clear"></div>	    
 		</div> <?php 
@@ -1066,14 +1051,7 @@ class Page {
 		
 		<div class="homeNewsBottom"><div class="left homeNewsBottomLeft"></div><div class="left homeNewsBottomCenter"></div><div class="left homeNewsBottomRight"></div><div class="clear"></div></div>
 	   
-		<ul class="shareContinue right">
-		    <li class="shareContinueLatest right">
-			<div><div class="shareContinueTabLeft left"></div><div class="shareContinueTabCenter left"><a href="#">Continua</a></div><div class="shareContinueTabRight left"></div><div class="clear"></div></div>
-		    </li>	
-		    <li class=" right">
-			<div><div class="shareContinueTabLeft left"></div><div class="shareContinueTabCenter left"><a href="#">Condividi...</a></div><div class="shareContinueTabRight left"></div><div class="clear"></div></div>
-		    </li>	
-		</ul>
+		<?php self::ShareContinue(); ?>
 	    
 		<div class="clear"></div>
 		<?php
@@ -1095,41 +1073,52 @@ class Page {
 			$posts = SearchManager::searchBy(array("Post"),
 						array("type" => "news", "category" => "Cronaca", "loadComments" => false),
 						array("limit" => 3, "order" => "DESC", "by" => array("ps_creationDate")));
+			
+			self::$post_options[PostPage::FIRST] = true;
 			foreach($posts as $post) {
 					require_once 'page/PostPage.php';
 					self::$post_options[PostPage::FLASH] = true;
 					PostPage::showPost($post, self::$post_options);
 					self::$post_options[PostPage::FLASH] = false;
+					self::$post_options[PostPage::FIRST] = false;
 			}
 		?></div>
 		
 		<div class="homeNewsBottom"><div class="left homeNewsBottomLeft"></div><div class="left homeNewsBottomCenter"></div><div class="left homeNewsBottomRight"></div><div class="clear"></div></div>
 	   
-		<ul class="shareContinue right">
-			<li class="shareContinueLatest right">
-				<div><div class="shareContinueTabLeft left"></div><div class="shareContinueTabCenter left"><a href="#">Continua</a></div><div class="shareContinueTabRight left"></div><div class="clear"></div></div>
-			</li>	
-			<li class=" right">
-				<div><div class="shareContinueTabLeft left"></div><div class="shareContinueTabCenter left"><a href="#">Condividi...</a></div><div class="shareContinueTabRight left"></div><div class="clear"></div></div>
-			</li>	
-		</ul>
+		<?php self::ShareContinue(); ?>
 		
 		<div class="clear"></div>
 		<?php 
 	}
 	
 	private static function PCPopular($data){
-		/*DEBUG*/echo "<p>Popular News</p>";
-		
 		/*TODO: da dafinire*/
+		
+		?>
+		<ul class="left">
+			<li class="left">
+				<div><div class="homeNewsTabLeft left"></div><div class="homeNewsTabCenter left"><span class="left">POPULAR</span><p class="left">NEWS</p></div><div class="homeNewsTabRight left"></div><div class="clear"></div></div>
+			</li>	
+		</ul>
+		
+		<div class="homeNewsTop"><div class="left homeNewsTopLeft"></div><div class="left homeNewsTopCenter"></div><div class="left homeNewsTopRight"></div><div class="clear"></div></div>
+		
+		<div class="homeNewsCenter">
+			<div id="popularNews">
+			    
+			</div>
+		</div>
+		
+		<div class="homeNewsBottom"><div class="left homeNewsBottomLeft"></div><div class="left homeNewsBottomCenter"></div><div class="left homeNewsBottomRight"></div><div class="clear"></div></div>
+	   
+		<?php self::ShareContinue(); ?>
+		
+		<div class="clear"></div>
+		<?php
 	}
 	
 	private static function PCPhotoNews($data){
-		/*DEBUG*/echo "<p>Photo News</p>";
-		
-		require_once 'manager/SearchManager.php';
-		//$posts = SearchManager::searchBy();
-		
 		/*TODO: query che prende i post che hanno:
 		*	type=photoreportage
 		*	day=today (else=yesterday else ecc.ecc.)
@@ -1139,6 +1128,39 @@ class Page {
 		*	titolo
 		*	didascalia
 		*/
+		
+		?>
+		<ul class="left">
+			<li class="left">
+				<div><div class="homeNewsTabLeft left"></div><div class="homeNewsTabCenter left"><span class="left">PHOTO</span><p class="left">NEWS</p></div><div class="homeNewsTabRight left"></div><div class="clear"></div></div>
+			</li>	
+		</ul>
+		
+		<div class="homeNewsTop"><div class="left homeNewsTopLeft"></div><div class="left homeNewsTopCenter"></div><div class="left homeNewsTopRight"></div><div class="clear"></div></div>
+		
+		<div class="homeNewsCenter">
+		
+		</div>
+		
+		<div class="homeNewsBottom"><div class="left homeNewsBottomLeft"></div><div class="left homeNewsBottomCenter"></div><div class="left homeNewsBottomRight"></div><div class="clear"></div></div>
+	   
+		<?php self::ShareContinue(); ?>
+		
+		<div class="clear"></div>
+		<?php
+	}
+	
+	private static function ShareContinue(){
+		?>
+		<ul class="shareContinue right">
+			<li class="shareContinueLatest right">
+				<div><div class="shareContinueTabLeft left"></div><div class="shareContinueTabCenter left"><a href="#">Sucessivo</a></div><div class="shareContinueTabRight left"></div><div class="clear"></div></div> <!-- ricarica il widget -->
+			</li>	
+			<li class=" right">
+				<div><div class="shareContinueTabLeft left"></div><div class="shareContinueTabCenter left"><a href="#">Condividi</a></div><div class="shareContinueTabRight left"></div><div class="clear"></div></div>
+			</li>	
+		</ul>
+		<?php
 	}
 	
 	private static function PCComments($data) {
