@@ -11,12 +11,7 @@ body p{
 	padding: 0;
 }
 
-/*---------------------- clear ----------------------*/
-.clear {	
-	clear: both;
-}
-
-/*---------------------- header ----------------------*/
+/*---------------------- header ---------------------- */
 #header{
 	width: 916px;
 	margin: 0 auto;
@@ -27,7 +22,6 @@ body p{
 #widget{
 	height: 35px;
 	width: 916px;
-	line-height: 2.3;
 }
 #widget p{
 	display: inline;
@@ -49,6 +43,10 @@ body p{
 	width: 445px;
 	height: inherit;
 	background: #ECECEC;
+}
+#widgetCenterLeft form{
+	padding: 7px 0px;
+
 }
 
 #login{
@@ -249,14 +247,6 @@ body p{
 	height: 30px;
 	margin-right: 2px;
 	float:left;
-}
-
-.left {
-	float:left;
-}
-
-.clear{
-    clear: both;
 }
 
 /*---------------------- page ----------------------*/
@@ -572,56 +562,79 @@ body p{
 .category_tree_level_0 ul {
 	padding-left: 20px;
 }
-#footerBackground {
-	margin-top: 10px;
-	width: 100%;
-	background-color: #000;
-}
-#references {
-	width: 100%;
-	background-color: #FF6600
-}
-#references p {
-	border-left: 1px solid #FE9;
-	border-right: 1px solid #000;
-	border-bottom: 1px solid #000;
-	border-bottom-left-radius: 5px 5px;
-	border-bottom-right-radius: 5px 5px;
-	margin: 0 auto;
-	width: 878px;
-	padding: 4px 10px 6px 10px;
-	height: 14px;
-	font-size: 14px;
-}
-#references em {
-	float: right;
-}
+
+/*---------------------- footer ----------------------*/
+
 #footer {
-	color: #ff6600;
-	width: 900px;
+	width: 916px;
 	margin: 0 auto;
-	padding: 10px 0;
 }
-#footer a {
-	color: #fe9;
+
+#references {
+	height: 28px;
+	background-color: #ECECEC;
 }
-#footer a:hover {
-	color: #f60;
+#references div {
+	margin: 0 auto;
+	padding: 4px 10px 6px 10px;
+	font-size: 85%;
 }
-.ad_footer {
-	float: left;
-	background-color: red;
+#references .right {
+	font-size: 80%;
+	padding: 6px 10px 6px 10px;
 }
-.ad_footer img {
-	border: 0;
-	width: 700px;
+
+#footerAdvertise{
+	background-color: #4B658F;
+}
+.ad_footerAdvertise img {
+	padding: 10px 8px;
+	width: 900px;
 	height: 36px;
 }
-#license {
-	float: right;
-	font-size: 10px;
-	text-align: right;
+
+#copyright{
+	height: 35px;
+	font-size: 85%;
+	margin-bottom: 10px;
 }
+
+#copyright .left{
+	height: 23px;
+	width: 12px;
+	background: url(img/tabLeftFooter.png)
+}
+#copyrightMenu{
+	width: 892px;
+	height: 23px;
+	float: left;
+	font-size: 80%;
+	background-color: #ECECEC;
+}
+#copyrightMenu ul{
+	margin-top: 4px;
+	padding: 0 260px;
+}
+#copyrightMenu li{
+	display: inline;
+	padding-left: 15px;
+}
+#copyrightMenu a{
+	text-decoration: none;
+	color: #4B658F;
+}
+#copyrightMenu a:hover{
+	text-decoration: underline;
+}
+#copyright .right{
+	height: 23px;
+	width: 12px;
+	background: url(img/tabRightFooter.png)
+}
+
+
+/*---------------------- altro ----------------------*/
+
 input.post_title, input.post_subtitle, input.post_headline {
 	width: 100%;
 	font-family: "Times New Roman", Times, serif;

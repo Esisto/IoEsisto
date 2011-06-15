@@ -22,7 +22,6 @@ body p{
 #widget{
 	height: 35px;
 	width: 916px;
-	line-height: 2.3;
 }
 #widget p{
 	display: inline;
@@ -44,6 +43,10 @@ body p{
 	width: 445px;
 	height: inherit;
 	background: #ECECEC;
+}
+#widgetCenterLeft form{
+	padding: 7px 0px;
+
 }
 
 #login{
@@ -244,14 +247,6 @@ body p{
 	height: 30px;
 	margin-right: 2px;
 	float:left;
-}
-
-.left {
-	float:left;
-}
-
-.clear{
-    clear: both;
 }
 
 
@@ -719,17 +714,17 @@ body p{
 }
 
 #references {
+	height: 28px;
 	background-color: #ECECEC;
 }
-#references p {
+#references div {
 	margin: 0 auto;
 	padding: 4px 10px 6px 10px;
 	font-size: 85%;
-}	
-#references em {
-	float: right;
+}
+#references .right {
 	font-size: 80%;
-	line-height: 1.8;
+	padding: 6px 10px 6px 10px;
 }
 
 #footerAdvertise{
@@ -756,11 +751,11 @@ body p{
 	width: 892px;
 	height: 23px;
 	float: left;
-	line-height: 0.3;
 	font-size: 80%;
 	background-color: #ECECEC;
 }
 #copyrightMenu ul{
+	margin-top: 4px;
 	padding: 0 260px;
 }
 #copyrightMenu li{

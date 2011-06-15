@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<template name="legal">
+	<head>
+		<stylesheet css="default/legal" />
+		<js src="http://maps.google.com/maps/api/js?sensor=false" />
+		<js src="http://code.google.com/apis/gears/gears_init.js" />
+		<js src="plugins/ckeditor/ckeditor.js" />
+	</head>
+	
+	<ad/>
+	<header><div></div></header>
+	
+	<content cols="1" id="homeContent">
+		PCMain
+	</content>
+	
+	<footer><ad/></footer>
+</template>

@@ -98,7 +98,7 @@ class PostPage {
 		    <div id="videoNewsYouTube" class="left"><?php
 			require_once("manager/youtubeManager.php");
 			/*DEBUG*/ echo 	youtubeManager::getVideoPlayer("Y8aReEh-kB4",280);
-			//echo youtubeManager::getVideoPlayer(Filter::decodeFilteredText($post->getContent()));
+			//echo youtubeManager::getVideoPlayer(Filter::decodeFilteredText($post->getContent()),280);
 		    ?></div>	
 			
 		    <div id="videoNewsAuthor" class="left"><p><?php $postdao = new PostDao(); echo Filter::decodeFilteredText($postdao->getAuthorName($post)); ?></p></div>

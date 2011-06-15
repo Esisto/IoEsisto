@@ -310,6 +310,14 @@ class Page {
 			case "Partner":
 				//TODO da implementare
 				break;
+			case "Copyright":
+			case "Rules":
+			case "Conditions":
+			case "Contacts":
+			case "Privacy":
+				if(self::$requestedAction != self::$requestedObject)
+					self::$requestedAction = self::$requestedObject;
+				break;
 			default:
 				self::$requestedAction = "";
 		}
@@ -362,6 +370,13 @@ class Page {
 			case "Tag":
 				self::doTagAction($request);
 				break;
+			case "Copyright":
+			case "Rules":
+			case "Conditions":
+			case "Contacts":
+			case "Privacy":
+				self::doLegalAction($request);
+				break;
 			case "index":
 			default:
 				//TODO: creare pagina index
@@ -378,6 +393,31 @@ class Page {
 				} else {
 					PostPage::showNoPostWarning();
 				}
+				break;
+		}
+	}
+	
+	private static function doLegalAction($request) {
+		switch (self::$requestedAction) {
+			case "Copyright":
+				require_once("page/legalPage.php");
+				LegalPage::showCopyright();
+				break;
+			case "Rules":
+				require_once("page/legalPage.php");
+				LegalPage::showRules();
+				break;
+			case "Conditions":
+				require_once("page/legalPage.php");
+				LegalPage::showConditions();
+				break;
+			case "Contacts":
+				require_once("page/legalPage.php");
+				LegalPage::showContacts();
+				break;
+			case "Privacy":
+				require_once("page/legalPage.php");
+				LegalPage::showPrivacy();
 				break;
 		}
 	}

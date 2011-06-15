@@ -28,6 +28,12 @@ class TemplateManager {
 				return "files/default/resource.xml";
 			case "Preferences":
 				return "files/default/preferences.xml";
+			case "Copyright":
+			case "Rules":
+			case "Conditions":
+			case "Contacts":
+			case "Privacy":
+				return "files/default/legal.xml";
 		}
 		return self::getDefaultTemplate();
 	}

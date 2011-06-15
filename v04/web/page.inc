@@ -138,17 +138,17 @@ function writePageFooter($class, $ad) {
 ?>
 <div id="footer">
 	<div id="references">
-		<p>Powered by CLAD-Team
-			<em>Queries made: 
-				<?php
+		<div class ="left">Powered by CLAD-Team</div>
+		<div class="right">
+		Queries made: 
+	<?php
 	$first = true;
 	foreach(Session::getQueryCounter() as $type => $count) {
 		if($first) $first = false;
 		else echo ", ";
 		echo $count . " " . $type;
 	} ?>
-			</em>
-		</p>
+		</div>
 	</div>
 	
 	<div id="footerAdvertise" <?php echo (!is_null($class) ? 'class="' . $class . '"' : ''); ?>>
