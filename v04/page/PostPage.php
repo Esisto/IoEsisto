@@ -18,6 +18,9 @@ class PostPage {
 	const SHORTEST = "shortest";
 	const FLASH = "flash";
 	const VIDEO = "video";
+	const MOST_RECENT_TOP = "most_recent_top";
+	const MOST_RECENT_BOTTOM = "most_recent_bottom";
+	const SEQUENTIAL = "sequential";
 	const NO_COMMENTS = "no_comments";
 	const NO_TAGS = "no_tags";
 	const SMALL_TITLE = "small_title";
@@ -105,6 +108,35 @@ class PostPage {
 		<?php
 	}
 	
+	static function showMostRecentTop($post, $options = null) {
+		if(isset($options[self::FIRST]) && $options[self::FIRST]) { ?>
+			<li class="left"><div>
+					<div class="firstMenuMostRecentTabLeft firstMenuMostRecentTabLeftUse left"></div>
+					<div class="menuMostRecentTabCenter menuMostRecentTabCenterUse left"><a href="#article<?php echo $options[self::SEQUENTIAL]; ?>"><p><?php echo Filter::decodeFilteredText($post->getCategories()); ?></p></a></div>
+					<div class="menuMostRecentTabRight menuMostRecentTabRightUse left"></div>
+					<div class="clear"></div>
+			</div></li>
+		<?php } else { ?>
+			<li class="menuMostRecentList left"><div>
+					<div class="menuMostRecentTabLeft left"></div>
+					<div class="menuMostRecentTabCenter left"><a href="#article<?php echo $options[self::SEQUENTIAL]; ?>"><?php echo Filter::decodeFilteredText($post->getCategories()); ?></a></div>
+					<div class="menuMostRecentTabRight left"></div><div class="clear"></div>
+			</div></li>
+		<?php }
+	}
+	
+	static function showMostRecentBottom($post, $options = null) {
+		?>
+		<div class="left articlesBlock" id="article<?php echo $options[self::SEQUENTIAL]; ?>">
+			<h2 id="mostRecentTitle"><?php echo Filter::decodeFilteredText($post->getTitle()); ?></h2>
+			<div id="mostRecentImg"><img src="img/mostRecentImgBottomRight.png"></div> <!-- TODO -->
+			<p id="mostRecentSubTitle"><?php echo Filter::decodeFilteredText($post->getSubtitle()); ?></p>
+			<p><?php echo substr(Filter::decodeFilteredText($post->getContent()), 0, 835) . (strlen(Filter::decodeFilteredText($post->getContent())) < 835 ? "" : " ..."); ?></p>
+			<div class="clear"></div>
+		</div>
+		<?php
+	}
+	
 	static function showPost($post, $options = null) {
 		if(isset($options[self::SHORTEST]) && $options[self::SHORTEST]) {
 			self::showShortPost($post);
@@ -114,6 +146,12 @@ class PostPage {
 			return;
 		}else if(isset($options[self::VIDEO]) && $options[self::VIDEO]) {
 			self::showVideoPost($post);
+			return;
+		}else if(isset($options[self::MOST_RECENT_TOP]) && $options[self::MOST_RECENT_TOP]) {
+			self::showMostRecentTop($post, $options);
+			return;
+		}else if(isset($options[self::MOST_RECENT_BOTTOM]) && $options[self::MOST_RECENT_BOTTOM]) {
+			self::showMostRecentBottom($post, $options);
 			return;
 		}
 ?>

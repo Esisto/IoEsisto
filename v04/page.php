@@ -379,20 +379,23 @@ class Page {
 				break;
 			case "index":
 			default:
-				//TODO: creare pagina index
+				self::PCMostRecent($request);
 				if(self::$requestedAction == "error") {
 					require_once 'errors/errors.php';
 					showError($_GET["e"]);
 				}
-				require_once 'manager/SearchManager.php';
-				$posts = SearchManager::searchBy(array("Post"), array(), array("limit" => 1, "order" => "DESC", "by" => array("ps_creationDate")));
-				require_once("page/PostPage.php");
-				if(count($posts) > 0) {
-					PostPage::showPost(self::$currentObject = $posts[0], self::$post_options);
-					self::$currentID = self::$currentObject->getPermalink();
-				} else {
-					PostPage::showNoPostWarning();
-				}
+				
+				//TODO: creare pagina index
+				//require_once 'manager/SearchManager.php';
+				//$posts = SearchManager::searchBy(array("Post"), array(), array("limit" => 1, "order" => "DESC", "by" => array("ps_creationDate")));
+				//require_once("page/PostPage.php");
+				//if(count($posts) > 0) {
+				//	PostPage::showPost(self::$currentObject = $posts[0], self::$post_options);
+				//	self::$currentID = self::$currentObject->getPermalink();
+				//} else {
+				//	PostPage::showNoPostWarning();
+				//}
+				
 				break;
 		}
 	}
@@ -991,75 +994,88 @@ class Page {
 		self::$post_options[PostPage::NO_COMMENTS] = false;
 	}
 	
-	private static function PCMostRecent($data){ ?>
+	private static function PCMostRecent($data){
+		
+		require_once 'manager/SearchManager.php';
+		//TODO: modificare criterio di ricerca: ultimo giorno, category= cronaca||politica||scienza||economia||spettacoli||sport
+		$posts = SearchManager::searchBy(array("Post"),
+					array("type" => "news", "category" => "Cronaca", "loadComments" => false),
+					array("limit" => 4, "order" => "DESC", "by" => array("ps_creationDate")));
+		
+		?>
 		<div class="left" id="mostRecent">
-		    <ul class="left">
-			<li class="left">
-				<div>
-					<div class="firstMenuMostRecentTabLeft firstMenuMostRecentTabLeftUse left"></div>
-					<div class="menuMostRecentTabCenter menuMostRecentTabCenterUse left"><p>Cronaca</p></div>
-					<div class="menuMostRecentTabRight menuMostRecentTabRightUse left"></div>
-					<div class="clear"></div>
-				</div>
-			</li>	
-			<li class="menuMostRecentList left">
-				<div>
-					<div class="menuMostRecentTabLeft left"></div>
-					<div class="menuMostRecentTabCenter left"><a href="#">Cultura</a></div>
-					<div class="menuMostRecentTabRight left"></div><div class="clear"></div>
-				</div>
-			</li>	
-			<li class="menuMostRecentList left">
-				<div>
-					<div class="menuMostRecentTabLeft left"></div>
-					<div class="menuMostRecentTabCenter left"><a href="#">Finanza</a></div>
-					<div class="menuMostRecentTabRight left"></div><div class="clear"></div>
-				</div>
-			</li>
-			<li class="menuMostRecentList left">
-				<div>
-					<div class="menuMostRecentTabLeft left"></div>
-					<div class="menuMostRecentTabCenter left"><a href="#">Motori</a></div>
-					<div class="menuMostRecentTabRight left"></div><div class="clear"></div>
-				</div>
-			</li>   
-		    </ul>
-		    
-		    <div id="mostRecentTop">
+		<ul class="left">
+		<?php
+		self::$post_options[PostPage::FIRST] = true;
+		for($i=0; $i<4; $i++){
+			if(isset($posts[$i])){
+				$post = $posts[$i];
+				require_once 'page/PostPage.php';
+				self::$post_options[PostPage::MOST_RECENT_TOP] = true;
+				self::$post_options[PostPage::SEQUENTIAL] = $i;
+				PostPage::showPost($post, self::$post_options);
+				self::$post_options[PostPage::MOST_RECENT_TOP] = false;
+				self::$post_options[PostPage::FIRST] = false;
+			}
+		}
+		?>
+		</ul>
+		
+		<div id="mostRecentTop">
 			<div class="left" id="mostRecentArticlesTopLeft"></div>
 			<div class="left" id="mostRecentArticlesTopCenter"></div>
 			<div class="left" id="mostRecentArticlesTopRight"></div>
 			<div class="clear"></div>
-		    </div>
-		    
-		    <div class="left" id="mostRecentArticles">
-			<h2 id="mostRecentTitle">Milano, pacco bomba in corso sempione<!-- TODO --></h2>
-			<div id="mostRecentImg"><img src="img/mostRecentImgBottomRight.png"></div>
-			<p id="mostRecentSubTitle">Gli artificieri hanno trovato esplosivo collegato a delle bottiglie incendiarie
-							davanti a un negozio dell'Eni<!-- TODO --></p>
-			<p>MILANO - Avrebbe potuto provocare danni il pacco bomba rinvenuto in corso Sempione a Milano.
-			E quanto emerge dai primi rilievi effettuati dagli artificieri intervenuti sul posto.
-			Si tratta di un ordigno incendiario contenente tre petardi in cui innesco era collegato a bottiglie di benzina.
-			L'esplosivo È stato trovato all'angolo tra via Melzi davanti all'Eni Store,
-			a cinquanta metri dalla readazione de "Il Fatto Quotidiano".
-			Sul posto sono intervenuti gli artificieri che hanno isolato il pacco e poi hanno ispezionato gli stabili.
-			Oltre alla redazione de "Il Fatto Quotidiano", nelle vicinanze del luogo dove È stato trovato
-			il pacco bomba c'È anche la sede della Rai, a qualche centinaio di metri.
-			Ma È stato poi accertato che...<!-- TODO --> </p>
-			<div class="clear"></div>
-		    </div>
-		    
-		    <div id="mostRecentBottom">
+		</div>
+		
+		<div class="left" id="mostRecentArticles">
+		<?php
+		self::$post_options[PostPage::FIRST] = true;
+		for($i=0; $i<4; $i++){
+			if(isset($posts[$i])){
+				$post = $posts[$i];
+				require_once 'page/PostPage.php';
+				self::$post_options[PostPage::MOST_RECENT_BOTTOM] = true;
+				self::$post_options["sequential"] = $i;
+				PostPage::showPost($post, self::$post_options);
+				self::$post_options[PostPage::MOST_RECENT_BOTTOM] = false;
+				self::$post_options[PostPage::FIRST] = false;
+			}
+		}
+		?>
+		<div class="clear"></div>
+		</div>
+		
+		<div id="mostRecentBottom">
 			<div class="left" id="mostRecentArticlesBottomLeft"></div>
 			<div class="left" id="mostRecentArticlesBottomCenter"></div>
 			<div class="left" id="mostRecentArticlesBottomRight"></div>
 			<div class="clear"></div>
-		    </div>
-		    
-		   <?php self::ShareContinue(); ?>
-	    
-		    <div class="clear"></div>	    
-		</div> <?php 
+		</div>
+		
+		<?php self::ShareContinue(); ?>
+		
+		<div class="clear"></div>	    
+		
+		<script type="text/javascript">
+			$(document).ready(function() {
+				$(".articlesBlock").hide();
+				//$("ul.tabs li:first").addClass("active").show(); //Attiva la prima tab, dovrebbe renderala grande e bianca
+				$(".articlesBlock:first").show();
+		 
+				$("div.menuMostRecentTabCenter").click(function() {
+					//$("ul.tabs li").removeClass("active"); //Rimuovi ogni classe active
+					//$(this).addClass("active"); //E aggiungila solo a quella su cui ho cliccato
+					$(".articlesBlock").hide();
+					var activeTab = $(this).find("a").attr("href");
+					$(activeTab).fadeIn();
+					return false;
+				});
+			});
+		</script>
+		
+		</div>
+		<?php 
 	}
 	
 	private static function PCVideoNews($data){
