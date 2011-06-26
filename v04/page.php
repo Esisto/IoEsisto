@@ -1011,10 +1011,10 @@ class Page {
 			if(isset($posts[$i])){
 				$post = $posts[$i];
 				require_once 'page/PostPage.php';
-				self::$post_options[PostPage::MOST_RECENT_TOP] = true;
+				self::$post_options[PostPage::MOST_RECENT_MENU] = true;
 				self::$post_options[PostPage::SEQUENTIAL] = $i;
 				PostPage::showPost($post, self::$post_options);
-				self::$post_options[PostPage::MOST_RECENT_TOP] = false;
+				self::$post_options[PostPage::MOST_RECENT_MENU] = false;
 				self::$post_options[PostPage::FIRST] = false;
 			}
 		}
@@ -1030,16 +1030,14 @@ class Page {
 		
 		<div class="left" id="mostRecentArticles">
 		<?php
-		self::$post_options[PostPage::FIRST] = true;
 		for($i=0; $i<4; $i++){
 			if(isset($posts[$i])){
 				$post = $posts[$i];
 				require_once 'page/PostPage.php';
-				self::$post_options[PostPage::MOST_RECENT_BOTTOM] = true;
+				self::$post_options[PostPage::MOST_RECENT_CONTENT] = true;
 				self::$post_options["sequential"] = $i;
 				PostPage::showPost($post, self::$post_options);
-				self::$post_options[PostPage::MOST_RECENT_BOTTOM] = false;
-				self::$post_options[PostPage::FIRST] = false;
+				self::$post_options[PostPage::MOST_RECENT_CONTENT] = false;
 			}
 		}
 		?>
@@ -1055,24 +1053,7 @@ class Page {
 		
 		<?php self::ShareContinue(); ?>
 		
-		<div class="clear"></div>	    
-		
-		<script type="text/javascript">
-			$(document).ready(function() {
-				$(".articlesBlock").hide();
-				//$("ul.tabs li:first").addClass("active").show(); //Attiva la prima tab, dovrebbe renderala grande e bianca
-				$(".articlesBlock:first").show();
-		 
-				$("div.menuMostRecentTabCenter").click(function() {
-					//$("ul.tabs li").removeClass("active"); //Rimuovi ogni classe active
-					//$(this).addClass("active"); //E aggiungila solo a quella su cui ho cliccato
-					$(".articlesBlock").hide();
-					var activeTab = $(this).find("a").attr("href");
-					$(activeTab).fadeIn();
-					return false;
-				});
-			});
-		</script>
+		<div class="clear"></div>
 		
 		</div>
 		<?php 

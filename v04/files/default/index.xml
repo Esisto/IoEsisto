@@ -8,6 +8,7 @@
 		<js src="http://code.google.com/apis/gears/gears_init.js" />
 		<js src="default/jquery-1.6.1.min"/>
 		<js src="default/map_utils.js" />
+		<js src="default/mostRecentMenu.js" />
 	</head>
 	
 	<ad/>

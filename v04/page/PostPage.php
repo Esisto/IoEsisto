@@ -18,8 +18,8 @@ class PostPage {
 	const SHORTEST = "shortest";
 	const FLASH = "flash";
 	const VIDEO = "video";
-	const MOST_RECENT_TOP = "most_recent_top";
-	const MOST_RECENT_BOTTOM = "most_recent_bottom";
+	const MOST_RECENT_MENU = "most_recent_top";
+	const MOST_RECENT_CONTENT = "most_recent_bottom";
 	const SEQUENTIAL = "sequential";
 	const NO_COMMENTS = "no_comments";
 	const NO_TAGS = "no_tags";
@@ -108,28 +108,28 @@ class PostPage {
 		<?php
 	}
 	
-	static function showMostRecentTop($post, $options = null) {
+	static function showMostRecentMenu($post, $options = null) {
 		if(isset($options[self::FIRST]) && $options[self::FIRST]) { ?>
-			<li class="left"><div>
-					<div class="firstMenuMostRecentTabLeft firstMenuMostRecentTabLeftUse left"></div>
-					<div class="menuMostRecentTabCenter menuMostRecentTabCenterUse left"><a href="#article<?php echo $options[self::SEQUENTIAL]; ?>"><p><?php echo Filter::decodeFilteredText($post->getCategories()); ?></p></a></div>
-					<div class="menuMostRecentTabRight menuMostRecentTabRightUse left"></div>
-					<div class="clear"></div>
+			<li id="liArticle<?php echo $options[self::SEQUENTIAL]; ?>" class="firstMenuMostRecentList left"><div>
+				<div id="leftArticle<?php echo $options[self::SEQUENTIAL]; ?>" class="firstMenuMostRecentTabLeft firstMenuMostRecentTabLeft left"></div>
+				<div id="centerArticle<?php echo $options[self::SEQUENTIAL]; ?>" class="menuMostRecentTabCenter menuMostRecentTabCenter left"><a href="#article<?php echo $options[self::SEQUENTIAL]; ?>"><p><?php echo Filter::decodeFilteredText($post->getCategories()); ?></p></a></div>
+				<div id="rightArticle<?php echo $options[self::SEQUENTIAL]; ?>" class="menuMostRecentTabRight menuMostRecentTabRight left"></div>
+				<div class="clear"></div>
 			</div></li>
 		<?php } else { ?>
-			<li class="menuMostRecentList left"><div>
-					<div class="menuMostRecentTabLeft left"></div>
-					<div class="menuMostRecentTabCenter left"><a href="#article<?php echo $options[self::SEQUENTIAL]; ?>"><?php echo Filter::decodeFilteredText($post->getCategories()); ?></a></div>
-					<div class="menuMostRecentTabRight left"></div><div class="clear"></div>
+			<li id="liArticle<?php echo $options[self::SEQUENTIAL]; ?>" class="menuMostRecentList left"><div>
+				<div id="leftArticle<?php echo $options[self::SEQUENTIAL]; ?>" class="menuMostRecentTabLeft left"></div>
+				<div id="centerArticle<?php echo $options[self::SEQUENTIAL]; ?>" class="menuMostRecentTabCenter left"><a href="#article<?php echo $options[self::SEQUENTIAL]; ?>"><?php echo Filter::decodeFilteredText($post->getCategories()); ?></a></div>
+				<div id="rightArticle<?php echo $options[self::SEQUENTIAL]; ?>" class="menuMostRecentTabRight left"></div><div class="clear"></div>
 			</div></li>
 		<?php }
 	}
 	
-	static function showMostRecentBottom($post, $options = null) {
+	static function showMostRecentContent($post, $options = null) {
 		?>
-		<div class="left articlesBlock" id="article<?php echo $options[self::SEQUENTIAL]; ?>">
-			<h2 id="mostRecentTitle"><?php echo Filter::decodeFilteredText($post->getTitle()); ?></h2>
-			<div id="mostRecentImg"><img src="img/mostRecentImgBottomRight.png"></div> <!-- TODO -->
+		<div class="articlesBlock left" id="article<?php echo $options[self::SEQUENTIAL]; ?>">
+			<h2 id="mostRecentTitle"><a href="<?php echo FileManager::appendToRootPath($post->getPermalink()); ?>"><?php echo Filter::decodeFilteredText($post->getTitle()); ?></a></h2>
+			<div id="mostRecentImg"><img src="<?php echo FileManager::appendToRootPath("files/default/img/mostRecentImgBottomRight.png"); ?>"></div> <!-- TODO -->
 			<p id="mostRecentSubTitle"><?php echo Filter::decodeFilteredText($post->getSubtitle()); ?></p>
 			<p><?php echo substr(Filter::decodeFilteredText($post->getContent()), 0, 835) . (strlen(Filter::decodeFilteredText($post->getContent())) < 835 ? "" : " ..."); ?></p>
 			<div class="clear"></div>
@@ -147,11 +147,11 @@ class PostPage {
 		}else if(isset($options[self::VIDEO]) && $options[self::VIDEO]) {
 			self::showVideoPost($post);
 			return;
-		}else if(isset($options[self::MOST_RECENT_TOP]) && $options[self::MOST_RECENT_TOP]) {
-			self::showMostRecentTop($post, $options);
+		}else if(isset($options[self::MOST_RECENT_MENU]) && $options[self::MOST_RECENT_MENU]) {
+			self::showMostRecentMenu($post, $options);
 			return;
-		}else if(isset($options[self::MOST_RECENT_BOTTOM]) && $options[self::MOST_RECENT_BOTTOM]) {
-			self::showMostRecentBottom($post, $options);
+		}else if(isset($options[self::MOST_RECENT_CONTENT]) && $options[self::MOST_RECENT_CONTENT]) {
+			self::showMostRecentContent($post, $options);
 			return;
 		}
 ?>

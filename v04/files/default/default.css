@@ -278,6 +278,12 @@ body p{
     list-style: none;
 }
 
+.firstMenuMostRecentList{
+    margin-top: 12px;
+    margin-left: 28px;
+    display: block;
+    list-style: none;
+}
 .menuMostRecentList{
     margin-top: 12px;
     margin-left: -28px;
@@ -287,7 +293,6 @@ body p{
 .firstMenuMostRecentTabLeft{
     width: 26px;
     height: 26px;
-    margin-left: 28px;
     background: url(img/FirstMenuMostRecentTabLeft.png) right no-repeat;   
 }
 .firstMenuMostRecentTabLeftUse{
@@ -300,6 +305,12 @@ body p{
     width: 26px;
     height: 26px;
     background: url(img/menuMostRecentTabLeft.png) right no-repeat;
+}
+.menuMostRecentTabLeftUse{
+    width: 38px;
+    height: 38px;
+    margin-left: -26px;
+    background: url(img/menuMostRecentTabLeftUse.png) right no-repeat; 
 }
 .menuMostRecentTabCenter{
     border-top: 2px solid #ECECEC;
@@ -317,7 +328,7 @@ body p{
     line-height: 1.4;
     color: #ECECEC;
 }
-.menuMostRecentTabCenter p{
+.menuMostRecentTabCenterUse a{
     margin: 0;
     padding: 0;
     line-height: 2;
@@ -336,6 +347,7 @@ body p{
     height: 38px;
     background: url(img/homeNewsTabRight.png) left no-repeat;   
 }
+
 #mostRecentTop{
     width: inherit;
 }
@@ -385,7 +397,13 @@ body p{
     padding: 0;
     margin: 5px;
     text-align: center;
-    color: #4B658F;
+}
+#mostRecentTitle a{
+	text-decoration: none;
+	color: #4B658F;
+}
+#mostRecentTitle a:hover{
+	/*text-decoration: underline;*/
 }
 #mostRecentImg{
     width: 290px;
