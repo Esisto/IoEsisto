@@ -5,6 +5,7 @@ define("DB_USERNAME", "root");
 define("DB_PASSWORD", "root");
 define("DB_NAME", "ioesisto3");
 define("DB_PORT", 8889);
+define("DEFAULT_ROLE", "editor");
 
 //Image settings.
 define("HEIGHT","100");

@@ -6,32 +6,54 @@ require_once("session.php");
 
 class UserManager {
 	
-    static function createUser($nickname, $email, $password) {
- 		$pwd = Filter::encodePassword($passowrd);
-        $user = new User($nickname, $email, $password);
+    static function createUser($nickname, $email, $password, $role) {
+ 	$pwd = Filter::encodePassword($password);
+        $user = new User($nickname, $email, $pwd);
+	$user->setRole($role);
         
         $userdao = new UserDao();
         $u = $userdao->save($user);
         
         //invia una mail per permettere all'utente di convalidare la sua casella.
         $code = self::generateValidationCode($u);
-        mail($u->getMail(), "Iscrizione a IoEsisto", self::generateValidationMailMessage($code));
+        mail($u->getEMail(), "Iscrizione a IoEsisto", self::generateValidationMailMessage($code));
      	
         //genera una collection di preferiti
         require_once 'manager/CollectionManager.php';
         $data = array("title" => "Preferiti",
      			  "author" => $u->getID(),
      			  "categories" => "favourites",
-     			  "visible" => false);
-        CollectionManager::createCollection($data);
-     	
+     			  "visible" => false,
+			  "type" => "collection");
+	//TODO la collection viene creata nel db ma da fatal error, forse il problema è nell'override di setContent dove controlla che si stia inserendo un post ma il contenuto è false
+        //CollectionManager::createCollection($data);
+	
+	//TODO creare MailManager
         //genera tre directory email: mailbox, cestino e spam
-		require_once("manager/MailManager.php");
-		MailManager::createDirectory(MAILBOX, $u->getID());
-		MailManager::createDirectory(TRASH, $u->getID());
-		MailManager::createDirectory(SPAM, $u->getID());
-        
+		//require_once("manager/MailManager.php");
+		//MailManager::createDirectory(MAILBOX, $u->getID());
+		//MailManager::createDirectory(TRASH, $u->getID());
+		//MailManager::createDirectory(SPAM, $u->getID());
+		
         return $u;
+    }
+    
+    function checkMail($email){
+	$email = trim($email);
+	if(!$email) {
+		return false;
+	}
+	$num_at = count(explode( '@', $email )) - 1;
+	if($num_at != 1) {
+		return false;
+	}
+ 	if(strpos($email,';') || strpos($email,',') || strpos($email,' ')) {
+		return false;
+	}
+ 	if(!preg_match( '/^[\w\.\-]+@\w+[\w\.\-]*?\.\w{1,4}$/', $email)) {
+		return false;
+	}
+	return true;
     }
     
     private static function generateValidationMailMessage($code) {
@@ -43,7 +65,7 @@ class UserManager {
     }
     
     private static function generateValidationCode($user) {
- 		return Filter::hash($user->getMail() . $user->getPassword());
+ 		return Filter::hash($user->getEMail() . $user->getPassword());
     }
     
     static function verifyUser($user, $code) {
@@ -84,11 +106,12 @@ class UserManager {
     }
     
     static function editUser($user, $data) {
-        $data[User::PASSWORD] = Filter::encodePassword($data[User::PASSWORD]);
+        if(isset($data[User::PASSWORD]) && $data[User::PASSWORD] != "")
+	   $data[User::PASSWORD] = Filter::encodePassword($data[User::PASSWORD]);
         $data = Filter::filterArray($data);
         $user->edit($data);
         $userdao = new UserDao();
-        return $userdao->update();
+        return $userdao->update($user, $editor);
     }
     
     /**
@@ -167,6 +190,24 @@ class UserManager {
     static function userExists($user) {
         $userdao = new UserDao();
 		return $userdao->exists($user);
+    }
+    
+    static function emailExist($email){
+	try {
+	    self::loadUserByMail($email);
+	    return true;
+	} catch(Exception $e) {
+	    return false;
+	}
+    }
+    
+    static function nicknameExist($nickname){
+	try {
+	    self::loadUserByNickname($nickname);
+	    return true;
+	} catch(Exception $e) {
+	    return false;
+	}
     }
 }
 ?>

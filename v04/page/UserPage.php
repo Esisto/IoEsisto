@@ -57,37 +57,75 @@ class UserPage {
 			$data=array();
 			$error=array();
 			$privatekey = CAPTCHA_PRIVATE;
-
-			if(isset($_POST["nickname"]))
-				$data["nickname"] = $_POST["nickname"];
-			else
+			
+			$logger = Logger::getLogger();
+			$logger->debug("UserPage", "inizio controllo parametri");
+			
+			if(isset($_POST["nickname"]) && $_POST["nickname"] != ""){
+				if(!UserManager::nicknameExist($_POST["nickname"])) {
+					$data["nickname"] = $_POST["nickname"];
+					$logger->debug("UserPage", "nickname: " . $data["nickname"]);
+				}else{
+					$error[] = "il nickname scelto non è disponibile";
+					$logger->debug("UserPage", "error: nickname non disponibile");
+				}
+			}else{
 				$error[] = "non c'è il nickname";
-			if(isset($_POST["check_password"]) && isset($_POST["password"])){
-				if($_POST["password"] == $_POST["check_password"])
-					$data["password"] = $_POST["password"];
-				else
+				$logger->debug("UserPage", "error: nickname");
+			}
+			
+			if((isset($_POST["check_password"]) && $_POST["check_password"] != "") && (isset($_POST["password_signin"]) && $_POST["password_signin"] != "")){
+				if($_POST["password_signin"] == $_POST["check_password"]){
+					$data["password_signin"] = $_POST["password_signin"];
+					$logger->debug("UserPage", "password_signin: " . $data["password_signin"]);
+
+				}else{
 					$error[] = "le password non corrispondono";
+					$logger->debug("UserPage", "error: password non coincidenti");
+				}
 			} else {
 				$error[] = "password non presente";
+				$logger->debug("UserPage", "error: no password");
 			}
-			if(isset($_POST["email"]))
-				$data["email"] = $_POST["email"];
-			else
+			if(isset($_POST["email"]) && $_POST["email"] != ""){
+				if(UserManager::checkMail($_POST["email"])){
+					if(!UserManager::emailExist($_POST["email"])) {
+						$data["email"] = $_POST["email"];
+						$logger->debug("UserPage", "email: " . $_POST["email"]);
+					}else{
+						$error[] = "questo indirizzo e-mail è già stato utilizzato";
+						$logger->debug("UserPage", "error: email gia utilizzata");
+					}
+				}else{
+					$error[] = "l'indirizzo e-mail non è valido";
+					$logger->debug("UserPage", "error: email non valida");
+				}
+			}else{
 				$error[] = "non c'è l'email";
-
+				$logger->debug("UserPage", "error: email");
+			}
+			
 			/* check reCHAPTCHA response */
 			require_once('recaptchalib.php');
 			$resp = recaptcha_check_answer ($privatekey, $_SERVER["REMOTE_ADDR"], $_POST["recaptcha_challenge_field"], $_POST["recaptcha_response_field"]);
 			if (!$resp->is_valid) {
 				$error[] = "Il reCAPTCHA non è stato inserito correttamente. Prova di nuovo";
-
-				if(count($error) > 0) {
-					self::showSignInForm($error);
-				} else {
-					$dataFiltered= Filter::filterArray($data);
-					$user = UserManager::createUser($data);
-					self::showProfile($user);
-				}
+				$logger->debug("UserPage", "reCaptha : failed");
+			}else{
+				$logger->debug("UserPage", "reCaptha : ok");
+			
+			}
+						
+			if(count($error) > 0) {
+				self::showSignInForm($error);
+				$logger->debug("UserPage", "error : yes");
+			} else {
+				$logger->debug("UserPage", "error : no");
+				$dataFiltered= Filter::filterArray($data);
+				$userRole = DEFAULT_ROLE;
+				$user = UserManager::createUser($data["nickname"],$data["email"],$data["password_signin"],$userRole);
+				self::showProfile($user);
+			
 			}
 		} else {
 			$POST_data = count($_POST) > 0; ?>
@@ -95,15 +133,16 @@ class UserPage {
 	//change reCAPTCHA theme 
 	var RecaptchaOptions = {theme : 'clean'};
 </script>
-<form name="signIn" action="" method="post"><!-- show error messages --> <?php
-			if( $error != null) {
-				foreach ($error as $valore) {
-					echo "$valore<br>";
-				}
-			}
-	?>
+<form name="signIn" action="" method="post">
+		<?php if($error != null){ ?>
+			<div class="error">
+			<?php foreach($error as $err) { ?>
+			<p><?php echo $err; ?></p>
+			<?php 
+			} ?></div>
+		<?php } ?>
 Nickname: <input type="text" name="nickname" value="<?php if($POST_data) echo $_POST["nickname"]; ?>" /><br>
-Password: <input type="password" name="password" value="" /><br>
+Password: <input type="password" name="password_signin" value="" /><br>
 Check Password: <input type="password" name="check_password" value="" /><br>
 Email: <input type="text" name="email" value="<?php if($POST_data) echo $_POST["email"]; ?>" /><br>
 <!-- show reCAPTCHA --> <?php
@@ -147,14 +186,16 @@ echo recaptcha_get_html($publickey);
 		if($error==null && count($_POST) > 0) {  /* information already insered  */
 			$data=array();
 			$error=array();
-			/* check the value of the fields NON NULL on database */
-			if(isset($_POST["nickname"]))
+
+			if(isset($_POST["avatar"]) && $_POST["avatar"] != "")
+				$data["avatar"] = $_POST["avatar"];
+			if(isset($_POST["nickname"]) && $_POST["nickname"] != "")
 				$data["nickname"] = $_POST["nickname"];
 			else
 				$error[] = "non c'è il nickname";
-			if(isset($_POST["current_password"])){
+			if(isset($_POST["current_password"]) && $_POST["current_password"] != ""){
 				if ($user->getPassword() == Filter::encodePassword($_POST["current_password"])){
-					if (isset($_POST["check_password"]) && isset($_POST["new_password"])){
+					if (isset($_POST["check_password"]) && $_POST["check_password"] != "" && isset($_POST["new_password"]) && $_POST["new_password"] != ""){
 						if ($_POST["new_password"] == $_POST["check_password"])
 							$data["password"] = $_POST["new_password"];
 						else
@@ -163,42 +204,35 @@ echo recaptcha_get_html($publickey);
 				}else{
 					$error[] = "password non corretta";
 				}
-			} else {
-				$error[] = "password non presente";
-			}
-			if(isset($_POST["email"]))
+			}else
+				$error[] = "E' necessaria la password per modificare i tuoi dati";
+			if(isset($_POST["name"]) && $_POST["name"] != "")
+				$data["name"] = $_POST["name"];
+			if(isset($_POST["surname"]) && $_POST["surname"] != "")
+				$data["surname"] = $_POST["surname"];
+			if(isset($_POST["email"]) && $_POST["email"] != "")
 				$data["email"] = $_POST["email"];
 			else
 				$error[] = "non c'è l'email";
-
-			/* check other fields */
-			if(isset($_POST["birthday_year"]) && isset($_POST["birthday_month"]) && isset($_POST["birthday_day"])){
-				$birthday_timestamp= mktime(0,0,0,$_POST["birthday_month"],$_POST["birthday_day"],$_POST["birthday_year"]);
-				$data["birthday"] = $birthday_timestamp;
-			} else {
-				$error[] = "inserisci una data completa di giorno, mese e anno";
-			}
-			if(isset($_POST["avatar"]))
-				$data["avatar"] = $_POST["avatar"];
-			if(isset($_POST["name"]))
-				$data["name"] = $_POST["name"];
-			if(isset($_POST["surname"]))
-				$data["surname"] = $_POST["surname"];
 			if(isset($_POST["gender"])){
 				if ($_POST["gender"] == "male")
 					$data["gender"] = "m";
 				else
 					$data["gender"] = "f";
 			}
-			if(isset($_POST["nickname"]))
-				$data["nickname"] = $_POST["nickname"];
-			if(isset($_POST["job"]))
+			if(isset($_POST["job"]) && $_POST["job"] != "")
 				$data["job"] = $_POST["job"];
-			if(isset($_POST["birthplace"]))
+			if(isset($_POST["birthday_year"])  && $_POST["birthday_year"] != "" && isset($_POST["birthday_month"]) &&  $_POST["birthday_month"] != "" && isset($_POST["birthday_day"]) && $_POST["birthday_day"] != ""){
+				$birthday_timestamp= mktime(0,0,0,$_POST["birthday_month"],$_POST["birthday_day"],$_POST["birthday_year"]);
+				$data["birthday"] = $birthday_timestamp;
+			} else {
+				$error[] = "inserisci una data completa di giorno, mese e anno";
+			}
+			if(isset($_POST["birthplace"]) && $_POST["birthplace"] != "")
 				$data["birthplace"] = $_POST["birthplace"];
-			if(isset($_POST["livingPlace"]))
+			if(isset($_POST["livingPlace"]) && $_POST["livingPlace"] != "")
 				$data["livingPlace"] = $_POST["livingPlace"];
-			if(isset($_POST["hobbies"]))
+			if(isset($_POST["hobbies"]) && $_POST["hobbies"] != "")
 				$data["hobbies"] = $_POST["hobbies"];
 
 			/* show error message or apply changes and show the profile page updated*/
@@ -216,12 +250,13 @@ echo recaptcha_get_html($publickey);
 			 POST_data == false -> first time user view the page, the form will be loaded with db information */
 			$POST_data = count($_POST) > 0;
 			?>
-<form name="editProfile" action="" method="post"><!-- show error messages --> <?php
-			if( $error != null) {
-				foreach ($error as $valore) {
-					echo "$valore<br>";
-				}
-			}?>
+<form name="editProfile" action="" method="post">
+		<?php if($error != null){ ?>
+			<div class="error">
+			<?php foreach($error as $err) { ?>
+			<p><?php echo $err; ?></p>
+			<?php } ?></div>
+		<?php } ?>
 <div class="userProfile" id="<?php echo $user->getID(); ?>">
 Avatar: <input type="text" name="avatar" value="<?php
 			if(!$POST_data) echo Filter::decodeFilteredText($user->getAvatar());

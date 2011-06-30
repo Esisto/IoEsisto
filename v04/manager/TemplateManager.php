@@ -17,6 +17,8 @@ class TemplateManager {
 					return "files/default/register.xml";
 			case "Feedback":
 				return "files/default/profile.xml";
+			case "Signin":
+				return "files/default/register.xml";
 			case "Mail":
 			case "Directory":
 				return "files/default/mail.xml";

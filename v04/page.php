@@ -878,7 +878,7 @@ class Page {
 		//echo "parser creato: " . serialize($parser) . "<br />";  //DEBUG
 		$css = array(); $js = array(); $title = self::titleForRequest($request);
 		$cols_stack = array();
-		$write_h = false; $write_f = false; $ad = false;
+		$write_h = false; $write_f = false; $ad = false; $nologin = false;
 //		$i=0; //DEBUG
 		while($el = $parser->nextElement()) {
 //			if($i==10) //DEBUG
@@ -905,8 +905,10 @@ class Page {
 					break;
 				case "HEADER":
 					$write_h = true;
+					if(isset($el["attributes"]["NOLOGIN"]))
+						$nologin=true;
 					if($el["type"] == "close") {
-						writePageHeader(self::$user, $ad);
+						writePageHeader(self::$user, $ad, $nologin);
 						$write_h = false;
 					}
 					break;

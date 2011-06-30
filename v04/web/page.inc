@@ -1,6 +1,6 @@
 <?php 
 
-function writePageHeader($user, $ad) {
+function writePageHeader($user, $ad, $nologin) {
 ?>
 <div id="header">
         
@@ -8,13 +8,17 @@ function writePageHeader($user, $ad) {
 		<div class="left" id="widgetLeft"></div>
 		<div class="left" id="widgetCenter">
 			<div class="left" id="widgetCenterLeft">
-			<?php if($user === false) {
-				require_once 'page/UserPage.php';
-				UserPage::showLoginForm();
-			} else { ?>
-				<span class="welcome">Benvenut<?php echo ($user->getGender() == "f" ? "a" : "o"); ?> <b><?php echo $user->getNickname(); ?></b></span>
-				<span class="welcome"><a href="<?php echo FileManager::appendToRootPath("Logout");?>">Logout</a></span>
-			<?php } ?>
+			<?php
+			if(!$nologin){
+				if($user === false) {
+					require_once 'page/UserPage.php';
+					UserPage::showLoginForm();
+				} else { ?>
+					<span class="welcome">Benvenut<?php echo ($user->getGender() == "f" ? "a" : "o"); ?> <b><?php echo $user->getNickname(); ?></b></span>
+					<span class="welcome"><a href="<?php echo FileManager::appendToRootPath("Logout");?>">Logout</a></span>
+				<?php }
+			}
+			?>
 			</div>
 			<div class="right" id="WidgetCenterRight">
 				<?php

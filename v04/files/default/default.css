@@ -716,6 +716,7 @@ body p{
 /*---------------------- error ----------------------*/
 
 .error {
+	width: 916px;
 	padding: 10px 0;
 	border: 1px solid f00;
 	border-radius: 5px 5px;

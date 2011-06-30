@@ -5,7 +5,7 @@ require_once("query.php");
 require_once("dataobject/User.php");
 
 class UserDao extends Dao {
-	const OBJECT_CLASS = "Post";
+	const OBJECT_CLASS = "User";
 	private $loadDependences = true;
 	private $loadReports = false;
 	private $loadAccessCount = true;
@@ -197,10 +197,10 @@ class UserDao extends Dao {
 	}
 	
 	function update($user, $editor) {
-		parent::update($resource, $editor, self::OBJECT_CLASS);
+		parent::update($user, $editor, self::OBJECT_CLASS);
 		
-		$old = $this->quickLoad($this->getID());
-		if(is_null($r_old))
+		$old = $this->quickLoad($user->getID());
+		if(is_null($old))
 			throw new Exception("L'oggetto da modificare non esiste.");
 		
 		$data = array();
@@ -236,12 +236,14 @@ class UserDao extends Dao {
 		$this->db->execute($s = Query::generateUpdateStm($this->table, $data,
 														 array(new WhereConstraint($this->table->getColumn(DB::USER_ID), Operator::EQUAL, $user->getID()))),
 							$this->table->getName(), $user);
+		
+		//TODO aggiungere authenitcationManager
 		//aggiorno lo stato della risorsa (se chi l'ha modificata è un redattore).
-		if(AuthenticationManager::isUserManager($editor)) {
-			$resource->setEditable(false);
-			$resource->setRemovable(false);
-			$this->updateState($resource);
-		}
+		//if(AuthenticationManager::isUserManager($editor)) {
+		//	$resource->setEditable(false);
+		//	$resource->setRemovable(false);
+		//	$this->updateState($resource);
+		//}
 		
 		if($this->db->affected_rows() != 1)
 			throw new Exception("Si è verificato un errore aggiornando il dato. Riprovare.");
@@ -284,7 +286,7 @@ class UserDao extends Dao {
 			return false;
 		}
 	}
-	
+
 	function updateState($user) {
 		parent::updateState($user, $this->table, DB::USER_ID);
 	}
