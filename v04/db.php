@@ -26,6 +26,7 @@ class DB {
 	const TABLE_TAG = "Tag";
 	const TABLE_USER = "User";
 	const TABLE_VOTE = "Vote";
+	const TABLE_POST_RESOURCE = "PostRecource";
 	
 	//colonne comuni a più tabelle
 	const EDITABLE = "editable";
@@ -266,6 +267,10 @@ class DB {
 	const VOTE_VOTE = "vt_vote";
 	const VOTE_AUTHOR = "vt_author";
 	const VOTE_POST = "vt_post";
+	
+	//tabella PostResource
+	const PR_POST_ID = "ps_ID";
+	const PR_RESOURCE_ID = "rs_ID";
 	
 	static function getCreateQueries() {
 		$s = "CREATE TABLE `" . self::TABLE_HISTORY . "` (
@@ -602,7 +607,12 @@ CREATE TABLE `" . self::TABLE_VOTE . "` (
   `" . self::VOTE_POST . "` bigint(20) NOT NULL,
   FOREIGN KEY (`" . self::VOTE_AUTHOR . "`) REFERENCES `" . self::TABLE_USER . "` (`" . self::USER_ID . "`) ON DELETE SET NULL,
   FOREIGN KEY (`" . self::VOTE_POST . "`) REFERENCES `" . self::TABLE_POST . "` (`" . self::POST_ID . "`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin DEFAULT CHARSET=utf8 COLLATE=utf8_bin;";
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+CREATE TABLE `" . self::TABLE_POST_RESOURCE . "` (
+  `" . self::PR_POST_ID . "` bigint(20) NOT NULL,
+  `" . self::PR_RESOURCE_ID . "` bigint(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;";
 
 		return $s;
 	}

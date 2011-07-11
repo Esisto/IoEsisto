@@ -55,13 +55,23 @@ class PostPage {
 					else echo " ";
 					//echo Filter::decodeFilteredText($cont);
 					$cont = ResourceManager::loadResource($rsID);
-					$path =	$cont->getPath();
+					$path =	FileManager::appendToRootPath($cont->getPath());
 					$description = $cont->getDescription();
 					echo "<a href='$path'><img src='" . $path . "' width='100' height='50' alt='" . $description . "' title='" . $description . "'></a>";
 
 				}
-			} else
-				echo substr(Filter::decodeFilteredText($post->getContent()), 0, 200) . (strlen(Filter::decodeFilteredText($post->getContent())) < 200 ? "" : "...");
+			} else {
+				if($post->getType() == "videoreportage"){
+					echo youtubeManager::getVideoPlayer($post->getContent());
+				}else{ //type=news
+					echo substr(Filter::decodeFilteredText($post->getContent()), 0, 200) . (strlen(Filter::decodeFilteredText($post->getContent())) < 200 ? "" : "...");
+					$rs_id = PostManager::getPostResource($post->getID());
+					if($rs_id){
+						$photo= ResourceManager::loadResource($rs_id);
+						echo "<img src='" . FileManager::appendToRootPath($photo->getPath()) . "' />";
+					}
+				}
+			}
 			if(!is_null($post->getPlace())) {
 				require_once("manager/MapManager.php");
 				MapManager::printInfoInElement($post->getPlace(), "post_place_" . $post->getID());
@@ -81,12 +91,23 @@ class PostPage {
 				echo "<div class='flashNewsFirst'>";
 			else
 				echo "<div class='flashNews'>";
-			?>
-				<div class="flashNewsImg left"><img src="img/.png" alt="First flashNewsImage"></div> <!-- TODO: inserire immagine se presente -->
-					<div class="flashNewsContent left">
-					<div class="flashNewsTitle left"><h2><?php echo Filter::decodeFilteredText($post->getTitle()); ?></h2></div>
-					<div class="flashNewsArticles left"><p><?php echo substr(Filter::decodeFilteredText($post->getContent()), 0, 50) . (strlen(Filter::decodeFilteredText($post->getContent())) < 50 ? "" : " ..."); ?></p></div>
-					<div class="clear"></div>
+			
+			$rs_id = PostManager::getPostResource($post->getID());
+			if($rs_id){
+				?><div class="flashNewsImg left">
+					<img src="<?php $photo= ResourceManager::loadResource($rs_id); $path=FileManager::appendToRootPath($photo->getPath()); echo $path; ?>">
+				</div> 
+				<div class="flashNewsContent left">
+				<div class="flashNewsTitle left"><h2><?php echo Filter::decodeFilteredText($post->getTitle()); ?></h2></div>
+				<div class="flashNewsArticles left"><p><?php echo substr(Filter::decodeFilteredText($post->getContent()), 0, 50) . (strlen(Filter::decodeFilteredText($post->getContent())) < 50 ? "" : " ..."); ?></p></div>
+				<?php
+			}else{
+				?><div class="flashNewsContentTextOnly left">
+				<div class="flashNewsTitle left"><h2><?php echo Filter::decodeFilteredText($post->getTitle()); ?></h2></div>
+				<div class="flashNewsArticles left"><p><?php echo substr(Filter::decodeFilteredText($post->getContent()), 0, 270) . (strlen(Filter::decodeFilteredText($post->getContent())) < 270 ? "" : " ..."); ?></p></div>
+				<?php
+			} ?>
+				<div class="clear"></div>
 				</div>
 				<div class="clear"></div>
 			</div>
@@ -100,8 +121,7 @@ class PostPage {
 		    
 		    <div id="videoNewsYouTube" class="left"><?php
 			require_once("manager/youtubeManager.php");
-			/*DEBUG*/ echo 	youtubeManager::getVideoPlayer("Y8aReEh-kB4",280);
-			//echo youtubeManager::getVideoPlayer(Filter::decodeFilteredText($post->getContent()),280);
+			echo youtubeManager::getVideoPlayer($post->getContent(),280);
 		    ?></div>	
 			
 		    <div id="videoNewsAuthor" class="left"><p><?php $postdao = new PostDao(); echo Filter::decodeFilteredText($postdao->getAuthorName($post)); ?></p></div>
@@ -112,14 +132,14 @@ class PostPage {
 		if(isset($options[self::FIRST]) && $options[self::FIRST]) { ?>
 			<li id="liArticle<?php echo $options[self::SEQUENTIAL]; ?>" class="firstMenuMostRecentList left"><div>
 				<div id="leftArticle<?php echo $options[self::SEQUENTIAL]; ?>" class="firstMenuMostRecentTabLeft firstMenuMostRecentTabLeft left"></div>
-				<div id="centerArticle<?php echo $options[self::SEQUENTIAL]; ?>" class="menuMostRecentTabCenter menuMostRecentTabCenter left"><a href="#article<?php echo $options[self::SEQUENTIAL]; ?>"><p><?php echo Filter::decodeFilteredText($post->getCategories()); ?></p></a></div>
+				<div id="centerArticle<?php echo $options[self::SEQUENTIAL]; ?>" class="menuMostRecentTabCenter menuMostRecentTabCenter left"><a href="#article<?php echo $options[self::SEQUENTIAL]; ?>"><p><?php $cat = explode(",",$post->getCategories()); echo Filter::decodeFilteredText($cat[0]); ?></p></a></div>
 				<div id="rightArticle<?php echo $options[self::SEQUENTIAL]; ?>" class="menuMostRecentTabRight menuMostRecentTabRight left"></div>
 				<div class="clear"></div>
 			</div></li>
 		<?php } else { ?>
 			<li id="liArticle<?php echo $options[self::SEQUENTIAL]; ?>" class="menuMostRecentList left"><div>
 				<div id="leftArticle<?php echo $options[self::SEQUENTIAL]; ?>" class="menuMostRecentTabLeft left"></div>
-				<div id="centerArticle<?php echo $options[self::SEQUENTIAL]; ?>" class="menuMostRecentTabCenter left"><a href="#article<?php echo $options[self::SEQUENTIAL]; ?>"><?php echo Filter::decodeFilteredText($post->getCategories()); ?></a></div>
+				<div id="centerArticle<?php echo $options[self::SEQUENTIAL]; ?>" class="menuMostRecentTabCenter left"><a href="#article<?php echo $options[self::SEQUENTIAL]; ?>"><?php $cat = explode(",",$post->getCategories()); echo Filter::decodeFilteredText($cat[0]); ?></a></div>
 				<div id="rightArticle<?php echo $options[self::SEQUENTIAL]; ?>" class="menuMostRecentTabRight left"></div><div class="clear"></div>
 			</div></li>
 		<?php }
@@ -129,10 +149,25 @@ class PostPage {
 		?>
 		<div class="articlesBlock left" id="article<?php echo $options[self::SEQUENTIAL]; ?>">
 			<h2 id="mostRecentTitle"><a href="<?php echo FileManager::appendToRootPath($post->getPermalink()); ?>"><?php echo Filter::decodeFilteredText($post->getTitle()); ?></a></h2>
-			<div id="mostRecentImg"><img src="<?php echo FileManager::appendToRootPath("files/default/img/mostRecentImgBottomRight.png"); ?>"></div> <!-- TODO -->
-			<p id="mostRecentSubTitle"><?php echo Filter::decodeFilteredText($post->getSubtitle()); ?></p>
-			<p><?php echo substr(Filter::decodeFilteredText($post->getContent()), 0, 835) . (strlen(Filter::decodeFilteredText($post->getContent())) < 835 ? "" : " ..."); ?></p>
-			<div class="clear"></div>
+			<?php $rs_id = PostManager::getPostResource($post->getID());
+			if($rs_id) { ?>
+				<div> 
+					<div id="mostRecentArticlesTextAndImgLeft" class="left">
+						<div id="mostRecentSubTitle"><?php echo Filter::decodeFilteredText($post->getSubtitle()); ?></div>
+						<div id="mostRecentArticlesText"><?php echo substr(Filter::decodeFilteredText($post->getContent()), 0, 835) . (strlen(Filter::decodeFilteredText($post->getContent())) < 835 ? "" : " ..."); ?></div>
+					</div>
+					<div id="mostRecentArticlesTextAndImgAndRight" class="left">
+						<img id="mostRecentArticlesImg" src="<?php $photo= ResourceManager::loadResource($rs_id); $path=FileManager::appendToRootPath($photo->getPath()); echo $path; ?>"/>
+						<img id="mostRecentArticlesImgAngle" src="<?php echo FileManager::appendToRootPath("files/default/img/mostRecentImgAngle.png"); ?>"/> 
+					</div>
+					<div class="clear"></div>
+				</div>
+			<?php } else {  ?>
+				<div class="mostRecentExtend">
+					<div id="mostRecentSubTitle"><?php echo Filter::decodeFilteredText($post->getSubtitle()); ?></div>
+					<div id="mostRecentArticlesText"><?php echo substr(Filter::decodeFilteredText($post->getContent()), 0, 100) . (strlen(Filter::decodeFilteredText($post->getContent())) < 100 ? "" : " ..."); ?></div>
+				</div>
+			<?php }	 ?>
 		</div>
 		<?php
 	}
@@ -192,12 +227,22 @@ class PostPage {
 					else echo " ";
 					//echo Filter::decodeFilteredText($cont);
 					$cont = ResourceManager::loadResource($rsID);
-					$path =	$cont->getPath();
+					$path =	FileManager::appendToRootPath($cont->getPath());
 					$description = $cont->getDescription();
 					echo "<a href='$path'><img src='" . $path . "' width='100' height='50' alt='" . $description . "' title='" . $description . "'></a>";
 				}
-			} else
-				echo Filter::decodeFilteredText($post->getContent());
+			} else{
+				if($post->getType() == "videoreportage"){
+					echo youtubeManager::getVideoPlayer($post->getContent());
+				}else{ //type=news
+					echo Filter::decodeFilteredText($post->getContent());
+					$rs_id = PostManager::getPostResource($post->getID());
+					if($rs_id){
+						$photo= ResourceManager::loadResource($rs_id);
+						echo "<img src='" . FileManager::appendToRootPath($photo->getPath()) . "' />";
+					}
+				}
+			}
 			if(!is_null($post->getPlace())) {
 				require_once("manager/MapManager.php");
 				MapManager::printInfoInElement($post->getPlace(), "post_place_" . $post->getID());
@@ -273,41 +318,8 @@ class PostPage {
 		$logger = Logger::getLogger();
 		$logger->debug("ResourceDao", $_GET["type"]);
 		
-		if($_GET["type"]=="videoreportage3"){
-			if(isset($_POST["userUrl"]) && $_POST["userUrl"] != ''){
-				$rs = ResourceManager::createResource($user->getID(),youtubeManager::getVideoID($_POST["userUrl"]),'video');
-				echo youtubeManager::getVideoPlayer($rs->getPath());
-			}else if(isset($_GET["id"])){
-				$rs = ResourceManager::createResource($user->getID(),$_GET["id"],'video');
-				echo youtubeManager::getVideoPlayer($rs->getPath());
-			}else{
-				$error[] = "Errore nell'inserimento del video";
-				$post_temp = Session::getTempVideoRep();
-				self::showNewVideoReportageForm($post_temp,$error);
-			}
-			print_r($_SESSION);
-			$post_temp = Session::getTempVideoRep();
-			$post_temp= $post_temp['post'];
-			echo "<br>"; var_dump($post_temp);
-			$post_temp->setContent($rs->getID()); //content update with the new resource
-			
-			/*$data = PostManager::postToData($post_temp);		
-			$data = array();					
-			$data["title"] = $post_temp->getTitle();		
-			$data["type"] = $post_temp->getType();			
-			$data["content"] = $post_temp->getContent();		
-			$data["categories"] = $post_temp->getCategories();	
-			$data["place"] = $post_temp->getPlace();		
-			$data["headline"] = $post_temp->getHeadline();		
-			$data["subtitle"] = $post_temp->getSubtitle();		
-			$data["tags"] = $post_temp->getTags();			
-			$post = PostManager::createPost($data);*/
-			
-			//Page::redirect("Edit");
-			
-		}else if(isset($_GET["phase"]) && $_GET["phase"]==3){
+		if(isset($_GET["phase"]) && $_GET["phase"]==3){
 			if ($_GET["type"]=="photoreportage" && isset($_POST["numResources"])) {
-					/*DEBUG*/ echo "PHASE 3";
 					$data = array();
 					for($i=0;$i<$_POST["numResources"];$i++){
 						$resourceID = $_POST["resourceID".$i];
@@ -330,11 +342,31 @@ class PostPage {
 				$error[] = "Scegliere il tipo di post da pubblicare.";
 				
 			if($data["type"] == "news"){
+				//carico il testo del post
 				if(isset($_POST["content"]) && trim($_POST["content"]) != ""){
 					$data["content"] = $_POST["content"];
 				}else
 					$error[] = "Inserire un contenuto.";
-			} else if($data["type"] == "photoreportage"){
+					
+				//check if ther's not valid files
+				$notvalid = 0;
+				if(trim($_FILES["upfile"]["name"]) != ""){
+					if($_FILES["upfile"]["type"] == "image/gif" || $_FILES["upfile"]["type"] == "image/jpeg" || $_FILES["upfile"]["type"] == "image/png") ;
+					else $notvalid++;
+				}
+				if($notvalid == 0){
+					if(trim($_FILES["upfile"]["name"]) != ""){
+						if($_FILES["upfile"]["type"] == "image/gif" || $_FILES["upfile"]["type"] == "image/jpeg" || $_FILES["upfile"]["type"] == "image/png"){
+							$fname = ResourceManager::editFileName($_FILES["upfile"]["name"]);
+							$newsPhoto = ResourceManager::uploadPhoto($fname,$user->getNickname(),$user->getID(),$_FILES["upfile"]["tmp_name"],$_FILES["upfile"]["type"]);
+							//prelevo l'id della risorsa appena salvata
+							$data["photo"] = $newsPhoto->getID();
+						}
+					}
+				}else
+					$error[]="Devi inserire un formato valido: .jpeg .jpg .gif oppure .png";
+					
+			}else if($data["type"] == "photoreportage"){
 				$photo = array();
 				//check if ther's not valid files
 				for($i=0,$notvalid=0;$i<10;$i++){
@@ -353,16 +385,19 @@ class PostPage {
 							}
 						}
 					}
-					
 					if($numphoto>0)
 						$data["content"] = $photo;
 					else
 						$error[]="Devi inserire almeno un'immagine";	
 				}else
 					$error[]="Devi inserire un formato valido: .jpeg .jpg .gif oppure .png";
-			} else if($data["type"] == "videoreportage"){
-				
-			}
+					
+			}else if($data["type"] == "videoreportage"){
+				if(isset($_POST["userUrl"]) && $_POST["userUrl"] != ''){
+					$rs = ResourceManager::createResource($user->getID(),youtubeManager::getVideoID($_POST["userUrl"]),'video');
+					$data['content']=youtubeManager::getVideoID($_POST["userUrl"]);
+				}
+			} 
 			
 			if(isset($_POST["cat"]) && is_array($_POST["cat"]) && count($_POST["cat"]) > 0) {
 				$cat = ""; $first = true;
@@ -375,8 +410,8 @@ class PostPage {
 			}
 			if(isset($_POST["place"]) && trim($_POST["place"]) != "")
 				$data["place"] = $_POST["place"];
-			if(isset($_POST["headline"]) && trim($_POST["headline"]) != "")
-				$data["headline"] = $_POST["headline"];
+			//if(isset($_POST["headline"]) && trim($_POST["headline"]) != "")
+			//	$data["headline"] = $_POST["headline"];
 			if(isset($_POST["subtitle"]) && trim($_POST["subtitle"]) != "")
 				$data["subtitle"] = $_POST["subtitle"];
 			if(isset($_POST["tags"]) && trim($_POST["tags"]) != "")
@@ -387,16 +422,18 @@ class PostPage {
 				//se photoreportage creo una collection
 				if($data["type"]=="news"){
 					$post = PostManager::createPost($data);
-				}else if($data["type"]=="videoreportage" && $_POST["phase"]==2){
+					//se vi è una foto aggiorno la tabella PostResource
+					if(isset($data['photo']) && $data['photo'] != ""){
+						PostManager::setPostResource($post->getID(),$data['photo']);
+					}
+				}else if($data["type"]=="videoreportage"){
 					$post = PostManager::createPost($data);
 				}else if ($data["type"]=="photoreportage" && $_GET["phase"]==2){
 					//save only the resource ID not the whole object
 					foreach($data["content"] as &$resource){
 						$resource = $resource->getID();
 					}
-					$post = CollectionManager::createCollection($data);
-					/*DEGUB*/ echo "PHASE 2";
-					
+					$post = CollectionManager::createCollection($data);					
 				}else{
 					$post=false;
 				}
@@ -551,9 +588,9 @@ class PostPage {
 		<?php
 		}
 		?>
-		<form name="<?php echo $name; ?>Post" action="?type=news" method="post">
-			<p class="post_headline"><label>Occhiello:</label><br />
-				<input class="post_headline" name="headline" value="<?php echo $post->getHeadline(); ?>"/></p>
+		<form name="<?php echo $name; ?>Post" action="?type=news" method="post" enctype="multipart/form-data">
+			<!--<p class="post_headline"><label>Occhiello:</label><br />
+				<input class="post_headline" name="headline" value="<?php echo $post->getHeadline(); ?>"/></p>-->
 			<p class="title"><label>Titolo:</label><br/>
 				<input class="post_title" name="title" value="<?php echo $post->getTitle(); ?>"/></p>
 			<p class="post_subtitle"><label>Sottotilolo:</label><br />
@@ -564,6 +601,17 @@ class PostPage {
 				<script type="text/javascript">
 					CKEDITOR.replace( 'post_content', { toolbar : 'edited'});
 				</script>
+				<fieldset><legend>upload immagine</legend><?php
+					//se è presente la foto la visualizzo
+					if($post->getID() != ""){
+						$rs_id = PostManager::getPostResource($post->getID());
+						if($rs_id){
+							$articlePhoto = ResourceManager::loadResource($rs_id);
+							echo "<img src='". FileManager::appendToRootPath($articlePhoto->getPath()) . "' /></br>";
+						}
+					}?>
+					<input type='file' name='upfile' />
+				</fieldset>
 			</p>
 			<p class="tags"><label>Tags:</label> 
 				<input class="tags" id="post_tags_input" name="tags" value="<?php echo $post->getTags(); ?>"/></p>
@@ -616,8 +664,8 @@ class PostPage {
 		}
 		if(!isset($_GET["phase"]) || count($error) != 0){?>
 		<form name="<?php echo $name; ?>Post" action="?type=photoreportage&phase=2" method="post" enctype="multipart/form-data">
-			<p class="post_headline"><label>Occhiello:</label><br />
-				<input class="post_headline" name="headline" value="<?php echo $post->getHeadline(); ?>"/></p>
+			<!--<p class="post_headline"><label>Occhiello:</label><br />
+				<input class="post_headline" name="headline" value="<?php echo $post->getHeadline(); ?>"/></p>-->
 			<p class="title"><label>Titolo:</label><br/>
 				<input class="post_title" name="title" value="<?php echo $post->getTitle(); ?>"/></p>
 			<p class="post_subtitle"><label>Sottotilolo:</label><br />
@@ -662,7 +710,6 @@ class PostPage {
 						$rs_array=$post->getContent();
 						$resource = ResourceManager::loadResource($rs_array[$i]);
 						$path = FileManager::appendToRootPath($resource->getPath());
-						//$path =	"/ioesisto/v04/".$resource->getPath();
 						$index = $resource->getID(); ?>
 						<img src="<?php  echo $path; ?>" width="200" height="100"/>
 						<textarea name="<?php echo $index ?>" rows="5" cols="40"></textarea> <!--textarea name is the ID of the corresponding resource-->
@@ -740,13 +787,20 @@ class PostPage {
 		}
 		if(!isset($_GET["phase"]) || count($error) != 0){
 		?>
-		<form name="<?php echo $name; ?>Post" action="?type=videoreportage&phase=2" method="post">
-			<p class="post_headline"><label>Occhiello:</label><br />
-				<input class="post_headline" name="headline" value="<?php echo $post->getHeadline(); ?>"/></p>
+		<form name="<?php echo $name; ?>Post" action="?type=videoreportage" method="post">
+			<!--<p class="post_headline"><label>Occhiello:</label><br />
+				<input class="post_headline" name="headline" value="<?php echo $post->getHeadline(); ?>"/></p>-->
 			<p class="title"><label>Titolo:</label><br/>
 				<input class="post_title" name="title" value="<?php echo $post->getTitle(); ?>"/></p>
 			<p class="post_subtitle"><label>Sottotilolo:</label><br />
 				<input class="post_subtitle" name="subtitle" value="<?php echo $post->getSubtitle(); ?>"/></p>
+			<p class="content"><?php
+				if($post->getContent() != "")
+					echo youtubeManager::getVideoPlayer($post->getContent());
+				?> <fieldset><legend>Video:</legend>
+						<label>Inserisci l'URL del video: </label><input type="text" name="userUrl" value="<?php echo youtubeManager::getUrl($post->getContent()); ?>">
+				</fieldset>
+			</p>
 			<p class="tags"><label>Tags:</label> 
 				<input class="tags" id="post_tags_input" name="tags" value="<?php echo $post->getTags(); ?>"/></p>
 			<p class="categories"><label>Categorie:</label><br/><?php
@@ -760,7 +814,7 @@ class PostPage {
 			<input id="post_place" name="place" type="hidden" value="<?php echo $post->getPlace(); ?>" />
 			<input name="visible" type="hidden" value="true" />
 			<input name="type" type="hidden" value="videoreportage" />
-			<p class="submit"><input type="submit" value="Vai al caricamento video" /> 
+			<p class="submit"><input type="submit" value="Pubblica" /> 
 				<input type="button" onclick="javascript:save();" value="Salva come bozza"/></p>
 			<script type="text/javascript">
 				function save() {
@@ -773,42 +827,6 @@ class PostPage {
 			MapManager::setCenterToMap($post->getPlace(), "map_canvas");
 			?>
 		</form>
-		<?php }else if(count($error) == 0){ ?>
-			<fieldset><legend>Sei ora autenticato su youtube con l'account di PublicHi!!</legend><?php
-			//salvo i dati del post nella sessione
-			$post->setType("videoreportage");//FIXME: capire perchè qui arriva type="news"
-			Session:: setTempVideoRep($post);
-			print_r($_SESSION);
-			
-			//ClientLogin autentication
-			require_once "Zend/Gdata/ClientLogin.php";
-			$yt= new Zend_Gdata_ClientLogin();
-			//define in settings.php con user e pass
-			$httpClient = $yt->getHttpClient(YT_USER,YT_PASS,'youtube', null,'ioesisto', null, null, 'https://www.google.com/accounts/ClientLogin');
-			echo "<br>Carica un video ...... <br><br>";
-			require_once("Zend/Loader.php");
-			Zend_Loader::loadClass('Zend_Gdata_YouTube');
-			$yt = new Zend_Gdata_YouTube($httpClient,"ioesisto",null,GDEV_KEY);
-			
-			//Upload video
-			require_once("Zend/Loader.php");
-			Zend_Loader::loadClass('Zend_Gdata_YouTube');
-			$yt = new Zend_Gdata_YouTube($httpClient,"ioesisto",null,GDEV_KEY);
-			// create a new VideoEntry object
-			$myVideoEntry = new Zend_Gdata_YouTube_VideoEntry();
-			require_once("manager/youtubeManager.php");				
-			$myVideoEntry = youtubeManager::addMetaData($myVideoEntry,$_POST['title']);
-			$tokenArray = youtubeManager::getTokenArray($yt,$myVideoEntry);
-			$form = youtubeManager::getUploadForm($tokenArray,"http://localhost/ioesisto/v04/Post/New?type=videoreportage3"); //TODO percorso relativo
-			echo $form . "</br>";
-				
-			echo "....... o inserisci l'URL di un video che vuoi allegare al tuo videoarticolo<br/><br/>"
-			?>
-			<form name="<?php echo $name; ?>Post" action="?type=videoreportage3" method="post">
-			<input type="text" name="userUrl">
-			<input type="submit" value="Allega il video" /> 
-			</form>
-			</fieldset>
 		<?php }
 	}
 	

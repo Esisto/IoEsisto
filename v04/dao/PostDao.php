@@ -358,6 +358,36 @@ class PostDao extends Dao {
 			return $u->getNickname();
 		return $post->getAuthor();
 	}
+	
+	/*
+	 *Aggiunge un record alla tabella PostResources
+	 *@param id_post: l'id del post a cui assegnare una risorsa
+	 *@param id_resource: l'id della risorsa da assegnare al post
+	*/
+	function assignResource($id_post, $id_resource){
+		$s = "INSERT INTO `ioesisto3`.`PostRecource` (`ps_ID`, `rs_ID`) VALUES ('". $id_post ."', '". $id_resource ."')";
+		$rs = $this->db->execute($s, DB::TABLE_POST_RESOURCE);
+		
+		if($this->db->affected_rows() != 1)
+			throw new Exception("Errore durante l'inserimento dell'oggetto.");
+	}
+	
+	/*
+	 *Recupera l'id della risorsa assocuata al post
+	 *@param id_post: l'id del post
+	 *@return: l'id della risorsa, se il post non ha risorse ritorna false.
+	*/
+	function loadResource($id_post){
+		try{
+			$s = "SELECT * FROM `PostRecource` WHERE `ps_ID`=" . $id_post;
+			$rs = $this->db->execute($s, DB::TABLE_POST_RESOURCE);
+			$row = $this->db->fetch_row();
+			$rs_id = $row[1];
+		}catch (Exception $e){
+			return false;
+		}
+		return $rs_id;
+	}
 
 	function updateState($post) {
 		parent::updateState($post, $this->table, DB::POST_ID);

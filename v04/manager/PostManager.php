@@ -225,5 +225,15 @@ class PostManager {
 		$postdao = new PostDao();
 		return $postdao->exists($post);
 	}
+	
+	static function setPostResource($id_post, $id_resource)	{
+		$postdao = new PostDao();
+		return $postdao->assignResource($id_post, $id_resource);
+	}
+	
+	static function getPostResource($id_post){
+		$postdao = new PostDao();
+		return $postdao->loadResource($id_post);
+	}
 }
 ?>

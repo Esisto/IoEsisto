@@ -11,18 +11,15 @@
 	
 	<ad/>
 	<header><div></div></header>
-	<content cols="1">
-		<col cols="2">
-			<col class="side left">
-				PCCommands
-				<ad/>
-				PCMapPost
-				<div class="clear" />
-			</col>
-			<col id="main" class="large right">
-				PCMain
-				<div class="clear" />
-			</col>
+	<content cols="1" id="homeContent">
+		<col class="left">
+			PCCommands
+			<ad/>
+			PCMapPost
+			<div class="clear" />
+		</col>
+		<col class="left">
+			PCMain
 			<div class="clear" />
 		</col>
 	</content>

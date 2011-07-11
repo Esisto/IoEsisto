@@ -114,6 +114,17 @@ require_once("session.php");
 	CategoryManager::createCategoriesFromArray($cat, 1);
 	echo "<p>INSERTED CATEGORIES</p>";
 	
+	//creo le cartelle uploads e log
+	if(!file_exists($_SERVER["DOCUMENT_ROOT"] . "/IoEsisto/v04/uploads")){
+		mkdir($_SERVER["DOCUMENT_ROOT"] . "/IoEsisto/v04/uploads", 0700);
+		echo "<p>DIRECTORY UPLOADS CREATED</p>";
+	}else
+		echo "<p>DIRECTORY UPLOADS ALREADY EXIST</p>";
+	if(!file_exists($_SERVER["DOCUMENT_ROOT"] . "/IoEsisto/v04/log")){
+		mkdir($_SERVER["DOCUMENT_ROOT"] . "/IoEsisto/v04/log", 0700);
+		echo "<p>DIRECTORY LOG CREATED</p>";
+	}else
+		echo "<p>DIRECTORY LOG ALREADY EXIST</p>";
 ?>
 
 </body>

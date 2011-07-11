@@ -380,47 +380,63 @@ body p{
     border-right: 2px solid #ECECEC;
     border-left: 2px solid #ECECEC;
 }
-#mostRecentArticles p{
-    margin: 0 10px 10px 10px; 
-    text-align: justify;
-    font-size: 12px;
-    font-style: italic;
-    font-weight: bold;
-    
-}
-#mostRecentSubTitle{
-    margin: 10px;
-    text-align: center;
-    color: #999999;
-}
 #mostRecentTitle{
     padding: 0;
     margin: 5px;
     text-align: center;
+    color: #4B658F;
 }
 #mostRecentTitle a{
 	text-decoration: none;
 	color: #4B658F;
 }
 #mostRecentTitle a:hover{
-	/*text-decoration: underline;*/
+	text-decoration: underline;
 }
-#mostRecentImg{
-    width: 290px;
-    height: 276px;
-    margin: 0 10px 10px 10px;
-    background: url(img/mostRecentImage.jpg);
-    float: right;
+
+#mostRecentArticlesTextAndImgLeft{
+	width: 300px;
 }
-#mostRecentImg img{
-    width: 50px;
-    height: 50px;
-    margin-top: 226px;
-    margin-left: 240px;
+#mostRecentSubTitle{
+	margin: 0 auto;
+    text-align: center;
+    color: #999999;
 }
-#mostRecentBottom{
-    width: inherit;
+#mostRecentArticlesText{
+    margin: 0 10px 5px 10px;
+    text-align: left;
+    font-size: 12px;
+    font-style: italic;
+    font-weight: bold;
 }
+#mostRecentArticlesText p{
+	margin: 0;
+	padding: 0;
+	float: left;
+}
+
+#mostRecentArticlesTextAndImgAndRight{
+	width: 295px;
+	height: 280px;
+}
+#mostRecentArticlesImg{
+	width: 295px;
+	height: 280px;
+}
+#mostRecentArticlesImgAngle{
+	width: 50px;
+	height: 50px;
+	margin-top: -50px;
+	margin-left: 245px;
+	position: absolute;
+}
+.articlesBlock{
+	width: inherit;
+}
+.mostRecentExtend{
+	width: inherit;
+}
+
 #mostRecentArticlesBottomLeft{
     width: 18px;
     height: 18px;
@@ -655,8 +671,11 @@ body p{
 .flashNewsContent{
     width: 180px;
 }
+.flashNewsContentTextOnly{
+	width: 280px;
+}
 .flashNewsTitle{
-    width: 180px;
+	width: inherit;
 }
 .flashNewsTitle h2{
     margin: 0;
@@ -666,7 +685,7 @@ body p{
     color: #000000;
 }
 .flashNewsArticles{
-    width: 180px;
+    width: inherit;
     margin: 5px auto;
     padding: 0;
     font-size: 80%;
