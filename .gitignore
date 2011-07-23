@@ -16,6 +16,7 @@ v04/db_schema.dbs
 v04/log/*
 v04/Uploads/*
 v04/uploads/*
+v04/cache/*
 v03/db_schema.dbs
 v03/ioesisto_db_v3.sql
 v02/maps/prova.php

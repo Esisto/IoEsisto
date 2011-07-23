@@ -56,7 +56,7 @@ class PostPage {
 					//echo Filter::decodeFilteredText($cont);
 					$cont = ResourceManager::loadResource($rsID);
 					$path =	FileManager::appendToRootPath($cont->getPath());
-					$description = $cont->getDescription();
+					$description = Filter::decodeFilteredText($cont->getDescription());
 					echo "<a href='$path'><img src='" . $path . "' width='100' height='50' alt='" . $description . "' title='" . $description . "'></a>";
 
 				}
@@ -99,12 +99,12 @@ class PostPage {
 				</div> 
 				<div class="flashNewsContent left">
 				<div class="flashNewsTitle left"><h2><?php echo Filter::decodeFilteredText($post->getTitle()); ?></h2></div>
-				<div class="flashNewsArticles left"><p><?php echo substr(Filter::decodeFilteredText($post->getContent()), 0, 50) . (strlen(Filter::decodeFilteredText($post->getContent())) < 50 ? "" : " ..."); ?></p></div>
+				<div class="flashNewsArticles left"><p><?php echo Filter::truncateMarkup(Filter::decodeFilteredText($post->getContent()),50); ?></p></div>
 				<?php
 			}else{
 				?><div class="flashNewsContentTextOnly left">
 				<div class="flashNewsTitle left"><h2><?php echo Filter::decodeFilteredText($post->getTitle()); ?></h2></div>
-				<div class="flashNewsArticles left"><p><?php echo substr(Filter::decodeFilteredText($post->getContent()), 0, 270) . (strlen(Filter::decodeFilteredText($post->getContent())) < 270 ? "" : " ..."); ?></p></div>
+				<div class="flashNewsArticles left"><p><?php echo Filter::truncateMarkup(Filter::decodeFilteredText($post->getContent()),270); ?></p></div>
 				<?php
 			} ?>
 				<div class="clear"></div>
@@ -154,7 +154,7 @@ class PostPage {
 				<div> 
 					<div id="mostRecentArticlesTextAndImgLeft" class="left">
 						<div id="mostRecentSubTitle"><?php echo Filter::decodeFilteredText($post->getSubtitle()); ?></div>
-						<div id="mostRecentArticlesText"><?php echo substr(Filter::decodeFilteredText($post->getContent()), 0, 835) . (strlen(Filter::decodeFilteredText($post->getContent())) < 835 ? "" : " ..."); ?></div>
+						<div id="mostRecentArticlesText"><?php echo Filter::truncateMarkup(Filter::decodeFilteredText($post->getContent()),800); ?></div>
 					</div>
 					<div id="mostRecentArticlesTextAndImgAndRight" class="left">
 						<img id="mostRecentArticlesImg" src="<?php $photo= ResourceManager::loadResource($rs_id); $path=FileManager::appendToRootPath($photo->getPath()); echo $path; ?>"/>
@@ -165,7 +165,7 @@ class PostPage {
 			<?php } else {  ?>
 				<div class="mostRecentExtend">
 					<div id="mostRecentSubTitle"><?php echo Filter::decodeFilteredText($post->getSubtitle()); ?></div>
-					<div id="mostRecentArticlesText"><?php echo substr(Filter::decodeFilteredText($post->getContent()), 0, 100) . (strlen(Filter::decodeFilteredText($post->getContent())) < 100 ? "" : " ..."); ?></div>
+					<div id="mostRecentArticlesText"><?php echo Filter::truncateMarkup(Filter::decodeFilteredText($post->getContent()),1500); ?></div>
 				</div>
 			<?php }	 ?>
 		</div>
@@ -228,7 +228,7 @@ class PostPage {
 					//echo Filter::decodeFilteredText($cont);
 					$cont = ResourceManager::loadResource($rsID);
 					$path =	FileManager::appendToRootPath($cont->getPath());
-					$description = $cont->getDescription();
+					$description = Filter::decodeFilteredText($cont->getDescription());
 					echo "<a href='$path'><img src='" . $path . "' width='100' height='50' alt='" . $description . "' title='" . $description . "'></a>";
 				}
 			} else{
@@ -590,13 +590,13 @@ class PostPage {
 		?>
 		<form name="<?php echo $name; ?>Post" action="?type=news" method="post" enctype="multipart/form-data">
 			<!--<p class="post_headline"><label>Occhiello:</label><br />
-				<input class="post_headline" name="headline" value="<?php echo $post->getHeadline(); ?>"/></p>-->
+				<input class="post_headline" name="headline" value="<?php echo Filter::decodeFilteredText($post->getHeadline()); ?>"/></p>-->
 			<p class="title"><label>Titolo:</label><br/>
-				<input class="post_title" name="title" value="<?php echo $post->getTitle(); ?>"/></p>
+				<input class="post_title" name="title" value="<?php echo Filter::decodeFilteredText($post->getTitle()); ?>"/></p>
 			<p class="post_subtitle"><label>Sottotilolo:</label><br />
-				<input class="post_subtitle" name="subtitle" value="<?php echo $post->getSubtitle(); ?>"/></p>
+				<input class="post_subtitle" name="subtitle" value="<?php echo Filter::decodeFilteredText($post->getSubtitle()); ?>"/></p>
 			<p class="content"><label>Contenuto:</label><br/>
-				<textarea name="content" id="post_content"><?php echo $post->getContent(); ?></textarea>
+				<textarea name="content" id="post_content"><?php echo Filter::decodeFilteredText($post->getContent()); ?></textarea>
 				<!-- sostituisco textarea standard con ckeditor -->
 				<script type="text/javascript">
 					CKEDITOR.replace( 'post_content', { toolbar : 'edited'});
@@ -614,7 +614,7 @@ class PostPage {
 				</fieldset>
 			</p>
 			<p class="tags"><label>Tags:</label> 
-				<input class="tags" id="post_tags_input" name="tags" value="<?php echo $post->getTags(); ?>"/></p>
+				<input class="tags" id="post_tags_input" name="tags" value="<?php echo Filter::decodeFilteredText($post->getTags()); ?>"/></p>
 			<p class="categories"><label>Categorie:</label><br/><?php
 				$cat = array();
 				if(trim($post->getCategories()) != "")
@@ -665,21 +665,22 @@ class PostPage {
 		if(!isset($_GET["phase"]) || count($error) != 0){?>
 		<form name="<?php echo $name; ?>Post" action="?type=photoreportage&phase=2" method="post" enctype="multipart/form-data">
 			<!--<p class="post_headline"><label>Occhiello:</label><br />
-				<input class="post_headline" name="headline" value="<?php echo $post->getHeadline(); ?>"/></p>-->
+				<input class="post_headline" name="headline" value="<?php echo Filter::decodeFilteredText($post->getHeadline()); ?>"/></p>-->
 			<p class="title"><label>Titolo:</label><br/>
-				<input class="post_title" name="title" value="<?php echo $post->getTitle(); ?>"/></p>
+				<input class="post_title" name="title" value="<?php echo Filter::decodeFilteredText($post->getTitle()); ?>"/></p>
 			<p class="post_subtitle"><label>Sottotilolo:</label><br />
-				<input class="post_subtitle" name="subtitle" value="<?php echo $post->getSubtitle(); ?>"/></p>
+				<input class="post_subtitle" name="subtitle" value="<?php echo Filter::decodeFilteredText($post->getSubtitle()); ?>"/></p>
 			<p class="content">
 				<label>Contenuto:</label><br/>
 				<fieldset><legend>upload immagini</legend>
-				<?php for($i=0;$i<10;$i++){
+				<?php
+				for($i=0;$i<10;$i++){
 					echo "<input type=\"file\"name=\"upfile$i\"></br>";
 				}?>
 				</fieldset>
 			</p>
 			<p class="tags"><label>Tags:</label> 
-				<input class="tags" id="post_tags_input" name="tags" value="<?php echo $post->getTags(); ?>"/></p>
+				<input class="tags" id="post_tags_input" name="tags" value="<?php echo Filter::decodeFilteredText($post->getTags()); ?>"/></p>
 			<p class="categories"><label>Categorie:</label><br/><?php
 				$cat = array();
 				if(trim($post->getCategories()) != "")
@@ -789,11 +790,11 @@ class PostPage {
 		?>
 		<form name="<?php echo $name; ?>Post" action="?type=videoreportage" method="post">
 			<!--<p class="post_headline"><label>Occhiello:</label><br />
-				<input class="post_headline" name="headline" value="<?php echo $post->getHeadline(); ?>"/></p>-->
+				<input class="post_headline" name="headline" value="<?php echo Filter::decodeFilteredText($post->getHeadline()); ?>"/></p>-->
 			<p class="title"><label>Titolo:</label><br/>
-				<input class="post_title" name="title" value="<?php echo $post->getTitle(); ?>"/></p>
+				<input class="post_title" name="title" value="<?php echo Filter::decodeFilteredText($post->getTitle()); ?>"/></p>
 			<p class="post_subtitle"><label>Sottotilolo:</label><br />
-				<input class="post_subtitle" name="subtitle" value="<?php echo $post->getSubtitle(); ?>"/></p>
+				<input class="post_subtitle" name="subtitle" value="<?php echo Filter::decodeFilteredText($post->getSubtitle()); ?>"/></p>
 			<p class="content"><?php
 				if($post->getContent() != "")
 					echo youtubeManager::getVideoPlayer($post->getContent());
@@ -802,7 +803,7 @@ class PostPage {
 				</fieldset>
 			</p>
 			<p class="tags"><label>Tags:</label> 
-				<input class="tags" id="post_tags_input" name="tags" value="<?php echo $post->getTags(); ?>"/></p>
+				<input class="tags" id="post_tags_input" name="tags" value="<?php echo Filter::decodeFilteredText($post->getTags()); ?>"/></p>
 			<p class="categories"><label>Categorie:</label><br/><?php
 				$cat = array();
 				if(trim($post->getCategories()) != "")

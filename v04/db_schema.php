@@ -132,6 +132,8 @@ class DBSchema {
 	}
 	
 	function save() {
+		if(!file_exists("cache/"))
+			mkdir("cache/");
 		$fp = fopen("cache/db_schema.cache", "w+");
 		fwrite($fp, serialize($this->tables));
 	}
